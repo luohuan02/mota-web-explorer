@@ -1,0 +1,9 @@
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+*.pyc
+.claude/settings.local.json
+browser-profile/
+tmp*.py
+tmp/
+outputs/

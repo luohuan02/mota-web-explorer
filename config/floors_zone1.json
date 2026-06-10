@@ -1,0 +1,58 @@
+{
+    "name": "Zone 1",
+    "floors": [
+        {
+            "id": "MT1",
+            "next": "MT2",
+            "prev": null
+        },
+        {
+            "id": "MT2",
+            "next": "MT3",
+            "prev": "MT1"
+        },
+        {
+            "id": "MT3",
+            "next": "MT4",
+            "prev": "MT2"
+        },
+        {
+            "id": "MT4",
+            "next": "MT5",
+            "prev": "MT3"
+        },
+        {
+            "id": "MT5",
+            "next": "MT6",
+            "prev": "MT4",
+            "checkpoint": true
+        },
+        {
+            "id": "MT6",
+            "next": "MT7",
+            "prev": "MT5"
+        },
+        {
+            "id": "MT7",
+            "next": "MT8",
+            "prev": "MT6"
+        },
+        {
+            "id": "MT8",
+            "next": "MT9",
+            "prev": "MT7"
+        },
+        {
+            "id": "MT9",
+            "next": "MT10",
+            "prev": "MT8",
+            "checkpoint": true
+        },
+        {
+            "id": "MT10",
+            "next": null,
+            "prev": "MT9",
+            "checkpoint": true
+        }
+    ]
+}

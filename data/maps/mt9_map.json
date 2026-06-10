@@ -1,0 +1,461 @@
+{
+  "W": 13,
+  "H": 13,
+  "m": [
+    [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      0,
+      0,
+      209,
+      81,
+      0,
+      88,
+      0,
+      81,
+      201,
+      0,
+      31,
+      1
+    ],
+    [
+      1,
+      0,
+      21,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      201,
+      0,
+      1
+    ],
+    [
+      1,
+      210,
+      1,
+      1,
+      1,
+      1,
+      82,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      0,
+      21,
+      0,
+      1,
+      21,
+      0,
+      21,
+      81,
+      81,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      28,
+      0,
+      205,
+      81,
+      0,
+      27,
+      0,
+      1,
+      1,
+      2,
+      1,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      202,
+      1,
+      0,
+      0,
+      210,
+      1
+    ],
+    [
+      1,
+      21,
+      0,
+      81,
+      210,
+      21,
+      1,
+      0,
+      1,
+      36,
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      210,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      1,
+      81,
+      1
+    ],
+    [
+      1,
+      81,
+      1,
+      1,
+      1,
+      81,
+      1,
+      0,
+      1,
+      21,
+      0,
+      217,
+      1
+    ],
+    [
+      1,
+      0,
+      31,
+      1,
+      0,
+      209,
+      1,
+      205,
+      1,
+      0,
+      209,
+      0,
+      1
+    ],
+    [
+      1,
+      87,
+      0,
+      82,
+      0,
+      0,
+      81,
+      0,
+      81,
+      217,
+      0,
+      31,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  ],
+  "bl": [
+    {
+      "x": 3,
+      "y": 1,
+      "id": "skeleton",
+      "cls": "enemys"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "id": "downFloor",
+      "cls": "terrains"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 9,
+      "y": 1,
+      "id": "greenSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 11,
+      "y": 1,
+      "id": "redPotion",
+      "cls": "items"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "id": "greenSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "id": "skeletonSoldier",
+      "cls": "enemys"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "id": "blueDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 9,
+      "y": 4,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "id": "blueGem",
+      "cls": "items"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "id": "bat",
+      "cls": "enemys"
+    },
+    {
+      "x": 4,
+      "y": 5,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 6,
+      "y": 5,
+      "id": "redGem",
+      "cls": "items"
+    },
+    {
+      "x": 10,
+      "y": 5,
+      "id": "fakeWall",
+      "cls": "animates"
+    },
+    {
+      "x": 7,
+      "y": 6,
+      "id": "redSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 11,
+      "y": 6,
+      "id": "skeletonSoldier",
+      "cls": "enemys"
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "id": "skeletonSoldier",
+      "cls": "enemys"
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 9,
+      "y": 7,
+      "id": "shield1",
+      "cls": "items"
+    },
+    {
+      "x": 1,
+      "y": 8,
+      "id": "skeletonSoldier",
+      "cls": "enemys"
+    },
+    {
+      "x": 11,
+      "y": 8,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 1,
+      "y": 9,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 5,
+      "y": 9,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 9,
+      "y": 9,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 11,
+      "y": 9,
+      "id": "bluePriest",
+      "cls": "enemys"
+    },
+    {
+      "x": 2,
+      "y": 10,
+      "id": "redPotion",
+      "cls": "items"
+    },
+    {
+      "x": 5,
+      "y": 10,
+      "id": "skeleton",
+      "cls": "enemys"
+    },
+    {
+      "x": 7,
+      "y": 10,
+      "id": "bat",
+      "cls": "enemys"
+    },
+    {
+      "x": 10,
+      "y": 10,
+      "id": "skeleton",
+      "cls": "enemys"
+    },
+    {
+      "x": 1,
+      "y": 11,
+      "id": "upFloor",
+      "cls": "terrains"
+    },
+    {
+      "x": 3,
+      "y": 11,
+      "id": "blueDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 6,
+      "y": 11,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 8,
+      "y": 11,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 9,
+      "y": 11,
+      "id": "bluePriest",
+      "cls": "enemys"
+    },
+    {
+      "x": 11,
+      "y": 11,
+      "id": "redPotion",
+      "cls": "items"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+JSON.stringify({f:core.status.floorId,x:core.status.hero.loc.x,y:core.status.hero.loc.y,h:core.status.hero.hp,a:core.status.hero.atk,d:core.status.hero.def,yk:core.status.hero.items.tools.yellowKey||0,bk:core.status.hero.items.tools.blueKey||0})

@@ -1,0 +1,395 @@
+{
+  "W": 13,
+  "H": 13,
+  "m": [
+    [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      87,
+      1,
+      0,
+      202,
+      81,
+      0,
+      1,
+      0,
+      0,
+      81,
+      0,
+      1
+    ],
+    [
+      1,
+      0,
+      1,
+      0,
+      0,
+      1,
+      21,
+      1,
+      201,
+      201,
+      1,
+      202,
+      1
+    ],
+    [
+      1,
+      0,
+      81,
+      205,
+      0,
+      1,
+      0,
+      1,
+      21,
+      21,
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      1,
+      81,
+      1,
+      205,
+      1,
+      21,
+      21,
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      21,
+      0,
+      217,
+      0,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      21,
+      0,
+      0,
+      205,
+      1,
+      0,
+      201,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      1,
+      210,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      202,
+      1
+    ],
+    [
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      201,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      28,
+      21,
+      31,
+      73,
+      1,
+      0,
+      1,
+      81,
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      88,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      2,
+      0,
+      35,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  ],
+  "bl": [
+    {
+      "x": 1,
+      "y": 1,
+      "id": "upFloor",
+      "cls": "terrains"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "id": "redSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "id": "greenSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 9,
+      "y": 2,
+      "id": "greenSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 11,
+      "y": 2,
+      "id": "redSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "id": "bat",
+      "cls": "enemys"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 9,
+      "y": 3,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 6,
+      "y": 4,
+      "id": "bat",
+      "cls": "enemys"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 9,
+      "y": 4,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "id": "bluePriest",
+      "cls": "enemys"
+    },
+    {
+      "x": 1,
+      "y": 6,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 4,
+      "y": 6,
+      "id": "bat",
+      "cls": "enemys"
+    },
+    {
+      "x": 7,
+      "y": 6,
+      "id": "greenSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "id": "skeletonSoldier",
+      "cls": "enemys"
+    },
+    {
+      "x": 11,
+      "y": 7,
+      "id": "redSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 6,
+      "y": 8,
+      "id": "greenSlime",
+      "cls": "enemys"
+    },
+    {
+      "x": 1,
+      "y": 9,
+      "id": "blueGem",
+      "cls": "items"
+    },
+    {
+      "x": 2,
+      "y": 9,
+      "id": "yellowKey",
+      "cls": "items"
+    },
+    {
+      "x": 3,
+      "y": 9,
+      "id": "redPotion",
+      "cls": "items"
+    },
+    {
+      "x": 4,
+      "y": 9,
+      "id": "wand",
+      "cls": "items"
+    },
+    {
+      "x": 8,
+      "y": 9,
+      "id": "yellowDoor",
+      "cls": "animates"
+    },
+    {
+      "x": 1,
+      "y": 11,
+      "id": "downFloor",
+      "cls": "terrains"
+    },
+    {
+      "x": 9,
+      "y": 11,
+      "id": "fakeWall",
+      "cls": "animates"
+    },
+    {
+      "x": 11,
+      "y": 11,
+      "id": "sword1",
+      "cls": "items"
+    }
+  ]
+}

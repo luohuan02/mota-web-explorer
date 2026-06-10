@@ -1,0 +1,733 @@
+{
+  "summary": {
+    "label": "current_best",
+    "source": "local order refinement",
+    "jhp": 122,
+    "hp": 122,
+    "atk": 27,
+    "def": 27,
+    "yk": 0,
+    "bk": 0,
+    "rk": 0,
+    "dmg": 2454,
+    "yd": 41,
+    "bd": 2,
+    "rd": 1,
+    "gold": 305,
+    "gold_score": 152.5,
+    "future_monster_gold": 204,
+    "future_monster_gold_score": 102.0,
+    "base_final_stock": 1224.0,
+    "merchant_residual": 400.0,
+    "remaining_group_value": 1102.0,
+    "final_score": 1376.5,
+    "merchants": [],
+    "actions": [
+      "('MT7', ['redGem'], True)",
+      "('MT3', ['blueGem'], True)",
+      "('MT6', ['blueGem'], True)",
+      "('MT7', ['yellowKey'], True)",
+      "('MT1', ['blueGem'], True)",
+      "('MT8', ['blueGem'], True)",
+      "('MT3', ['redGem'], True)",
+      "('MT5', ['blueGem'], True)",
+      "('MT4', ['blueKey'], True)",
+      "('MT9', ['upFloor'], True)",
+      "('MT10', ['blueGem'], False)",
+      "('MT7', ['yellowKey'], True)",
+      "('MT10', ['redGem'], True)",
+      "('MT10', ['bluePotion'], True)",
+      "('MT6', ['yellowKey'], True)",
+      "('MT8', ['redKey'], True)",
+      "('MT1', ['bluePotion'], True)",
+      "('MT7', ['bluePotion'], True)",
+      "('MT10', ['redDoor'], True)"
+    ],
+    "remaining_groups": [
+      {
+        "fid": "MT8",
+        "floor": 8,
+        "group": "MT8 full-map future resources",
+        "items": [
+          {
+            "pos": "x1y5",
+            "eid": "redPotion",
+            "value": 50
+          },
+          {
+            "pos": "x7y10",
+            "eid": "blueKey",
+            "value": 200
+          },
+          {
+            "pos": "x8y10",
+            "eid": "redPotion",
+            "value": 50
+          },
+          {
+            "pos": "x7y11",
+            "eid": "yellowKey",
+            "value": 50
+          }
+        ],
+        "merchants": [],
+        "reward": 360.0,
+        "doors": [
+          {
+            "pos": "x1y3",
+            "eid": "yellowDoor",
+            "cost": 50
+          },
+          {
+            "pos": "x11y9",
+            "eid": "yellowDoor",
+            "cost": 50
+          },
+          {
+            "pos": "x9y11",
+            "eid": "yellowDoor",
+            "cost": 50
+          }
+        ],
+        "door_cost": 150,
+        "monsters": [
+          {
+            "pos": "x7y2",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          },
+          {
+            "pos": "x2y6",
+            "eid": "redSlime",
+            "damage": 0,
+            "gold": 2,
+            "gold_score": 1.0
+          },
+          {
+            "pos": "x3y6",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          },
+          {
+            "pos": "x4y6",
+            "eid": "redSlime",
+            "damage": 0,
+            "gold": 2,
+            "gold_score": 1.0
+          },
+          {
+            "pos": "x11y10",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x10y11",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 20,
+        "future_monster_gold_score": 10.0,
+        "future_merchant_value": 0.0,
+        "value": 210.0
+      },
+      {
+        "fid": "MT6",
+        "floor": 6,
+        "group": "MT6 full-map future resources",
+        "items": [
+          {
+            "pos": "x8y3",
+            "eid": "redPotion",
+            "value": 50
+          }
+        ],
+        "merchants": [
+          {
+            "pos": "x8y4",
+            "eid": "merchant:MT6_BK",
+            "value": 175.0,
+            "reward": 200,
+            "gold_cost": 25.0
+          }
+        ],
+        "reward": 239.5,
+        "doors": [
+          {
+            "pos": "x11y2",
+            "eid": "yellowDoor",
+            "cost": 50
+          }
+        ],
+        "door_cost": 50,
+        "monsters": [
+          {
+            "pos": "x10y1",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          },
+          {
+            "pos": "x10y3",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x11y4",
+            "eid": "bat",
+            "damage": 0,
+            "gold": 3,
+            "gold_score": 1.5
+          },
+          {
+            "pos": "x8y6",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x9y6",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x1y8",
+            "eid": "bluePriest",
+            "damage": 0,
+            "gold": 5,
+            "gold_score": 2.5
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 29,
+        "future_monster_gold_score": 14.5,
+        "future_merchant_value": 175.0,
+        "value": 189.5
+      },
+      {
+        "fid": "MT7",
+        "floor": 7,
+        "group": "MT7 full-map future resources",
+        "items": [],
+        "merchants": [
+          {
+            "pos": "x6y1",
+            "eid": "merchant:MT7_YK",
+            "value": 225.0,
+            "reward": 250,
+            "gold_cost": 25.0
+          }
+        ],
+        "reward": 234.0,
+        "doors": [
+          {
+            "pos": "x7y5",
+            "eid": "yellowDoor",
+            "cost": 50
+          }
+        ],
+        "door_cost": 50,
+        "monsters": [
+          {
+            "pos": "x5y3",
+            "eid": "redSlime",
+            "damage": 0,
+            "gold": 2,
+            "gold_score": 1.0
+          },
+          {
+            "pos": "x7y3",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x2y6",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 18,
+        "future_monster_gold_score": 9.0,
+        "future_merchant_value": 225.0,
+        "value": 184.0
+      },
+      {
+        "fid": "MT4",
+        "floor": 4,
+        "group": "MT4 full-map future resources",
+        "items": [
+          {
+            "pos": "x9y2",
+            "eid": "yellowKey",
+            "value": 50
+          },
+          {
+            "pos": "x11y2",
+            "eid": "bluePotion",
+            "value": 200
+          }
+        ],
+        "merchants": [],
+        "reward": 259.0,
+        "doors": [
+          {
+            "pos": "x10y4",
+            "eid": "yellowDoor",
+            "cost": 50
+          },
+          {
+            "pos": "x4y5",
+            "eid": "yellowDoor",
+            "cost": 50
+          }
+        ],
+        "door_cost": 100,
+        "monsters": [
+          {
+            "pos": "x10y3",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x6y5",
+            "eid": "redSlime",
+            "damage": 0,
+            "gold": 2,
+            "gold_score": 1.0
+          },
+          {
+            "pos": "x9y5",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x4y11",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          },
+          {
+            "pos": "x8y11",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 18,
+        "future_monster_gold_score": 9.0,
+        "future_merchant_value": 0.0,
+        "value": 159.0
+      },
+      {
+        "fid": "MT1",
+        "floor": 1,
+        "group": "MT1 full-map future resources",
+        "items": [
+          {
+            "pos": "x1y3",
+            "eid": "redPotion",
+            "value": 50
+          },
+          {
+            "pos": "x1y6",
+            "eid": "yellowKey",
+            "value": 50
+          },
+          {
+            "pos": "x1y10",
+            "eid": "redPotion",
+            "value": 50
+          },
+          {
+            "pos": "x3y10",
+            "eid": "yellowKey",
+            "value": 50
+          },
+          {
+            "pos": "x1y11",
+            "eid": "redPotion",
+            "value": 50
+          },
+          {
+            "pos": "x3y11",
+            "eid": "yellowKey",
+            "value": 50
+          }
+        ],
+        "merchants": [],
+        "reward": 308.0,
+        "doors": [
+          {
+            "pos": "x4y3",
+            "eid": "yellowDoor",
+            "cost": 50
+          },
+          {
+            "pos": "x2y5",
+            "eid": "yellowDoor",
+            "cost": 50
+          },
+          {
+            "pos": "x2y8",
+            "eid": "yellowDoor",
+            "cost": 50
+          }
+        ],
+        "door_cost": 150,
+        "monsters": [
+          {
+            "pos": "x2y4",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x2y7",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x9y11",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          },
+          {
+            "pos": "x11y11",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 16,
+        "future_monster_gold_score": 8.0,
+        "future_merchant_value": 0.0,
+        "value": 158.0
+      },
+      {
+        "fid": "MT9",
+        "floor": 9,
+        "group": "MT9 full-map future resources",
+        "items": [
+          {
+            "pos": "x2y2",
+            "eid": "yellowKey",
+            "value": 50
+          },
+          {
+            "pos": "x1y7",
+            "eid": "yellowKey",
+            "value": 50
+          },
+          {
+            "pos": "x5y7",
+            "eid": "yellowKey",
+            "value": 50
+          },
+          {
+            "pos": "x9y9",
+            "eid": "yellowKey",
+            "value": 50
+          },
+          {
+            "pos": "x11y11",
+            "eid": "redPotion",
+            "value": 50
+          }
+        ],
+        "merchants": [],
+        "reward": 280.5,
+        "doors": [
+          {
+            "pos": "x3y7",
+            "eid": "yellowDoor",
+            "cost": 50
+          },
+          {
+            "pos": "x11y8",
+            "eid": "yellowDoor",
+            "cost": 50
+          },
+          {
+            "pos": "x1y9",
+            "eid": "yellowDoor",
+            "cost": 50
+          }
+        ],
+        "door_cost": 150,
+        "monsters": [
+          {
+            "pos": "x3y1",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x10y2",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          },
+          {
+            "pos": "x1y3",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x11y6",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x4y7",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x1y8",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x11y9",
+            "eid": "bluePriest",
+            "damage": 0,
+            "gold": 5,
+            "gold_score": 2.5
+          },
+          {
+            "pos": "x5y10",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x10y10",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x9y11",
+            "eid": "bluePriest",
+            "damage": 0,
+            "gold": 5,
+            "gold_score": 2.5
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 61,
+        "future_monster_gold_score": 30.5,
+        "future_merchant_value": 0.0,
+        "value": 130.5
+      },
+      {
+        "fid": "MT3",
+        "floor": 3,
+        "group": "MT3 full-map future resources",
+        "items": [
+          {
+            "pos": "x11y1",
+            "eid": "redPotion",
+            "value": 50
+          },
+          {
+            "pos": "x11y7",
+            "eid": "redPotion",
+            "value": 50
+          },
+          {
+            "pos": "x11y8",
+            "eid": "yellowKey",
+            "value": 50
+          }
+        ],
+        "merchants": [],
+        "reward": 154.0,
+        "doors": [
+          {
+            "pos": "x9y2",
+            "eid": "yellowDoor",
+            "cost": 50
+          },
+          {
+            "pos": "x9y8",
+            "eid": "yellowDoor",
+            "cost": 50
+          }
+        ],
+        "door_cost": 100,
+        "monsters": [
+          {
+            "pos": "x10y2",
+            "eid": "bat",
+            "damage": 0,
+            "gold": 3,
+            "gold_score": 1.5
+          },
+          {
+            "pos": "x10y8",
+            "eid": "bluePriest",
+            "damage": 0,
+            "gold": 5,
+            "gold_score": 2.5
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 8,
+        "future_monster_gold_score": 4.0,
+        "future_merchant_value": 0.0,
+        "value": 54.0
+      },
+      {
+        "fid": "MT10",
+        "floor": 10,
+        "group": "MT10 full-map future resources",
+        "items": [],
+        "merchants": [],
+        "reward": 14.0,
+        "doors": [],
+        "door_cost": 0,
+        "monsters": [
+          {
+            "pos": "x3y6",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x11y6",
+            "eid": "skeleton",
+            "damage": 0,
+            "gold": 6,
+            "gold_score": 3.0
+          },
+          {
+            "pos": "x2y7",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          },
+          {
+            "pos": "x10y7",
+            "eid": "skeletonSoldier",
+            "damage": 0,
+            "gold": 8,
+            "gold_score": 4.0
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 28,
+        "future_monster_gold_score": 14.0,
+        "future_merchant_value": 0.0,
+        "value": 14.0
+      },
+      {
+        "fid": "MT5",
+        "floor": 5,
+        "group": "MT5 full-map future resources",
+        "items": [],
+        "merchants": [],
+        "reward": 3.0,
+        "doors": [],
+        "door_cost": 0,
+        "monsters": [
+          {
+            "pos": "x9y2",
+            "eid": "greenSlime",
+            "damage": 0,
+            "gold": 1,
+            "gold_score": 0.5
+          },
+          {
+            "pos": "x3y5",
+            "eid": "bluePriest",
+            "damage": 0,
+            "gold": 5,
+            "gold_score": 2.5
+          }
+        ],
+        "monster_damage": 0,
+        "future_monster_gold": 6,
+        "future_monster_gold_score": 3.0,
+        "future_merchant_value": 0.0,
+        "value": 3.0
+      }
+    ]
+  },
+  "state": "HP=122 ATK=27 DEF=27 YK=0 BK=0 RK=0 G=305 dmg=2454 door=41/2/1",
+  "actions": [
+    "('MT7', ['redGem'], True)",
+    "('MT3', ['blueGem'], True)",
+    "('MT6', ['blueGem'], True)",
+    "('MT7', ['yellowKey'], True)",
+    "('MT1', ['blueGem'], True)",
+    "('MT8', ['blueGem'], True)",
+    "('MT3', ['redGem'], True)",
+    "('MT5', ['blueGem'], True)",
+    "('MT4', ['blueKey'], True)",
+    "('MT9', ['upFloor'], True)",
+    "('MT10', ['blueGem'], False)",
+    "('MT7', ['yellowKey'], True)",
+    "('MT10', ['redGem'], True)",
+    "('MT10', ['bluePotion'], True)",
+    "('MT6', ['yellowKey'], True)",
+    "('MT8', ['redKey'], True)",
+    "('MT1', ['bluePotion'], True)",
+    "('MT7', ['bluePotion'], True)",
+    "('MT10', ['redDoor'], True)"
+  ],
+  "search": {
+    "goal_count": 1,
+    "merchant_goal_count": 0,
+    "entry_count": 18,
+    "elapsed": 0
+  }
+}
