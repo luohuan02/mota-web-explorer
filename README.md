@@ -105,6 +105,69 @@ python tests\run_pareto_test.py
 python tests\run_floorsearch_test.py
 ```
 
+## Browser Game Access
+
+The game runs at https://h5mota.com/games/51/ . The project uses [agent-browser](https://www.npmjs.com/package/agent-browser) (Chrome CDP) to read and control it. The browser profile stores the h5mota save data and is ignored by git.
+
+### Connect to a running game
+
+If Chrome is already open with the game, auto-connect:
+
+```bash
+agent-browser --auto-connect snapshot -i
+```
+
+Or open a fresh session with the project profile:
+
+```bash
+agent-browser close
+agent-browser --profile "D:\claude\mota-web-explorer\browser-profile" --session-name mota-session open https://h5mota.com/games/51/
+```
+
+### Read hero state (CLI)
+
+```bash
+agent-browser --auto-connect eval "(function(){
+  const h = core.status.hero, loc = h.loc, t = h.items.tools;
+  return JSON.stringify({
+    floor: core.status.floorId, x: loc.x, y: loc.y,
+    hp: h.hp, atk: h.atk, def: h.def,
+    yk: t.yellowKey||0, bk: t.blueKey||0, rk: t.redKey||0,
+    gold: h.money||0
+  });
+})()"
+```
+
+### Read floor map (CLI)
+
+```bash
+agent-browser --auto-connect eval "(function(){
+  const fid = 'MT10';
+  const m = core.status.maps[fid];
+  const items = m.blocks.filter(b => b.event && b.event.id !== 'yellowWall')
+    .map(b => ({x:b.x, y:b.y, id:b.event.id, noPass:b.event.noPass}));
+  return JSON.stringify({floorId:fid, hero:{x:core.status.hero.loc.x,y:core.status.hero.loc.y}, items});
+})()"
+```
+
+### Read hero state (Python)
+
+```python
+from src.legacy.browser import BrowserController
+
+bc = BrowserController()          # defaults to project browser-profile
+bc.connect_existing()             # --auto-connect
+state = bc.read_game_state()      # .floor .x .y .hp .atk .def_ .yk .bk .rk
+floor_data = bc.export_floor_map()  # .map .blocks .width .height
+```
+
+### Notes
+
+- Always `agent-browser close` before re-opening; otherwise the `--profile` flag is ignored.
+- Never use `close --all` or close the user's own browser.
+- The game canvas only shows as `[Canvas]` in snapshots — use `eval` with `core.status` JS API instead.
+- Save data is in the browser profile's `localStorage`, not in the project repo.
+
 ## Repository Layout
 
 - `best/`: tracked stable walkthroughs and summary JSON

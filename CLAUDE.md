@@ -125,3 +125,9 @@ agent-browser --auto-connect snapshot -i
 ```
 
 The local browser profile is `browser-profile/`; do not delete it.
+
+## 注意
+- 如果要运行 python 临时脚本，请去掉换行符执行，或者写 tmp/tmp.py 然后执行 tmp/tmp.py
+- 禁止 Read(C:\Users\PEIYAN~1.LIA\AppData\Local\Temp\claude\D--claude-mota-web-explorer\eb734ded-6eeb-4a0f-b9fe-955937a952e
+    5\tasks\bv3t0dcvq.output)
+- 禁止截图,目前用的纯文本模型,直接看内存状态
