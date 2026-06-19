@@ -35,6 +35,9 @@
 
 - `download_data.py`
 - `extract_maps.py`
+- `extract_high_maps_cdp.js`: direct CDP extractor for MT41+ map data; avoids Python/PowerShell capturing `agent-browser.cmd` output.
+- `extract_high_maps.py` / `extract_high_maps.ps1`: thin wrappers around `extract_high_maps_cdp.js`.
+- `live_zone3_walk_replayer_cdp.js`: direct CDP live replay/checker for `outputs/results/zone3_quick_pass_walk.json`.
 - `snapshot_state.py`
 - `grab_state.py`
 - `read_full_state.py`
@@ -43,7 +46,11 @@
 - `test_browser.py`
 - `test_core.py`
 
-网页操作使用 agent-browser 时需要 `--auto-connect`。
+网页操作使用 agent-browser 读取或控制已经打开的 h5mota 游戏页时，使用 `--cdp 9222` 直连现有 Chrome DevTools 端口；不要用 `--auto-connect`，它可能连到 agent-browser 自己的空白页。
+
+```powershell
+agent-browser.cmd --cdp 9222 eval "(() => ({ floor: core.status.floorId, hero: core.status.hero.loc }))()"
+```
 ## Fixed-prefix JIT supply audit
 
 - `audit_fixed_prefix_user_post9_compressed.py`：逐步验证固定攻略前缀后的攻略路线可以由压缩图表达，最终应为 `HP=25 dmg=2601 door=40/2/1`。

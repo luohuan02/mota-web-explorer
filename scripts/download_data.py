@@ -20,7 +20,7 @@ os.makedirs(MAP_DIR, exist_ok=True)
 def run_js(js):
     """Run JS via agent-browser."""
     result = subprocess.run(
-        [AGENT, "--auto-connect", "eval", js],
+        [AGENT, "--cdp", "9222", "eval", js],
         capture_output=True, text=True,
         shell=False, encoding='utf-8', errors='ignore',
         timeout=60
@@ -76,7 +76,7 @@ for fid in ['MT4', 'MT5', 'MT6']:
     # Read blocks count
     js2 = 'core.status.maps["' + fid + '"].blocks.length'
     result = subprocess.run(
-        [AGENT, "--auto-connect", "eval", js2],
+        [AGENT, "--cdp", "9222", "eval", js2],
         capture_output=True, text=True, shell=False,
         encoding='utf-8', errors='ignore', timeout=30
     )

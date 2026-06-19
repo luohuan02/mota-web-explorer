@@ -1,0 +1,43 @@
+{
+  "description": "MT10 full map data after boss defeat, items still uncollected",
+  "source": "browser eval core.status.maps.MT10",
+  "timestamp": "2026-06-12",
+  "width": 13,
+  "height": 13,
+  "map": [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,0,0,0,1,1,1,1,1],
+    [1,27,27,27,1,1,0,1,1,28,28,28,1],
+    [1,32,32,32,0,0,0,0,0,21,21,21,1],
+    [1,1,1,1,1,0,0,0,1,1,1,1,1],
+    [1,0,0,209,1,0,0,0,1,0,0,209,1],
+    [1,0,210,0,1,1,0,1,1,0,210,0,1],
+    [1,0,0,0,1,1,0,1,1,0,0,0,1],
+    [1,0,1,0,1,1,0,1,1,0,1,0,1],
+    [1,0,1,0,1,0,0,0,1,0,1,0,1],
+    [1,88,1,0,0,0,87,0,0,0,1,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1]
+  ],
+  "items": [
+    {"x":1,"y":3,"id":"redGem","noPass":false},
+    {"x":2,"y":3,"id":"redGem","noPass":false},
+    {"x":3,"y":3,"id":"redGem","noPass":false},
+    {"x":9,"y":3,"id":"blueGem","noPass":false},
+    {"x":10,"y":3,"id":"blueGem","noPass":false},
+    {"x":11,"y":3,"id":"blueGem","noPass":false},
+    {"x":1,"y":4,"id":"bluePotion","noPass":false},
+    {"x":2,"y":4,"id":"bluePotion","noPass":false},
+    {"x":3,"y":4,"id":"bluePotion","noPass":false},
+    {"x":9,"y":4,"id":"yellowKey","noPass":false},
+    {"x":10,"y":4,"id":"yellowKey","noPass":false},
+    {"x":11,"y":4,"id":"yellowKey","noPass":false},
+    {"x":3,"y":6,"id":"skeleton","noPass":true},
+    {"x":11,"y":6,"id":"skeleton","noPass":true},
+    {"x":2,"y":7,"id":"skeletonSoldier","noPass":true},
+    {"x":10,"y":7,"id":"skeletonSoldier","noPass":true},
+    {"x":1,"y":11,"id":"downFloor","noPass":false,"data":{"floorId":":before","stair":"upFloor","time":0}},
+    {"x":6,"y":11,"id":"upFloor","noPass":false,"data":{"floorId":":next","stair":"downFloor","time":0}},
+    {"x":6,"y":9,"id":"none","noPass":false,"note":"thief event - triggers after boss flag, thief walks and opens path to upFloor"}
+  ]
+}

@@ -5,6 +5,19 @@ This file mirrors `AGENTS.md` for Claude-compatible agents. Keep both files sync
 Guide baseline:
 https://www.taptap.cn/moment/15225056477054087
 
+## Project Skills
+
+Before changing route/search/live-browser code, read the relevant project skill
+under `skills/` and follow its workflow. These local skills are the project
+entry points and may override older habits from generic browser tooling:
+
+- `skills/mota-route-search/SKILL.md`: local route search, Pareto/beam/A* probes, strategy comparison.
+- `skills/mota-route-audit/SKILL.md`: replay legality checks, Chinese walk generation, remaining-resource audits.
+- `skills/mota-live-browser/SKILL.md`: reading or probing the already-open h5mota browser state.
+- `skills/mota-live-verify/SKILL.md`: executing a generated walk in the live browser and comparing live state.
+
+For live h5mota access, the current project convention is `agent-browser.cmd --cdp 9222`; do not use `--auto-connect`.
+
 ## Current Canonical Result
 
 Use the tracked `best/` artifacts as the source of truth.
@@ -118,13 +131,22 @@ python tests\run_floorsearch_test.py
 
 ## Browser Notes
 
-Use the `agent-browser` skill for h5mota browser interaction. Keep `--auto-connect` when reading an existing opened game:
+Use the `agent-browser` skill for h5mota browser interaction.
+
+Important: when reading or controlling the already-open h5mota game, connect to the existing Chrome DevTools port directly. Use `--cdp 9222`, not `--auto-connect`; `--auto-connect` may attach to agent-browser's own blank daemon/tab instead of the real game page.
 
 ```powershell
-agent-browser --auto-connect snapshot -i
+agent-browser.cmd --cdp 9222 eval "(() => { const h = core.status.hero, loc = h.loc, t = h.items.tools; return { floor: core.status.floorId, x: loc.x, y: loc.y, hp: h.hp, atk: h.atk, def: h.def, yk: t.yellowKey || 0, bk: t.blueKey || 0, rk: t.redKey || 0, gold: h.money || 0 }; })()"
 ```
 
 The local browser profile is `browser-profile/`; do not delete it.
+
+For live route replay, prefer `scripts/live_zone3_mouse_replayer_cdp.js` and the
+`skills/mota-live-verify/SKILL.md` notes. The verifier should use real map-click
+handlers, not forced hero movement. Known h5mota replay edge cases include empty
+`waitAsync` event shells, adjacent noPass targets that require a second click,
+logical route targets whose live coordinates differ after the side effect, and
+the 39F/40F center-symmetry item (`centerFly3` pickup, `centerFly` usable tool).
 
 ## 注意
 - 如果要运行 python 临时脚本，请去掉换行符执行，或者写 tmp/tmp.py 然后执行 tmp/tmp.py

@@ -1,0 +1,2077 @@
+﻿{
+    "description":  "Tile number to game object mapping for full 50F game",
+    "source":  "browser eval core.maps.blocksInfo",
+    "timestamp":  "2026-06-14",
+    "tiles":  {
+                  "1":  {
+                            "cls":  "animates",
+                            "id":  "yellowWall",
+                            "noPass":  false,
+                            "trigger":  null,
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "2":  {
+                            "cls":  "animates",
+                            "id":  "fakeWall",
+                            "noPass":  false,
+                            "trigger":  "openDoor",
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "3":  {
+                            "cls":  "animates",
+                            "id":  "fakeWall2",
+                            "noPass":  false,
+                            "trigger":  "openDoor",
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "4":  {
+                            "cls":  "animates",
+                            "id":  "star",
+                            "noPass":  true,
+                            "trigger":  null,
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "5":  {
+                            "cls":  "animates",
+                            "id":  "lava",
+                            "noPass":  true,
+                            "trigger":  null,
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "6":  {
+                            "cls":  "terrains",
+                            "id":  "ice",
+                            "noPass":  false,
+                            "trigger":  null,
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "7":  {
+                            "cls":  "terrains",
+                            "id":  "blueShop-left",
+                            "noPass":  false,
+                            "trigger":  null,
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "8":  {
+                            "cls":  "terrains",
+                            "id":  "blueShop-right",
+                            "noPass":  false,
+                            "trigger":  null,
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "9":  {
+                            "cls":  "terrains",
+                            "id":  "pinkShop-left",
+                            "noPass":  false,
+                            "trigger":  null,
+                            "doorKeys":  {
+
+                                         }
+                        },
+                  "10":  {
+                             "cls":  "terrains",
+                             "id":  "pinkShop-right",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "11":  {
+                             "cls":  "animates",
+                             "id":  "lavaNet",
+                             "noPass":  false,
+                             "trigger":  "passNet",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "12":  {
+                             "cls":  "animates",
+                             "id":  "poisonNet",
+                             "noPass":  false,
+                             "trigger":  "passNet",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "13":  {
+                             "cls":  "animates",
+                             "id":  "weakNet",
+                             "noPass":  false,
+                             "trigger":  "passNet",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "14":  {
+                             "cls":  "animates",
+                             "id":  "curseNet",
+                             "noPass":  false,
+                             "trigger":  "passNet",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "15":  {
+                             "cls":  "animates",
+                             "id":  "blueWater",
+                             "noPass":  true,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "16":  {
+                             "cls":  "animates",
+                             "id":  "water",
+                             "noPass":  true,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "20":  {
+                             "cls":  "autotile",
+                             "id":  "autotile",
+                             "noPass":  true,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "21":  {
+                             "cls":  "items",
+                             "id":  "yellowKey",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "22":  {
+                             "cls":  "items",
+                             "id":  "blueKey",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "23":  {
+                             "cls":  "items",
+                             "id":  "redKey",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "24":  {
+                             "cls":  "items",
+                             "id":  "greenKey",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "25":  {
+                             "cls":  "items",
+                             "id":  "steelKey",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "26":  {
+                             "cls":  "items",
+                             "id":  "bigKey",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "27":  {
+                             "cls":  "items",
+                             "id":  "redGem",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "28":  {
+                             "cls":  "items",
+                             "id":  "blueGem",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "29":  {
+                             "cls":  "items",
+                             "id":  "greenGem",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "30":  {
+                             "cls":  "items",
+                             "id":  "yellowGem",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "31":  {
+                             "cls":  "items",
+                             "id":  "redPotion",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "32":  {
+                             "cls":  "items",
+                             "id":  "bluePotion",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "33":  {
+                             "cls":  "items",
+                             "id":  "greenPotion",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "34":  {
+                             "cls":  "items",
+                             "id":  "yellowPotion",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "35":  {
+                             "cls":  "items",
+                             "id":  "sword1",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "36":  {
+                             "cls":  "items",
+                             "id":  "shield1",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "37":  {
+                             "cls":  "items",
+                             "id":  "sword2",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "38":  {
+                             "cls":  "items",
+                             "id":  "shield2",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "39":  {
+                             "cls":  "items",
+                             "id":  "sword3",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "40":  {
+                             "cls":  "items",
+                             "id":  "shield3",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "41":  {
+                             "cls":  "items",
+                             "id":  "sword4",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "42":  {
+                             "cls":  "items",
+                             "id":  "shield4",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "43":  {
+                             "cls":  "items",
+                             "id":  "sword5",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "44":  {
+                             "cls":  "items",
+                             "id":  "shield5",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "45":  {
+                             "cls":  "items",
+                             "id":  "book",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "46":  {
+                             "cls":  "items",
+                             "id":  "fly",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "47":  {
+                             "cls":  "items",
+                             "id":  "pickaxe",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "48":  {
+                             "cls":  "items",
+                             "id":  "icePickaxe",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "49":  {
+                             "cls":  "items",
+                             "id":  "bomb",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "50":  {
+                             "cls":  "items",
+                             "id":  "centerFly",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "51":  {
+                             "cls":  "items",
+                             "id":  "upFly",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "52":  {
+                             "cls":  "items",
+                             "id":  "downFly",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "53":  {
+                             "cls":  "items",
+                             "id":  "coin",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "54":  {
+                             "cls":  "items",
+                             "id":  "snow",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "55":  {
+                             "cls":  "items",
+                             "id":  "cross",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "56":  {
+                             "cls":  "items",
+                             "id":  "superPotion",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "57":  {
+                             "cls":  "items",
+                             "id":  "earthquake",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "58":  {
+                             "cls":  "items",
+                             "id":  "poisonWine",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "59":  {
+                             "cls":  "items",
+                             "id":  "weakWine",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "60":  {
+                             "cls":  "items",
+                             "id":  "curseWine",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "61":  {
+                             "cls":  "items",
+                             "id":  "superWine",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "62":  {
+                             "cls":  "items",
+                             "id":  "knife",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "63":  {
+                             "cls":  "items",
+                             "id":  "moneyPocket",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "64":  {
+                             "cls":  "items",
+                             "id":  "shoes",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "65":  {
+                             "cls":  "items",
+                             "id":  "hammer",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "68":  {
+                             "cls":  "items",
+                             "id":  "lifeWand",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "69":  {
+                             "cls":  "items",
+                             "id":  "jumpShoes",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "70":  {
+                             "cls":  "items",
+                             "id":  "sword0",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "71":  {
+                             "cls":  "items",
+                             "id":  "shield0",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "72":  {
+                             "cls":  "items",
+                             "id":  "skill1",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "73":  {
+                             "cls":  "items",
+                             "id":  "wand",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "81":  {
+                             "cls":  "animates",
+                             "id":  "yellowDoor",
+                             "noPass":  false,
+                             "trigger":  "openDoor",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "82":  {
+                             "cls":  "animates",
+                             "id":  "blueDoor",
+                             "noPass":  false,
+                             "trigger":  "openDoor",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "83":  {
+                             "cls":  "animates",
+                             "id":  "redDoor",
+                             "noPass":  false,
+                             "trigger":  "openDoor",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "84":  {
+                             "cls":  "animates",
+                             "id":  "greenDoor",
+                             "noPass":  false,
+                             "trigger":  "openDoor",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "85":  {
+                             "cls":  "animates",
+                             "id":  "specialDoor",
+                             "noPass":  false,
+                             "trigger":  "openDoor",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "86":  {
+                             "cls":  "animates",
+                             "id":  "steelDoor",
+                             "noPass":  false,
+                             "trigger":  "openDoor",
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "87":  {
+                             "cls":  "terrains",
+                             "id":  "upFloor",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "88":  {
+                             "cls":  "terrains",
+                             "id":  "downFloor",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "89":  {
+                             "cls":  "animates",
+                             "id":  "portal",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "90":  {
+                             "cls":  "animates",
+                             "id":  "starPortal",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "91":  {
+                             "cls":  "animates",
+                             "id":  "upPortal",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "92":  {
+                             "cls":  "animates",
+                             "id":  "leftPortal",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "93":  {
+                             "cls":  "animates",
+                             "id":  "downPortal",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "94":  {
+                             "cls":  "animates",
+                             "id":  "rightPortal",
+                             "noPass":  false,
+                             "trigger":  null,
+                             "doorKeys":  {
+
+                                          }
+                         },
+                  "101":  {
+                              "cls":  "animates",
+                              "id":  "crystalUp",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "102":  {
+                              "cls":  "animates",
+                              "id":  "crystalBottom",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "103":  {
+                              "cls":  "animates",
+                              "id":  "fire",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "104":  {
+                              "cls":  "animates",
+                              "id":  "switch",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "121":  {
+                              "cls":  "npcs",
+                              "id":  "oldman",
+                              "noPass":  false,
+                              "trigger":  "oldman",
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "122":  {
+                              "cls":  "npcs",
+                              "id":  "trader",
+                              "noPass":  false,
+                              "trigger":  "trader",
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "123":  {
+                              "cls":  "npcs",
+                              "id":  "thief",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "124":  {
+                              "cls":  "npcs",
+                              "id":  "specialTrader",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "125":  {
+                              "cls":  "npcs",
+                              "id":  "magician",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "126":  {
+                              "cls":  "npcs",
+                              "id":  "womanMagician",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "127":  {
+                              "cls":  "npcs",
+                              "id":  "king",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "128":  {
+                              "cls":  "npcs",
+                              "id":  "child",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "129":  {
+                              "cls":  "npcs",
+                              "id":  "wood",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "130":  {
+                              "cls":  "npcs",
+                              "id":  "pinkShop",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "131":  {
+                              "cls":  "npcs",
+                              "id":  "blueShop",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "132":  {
+                              "cls":  "npcs",
+                              "id":  "princess",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "133":  {
+                              "cls":  "npc48",
+                              "id":  "npc0",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "134":  {
+                              "cls":  "npc48",
+                              "id":  "npc1",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "135":  {
+                              "cls":  "npc48",
+                              "id":  "npc2",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "136":  {
+                              "cls":  "npc48",
+                              "id":  "npc3",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "137":  {
+                              "cls":  "npc48",
+                              "id":  "npc4",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "151":  {
+                              "cls":  "autotile",
+                              "id":  "autotile1",
+                              "noPass":  true,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "152":  {
+                              "cls":  "autotile",
+                              "id":  "autotile2",
+                              "noPass":  true,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "153":  {
+                              "cls":  "autotile",
+                              "id":  "autotile3",
+                              "noPass":  true,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "161":  {
+                              "cls":  "terrains",
+                              "id":  "arrowUp",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "162":  {
+                              "cls":  "terrains",
+                              "id":  "arrowDown",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "163":  {
+                              "cls":  "terrains",
+                              "id":  "arrowLeft",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "164":  {
+                              "cls":  "terrains",
+                              "id":  "arrowRight",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "165":  {
+                              "cls":  "terrains",
+                              "id":  "light",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "166":  {
+                              "cls":  "terrains",
+                              "id":  "darkLight",
+                              "noPass":  true,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "167":  {
+                              "cls":  "terrains",
+                              "id":  "ski",
+                              "noPass":  false,
+                              "trigger":  "ski",
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "168":  {
+                              "cls":  "terrains",
+                              "id":  "flower",
+                              "noPass":  true,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "169":  {
+                              "cls":  "terrains",
+                              "id":  "box",
+                              "noPass":  true,
+                              "trigger":  "pushBox",
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "170":  {
+                              "cls":  "terrains",
+                              "id":  "boxed",
+                              "noPass":  true,
+                              "trigger":  "pushBox",
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "181":  {
+                              "cls":  "npcs",
+                              "id":  "wlt",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "182":  {
+                              "cls":  "npcs",
+                              "id":  "wt",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "183":  {
+                              "cls":  "npcs",
+                              "id":  "wrt",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "184":  {
+                              "cls":  "npcs",
+                              "id":  "wl",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "185":  {
+                              "cls":  "npcs",
+                              "id":  "wc",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "186":  {
+                              "cls":  "npcs",
+                              "id":  "wr",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "187":  {
+                              "cls":  "npcs",
+                              "id":  "wlb",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "188":  {
+                              "cls":  "npcs",
+                              "id":  "wrb",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "189":  {
+                              "cls":  "npcs",
+                              "id":  "dlt",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "190":  {
+                              "cls":  "npcs",
+                              "id":  "dt",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "191":  {
+                              "cls":  "npcs",
+                              "id":  "drt",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "192":  {
+                              "cls":  "npcs",
+                              "id":  "dl",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "193":  {
+                              "cls":  "npcs",
+                              "id":  "dc",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "194":  {
+                              "cls":  "npcs",
+                              "id":  "dr",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "195":  {
+                              "cls":  "npcs",
+                              "id":  "dlb",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "196":  {
+                              "cls":  "npcs",
+                              "id":  "drb",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "201":  {
+                              "cls":  "enemys",
+                              "id":  "greenSlime",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "202":  {
+                              "cls":  "enemys",
+                              "id":  "redSlime",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "203":  {
+                              "cls":  "enemys",
+                              "id":  "blackSlime",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "204":  {
+                              "cls":  "enemys",
+                              "id":  "slimelord",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "205":  {
+                              "cls":  "enemys",
+                              "id":  "bat",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "206":  {
+                              "cls":  "enemys",
+                              "id":  "bigBat",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "207":  {
+                              "cls":  "enemys",
+                              "id":  "redBat",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "208":  {
+                              "cls":  "enemys",
+                              "id":  "vampire",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "209":  {
+                              "cls":  "enemys",
+                              "id":  "skeleton",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "210":  {
+                              "cls":  "enemys",
+                              "id":  "skeletonSoldier",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "211":  {
+                              "cls":  "enemys",
+                              "id":  "skeletonCaptain",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "212":  {
+                              "cls":  "enemys",
+                              "id":  "ghostSkeleton",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "213":  {
+                              "cls":  "enemys",
+                              "id":  "zombie",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "214":  {
+                              "cls":  "enemys",
+                              "id":  "zombieKnight",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "215":  {
+                              "cls":  "enemys",
+                              "id":  "rock",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "216":  {
+                              "cls":  "enemys",
+                              "id":  "slimeMan",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "217":  {
+                              "cls":  "enemys",
+                              "id":  "bluePriest",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "218":  {
+                              "cls":  "enemys",
+                              "id":  "redPriest",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "219":  {
+                              "cls":  "enemys",
+                              "id":  "brownWizard",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "220":  {
+                              "cls":  "enemys",
+                              "id":  "redWizard",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "221":  {
+                              "cls":  "enemys",
+                              "id":  "yellowGuard",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "222":  {
+                              "cls":  "enemys",
+                              "id":  "blueGuard",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "223":  {
+                              "cls":  "enemys",
+                              "id":  "redGuard",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "224":  {
+                              "cls":  "enemys",
+                              "id":  "swordsman",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "225":  {
+                              "cls":  "enemys",
+                              "id":  "soldier",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "226":  {
+                              "cls":  "enemys",
+                              "id":  "yellowKnight",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "227":  {
+                              "cls":  "enemys",
+                              "id":  "redKnight",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "228":  {
+                              "cls":  "enemys",
+                              "id":  "darkKnight",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "229":  {
+                              "cls":  "enemys",
+                              "id":  "blackKing",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "230":  {
+                              "cls":  "enemys",
+                              "id":  "yellowKing",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "231":  {
+                              "cls":  "enemys",
+                              "id":  "greenKing",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "232":  {
+                              "cls":  "enemys",
+                              "id":  "blueKnight",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "233":  {
+                              "cls":  "enemys",
+                              "id":  "goldSlime",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "234":  {
+                              "cls":  "enemys",
+                              "id":  "poisonSkeleton",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "235":  {
+                              "cls":  "enemys",
+                              "id":  "poisonBat",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "236":  {
+                              "cls":  "enemys",
+                              "id":  "steelRock",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "237":  {
+                              "cls":  "enemys",
+                              "id":  "skeletonPriest",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "238":  {
+                              "cls":  "enemys",
+                              "id":  "skeletonKing",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "239":  {
+                              "cls":  "enemys",
+                              "id":  "skeletonWizard",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "240":  {
+                              "cls":  "enemys",
+                              "id":  "redSkeletonCaption",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "241":  {
+                              "cls":  "enemys",
+                              "id":  "badHero",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "242":  {
+                              "cls":  "enemys",
+                              "id":  "demon",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "243":  {
+                              "cls":  "enemys",
+                              "id":  "demonPriest",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "244":  {
+                              "cls":  "enemys",
+                              "id":  "goldHornSlime",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "245":  {
+                              "cls":  "enemys",
+                              "id":  "redKing",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "246":  {
+                              "cls":  "enemys",
+                              "id":  "whiteKing",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "247":  {
+                              "cls":  "enemys",
+                              "id":  "blackMagician",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "248":  {
+                              "cls":  "enemys",
+                              "id":  "silverSlime",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "249":  {
+                              "cls":  "enemys",
+                              "id":  "swordEmperor",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "250":  {
+                              "cls":  "enemys",
+                              "id":  "whiteHornSlime",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "251":  {
+                              "cls":  "enemys",
+                              "id":  "badPrincess",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "252":  {
+                              "cls":  "enemys",
+                              "id":  "badFairy",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "253":  {
+                              "cls":  "enemys",
+                              "id":  "grayPriest",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "254":  {
+                              "cls":  "enemys",
+                              "id":  "redSwordsman",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "255":  {
+                              "cls":  "enemys",
+                              "id":  "whiteGhost",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "256":  {
+                              "cls":  "enemys",
+                              "id":  "poisonZombie",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "257":  {
+                              "cls":  "enemys",
+                              "id":  "magicDragon",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "258":  {
+                              "cls":  "enemys",
+                              "id":  "octopus",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "259":  {
+                              "cls":  "enemys",
+                              "id":  "darkFairy",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "260":  {
+                              "cls":  "enemys",
+                              "id":  "greenKnight",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "261":  {
+                              "cls":  "enemy48",
+                              "id":  "angel",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "262":  {
+                              "cls":  "enemy48",
+                              "id":  "elemental",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "263":  {
+                              "cls":  "enemy48",
+                              "id":  "steelGuard",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "264":  {
+                              "cls":  "enemy48",
+                              "id":  "evilBat",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "300":  {
+                              "cls":  "items",
+                              "id":  "I300",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "301":  {
+                              "cls":  "items",
+                              "id":  "I301",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "302":  {
+                              "cls":  "items",
+                              "id":  "I302",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "303":  {
+                              "cls":  "items",
+                              "id":  "I303",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "304":  {
+                              "cls":  "items",
+                              "id":  "I304",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "305":  {
+                              "cls":  "items",
+                              "id":  "I305",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "306":  {
+                              "cls":  "items",
+                              "id":  "I306",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "307":  {
+                              "cls":  "items",
+                              "id":  "I307",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "308":  {
+                              "cls":  "items",
+                              "id":  "I308",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "309":  {
+                              "cls":  "items",
+                              "id":  "I309",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "310":  {
+                              "cls":  "items",
+                              "id":  "I310",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "311":  {
+                              "cls":  "terrains",
+                              "id":  "ground",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "312":  {
+                              "cls":  "terrains",
+                              "id":  "grass",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "313":  {
+                              "cls":  "terrains",
+                              "id":  "grass2",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "314":  {
+                              "cls":  "terrains",
+                              "id":  "snowGround",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "315":  {
+                              "cls":  "terrains",
+                              "id":  "ground2",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "316":  {
+                              "cls":  "terrains",
+                              "id":  "ground3",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "317":  {
+                              "cls":  "terrains",
+                              "id":  "ground4",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "318":  {
+                              "cls":  "terrains",
+                              "id":  "sand",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "319":  {
+                              "cls":  "terrains",
+                              "id":  "ground5",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "320":  {
+                              "cls":  "terrains",
+                              "id":  "yellowWall2",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "321":  {
+                              "cls":  "terrains",
+                              "id":  "whiteWall2",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "322":  {
+                              "cls":  "terrains",
+                              "id":  "blueWall2",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "323":  {
+                              "cls":  "terrains",
+                              "id":  "blockWall",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "324":  {
+                              "cls":  "terrains",
+                              "id":  "grayWall",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "325":  {
+                              "cls":  "terrains",
+                              "id":  "white",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "326":  {
+                              "cls":  "terrains",
+                              "id":  "ground6",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "327":  {
+                              "cls":  "terrains",
+                              "id":  "soil",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "328":  {
+                              "cls":  "terrains",
+                              "id":  "ground7",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "329":  {
+                              "cls":  "terrains",
+                              "id":  "ground8",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "330":  {
+                              "cls":  "animates",
+                              "id":  "unbreakableWall",
+                              "noPass":  true,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "331":  {
+                              "cls":  "items",
+                              "id":  "centerFly3",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "332":  {
+                              "cls":  "enemys",
+                              "id":  "redWizardRepulse",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          },
+                  "333":  {
+                              "cls":  "items",
+                              "id":  "I333",
+                              "noPass":  false,
+                              "trigger":  null,
+                              "doorKeys":  {
+
+                                           }
+                          }
+              }
+}

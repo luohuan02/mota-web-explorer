@@ -1,0 +1,47 @@
+{
+  "name": "三区攻略 321 到 322 当前版本卖钥匙尾线",
+  "description": "接在 zone3_guide_321_to_322_move_plan.json 的前 78 步之后：从 MT2 x4y4 出发，跳过无 1000G 收益的 2F 老人；确认 35F 暗道已开通后，到 28F 卖 3 把黄钥匙凑 32F 商店第 8 次购买金币，买一次攻击并保存 322。",
+  "start_after": "zone3_guide_321_to_322_move_plan.json --stop-step 78",
+  "steps": [
+    {"action": "expect", "label": "确认尾线起点：2F 拿完三黄钥匙", "expect": {"floor": "MT2", "x": 4, "y": 4, "hp": 758, "atk": 126, "def": 154, "yk": 4, "bk": 0, "money": 451}},
+
+    {"action": "move", "direction": "down", "label": "2F 去小偷 1", "expect": {"floor": "MT2", "x": 4, "y": 5}},
+    {"action": "move", "direction": "right", "label": "2F 去小偷 2", "expect": {"floor": "MT2", "x": 5, "y": 5}},
+    {"action": "move", "direction": "right", "label": "2F 去小偷 3", "expect": {"floor": "MT2", "x": 6, "y": 5}},
+    {"action": "move", "direction": "right", "label": "2F 去小偷 4", "expect": {"floor": "MT2", "x": 7, "y": 5}},
+    {"action": "move", "direction": "down", "label": "2F 去小偷 5", "expect": {"floor": "MT2", "x": 7, "y": 6}},
+    {"action": "move", "direction": "down", "label": "2F 去小偷 6", "expect": {"floor": "MT2", "x": 7, "y": 7}},
+    {"action": "move", "direction": "down", "label": "2F 去小偷 7", "expect": {"floor": "MT2", "x": 7, "y": 8}},
+    {"action": "move", "direction": "down", "label": "2F 去小偷 8", "expect": {"floor": "MT2", "x": 7, "y": 9}},
+    {"action": "move", "direction": "down", "label": "2F 去小偷 9", "expect": {"floor": "MT2", "x": 7, "y": 10}},
+    {"action": "move", "direction": "down", "label": "2F 去小偷 10", "expect": {"floor": "MT2", "x": 7, "y": 11}},
+    {"action": "move", "direction": "right", "label": "2F 去小偷 11", "expect": {"floor": "MT2", "x": 8, "y": 11}},
+    {"action": "move", "direction": "right", "label": "2F 过右下钢门", "expect": {"floor": "MT2", "x": 9, "y": 11}},
+    {"action": "move", "direction": "right", "label": "2F 经过小偷格：当前存档 35F 已开通", "expect": {"floor": "MT2", "x": 10, "y": 11, "ui": false}},
+
+    {"action": "fly", "floor": "MT28", "label": "飞到 28F 卖钥匙商人", "expect": {"floor": "MT28", "x": 10, "y": 11, "hp": 758, "yk": 4, "bk": 0, "money": 451}},
+    {"action": "move", "direction": "up", "label": "28F 去商人 1", "expect": {"floor": "MT28", "x": 10, "y": 10}},
+    {"action": "move", "direction": "up", "label": "28F 去商人 2", "expect": {"floor": "MT28", "x": 10, "y": 9}},
+    {"action": "move", "direction": "up", "label": "28F 去商人 3", "expect": {"floor": "MT28", "x": 10, "y": 8}},
+    {"action": "move", "direction": "up", "label": "28F 去商人 4", "expect": {"floor": "MT28", "x": 10, "y": 7}},
+    {"action": "move", "direction": "left", "label": "28F 去商人 5", "expect": {"floor": "MT28", "x": 9, "y": 7}},
+    {"action": "move", "direction": "left", "label": "28F 去商人 6", "expect": {"floor": "MT28", "x": 8, "y": 7}},
+    {"action": "move", "direction": "up", "label": "28F 去商人 7", "expect": {"floor": "MT28", "x": 8, "y": 6}},
+    {"action": "move", "direction": "up", "label": "28F 去商人 8", "expect": {"floor": "MT28", "x": 8, "y": 5}},
+    {"action": "move", "direction": "up", "label": "28F 打开卖钥匙商人", "expect": {"floor": "MT28", "x": 8, "y": 4, "ui": true}},
+    {"action": "choice", "index": 0, "label": "28F 卖第 1 把黄钥匙", "expect": {"floor": "MT28", "x": 8, "y": 4, "yk": 3, "money": 551, "ui": true}},
+    {"action": "choice", "index": 0, "label": "28F 卖第 2 把黄钥匙", "expect": {"floor": "MT28", "x": 8, "y": 4, "yk": 2, "money": 651, "ui": true}},
+    {"action": "choice", "index": 0, "label": "28F 卖第 3 把黄钥匙", "expect": {"floor": "MT28", "x": 8, "y": 4, "yk": 1, "money": 751, "ui": true}},
+    {"action": "choice", "index": 3, "label": "28F 离开卖钥匙商人", "expect": {"floor": "MT28", "x": 8, "y": 4, "yk": 1, "money": 751, "ui": false}},
+
+    {"action": "fly", "floor": "MT32", "label": "飞回 32F 商店", "expect": {"floor": "MT32", "x": 6, "y": 11, "hp": 758, "yk": 1, "bk": 0, "money": 751}},
+    {"action": "move", "direction": "up", "label": "32F 去商店 1", "expect": {"floor": "MT32", "x": 6, "y": 10}},
+    {"action": "move", "direction": "right", "label": "32F 去商店 2", "expect": {"floor": "MT32", "x": 7, "y": 10}},
+    {"action": "move", "direction": "right", "label": "32F 去商店 3", "expect": {"floor": "MT32", "x": 8, "y": 10}},
+    {"action": "move", "direction": "right", "label": "32F 去商店 4", "expect": {"floor": "MT32", "x": 9, "y": 10}},
+    {"action": "move", "direction": "right", "label": "32F 打开商店", "expect": {"floor": "MT32", "x": 10, "y": 10, "ui": true}},
+    {"action": "choice", "index": 1, "label": "32F 买一次攻击", "expect": {"floor": "MT32", "x": 10, "y": 10, "atk": 134, "money": 11, "ui": true}},
+    {"action": "choice", "index": 3, "label": "32F 离开商店", "expect": {"floor": "MT32", "x": 10, "y": 10, "atk": 134, "def": 154, "money": 11, "yk": 1, "bk": 0, "ui": false}},
+    {"action": "save_slot", "slot": 322, "label": "保存 322：当前版本卖钥匙补钱后，32F 买一次攻击"}
+  ]
+}

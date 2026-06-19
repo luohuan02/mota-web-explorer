@@ -110,8 +110,8 @@ MERCHANT_ACCESS = {
         "monsters": ((10, 1), (11, 4)),
     },
     "MT7_YK": {
-        "doors": ((11, 7), (5, 5)),
-        "monsters": ((5, 3),),
+        "doors": ((11, 7), (7, 5)),
+        "monsters": ((7, 3),),
     },
 }
 

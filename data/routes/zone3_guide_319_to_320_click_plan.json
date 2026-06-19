@@ -1,0 +1,180 @@
+{
+  "name": "三区攻略 319 到 320 点击验证",
+  "description": "从 319 存档开始，按攻略路线验证 33F 骑士剑段。规划层只保留目标点击点；执行层负责真实鼠标点击、等待和状态校验。",
+  "start_slot": 319,
+  "end_slot": 320,
+  "steps": [
+    {
+      "action": "load_slot",
+      "slot": 319,
+      "label": "读取 319：32F 左上宝石后",
+      "expect": {
+        "floor": "MT32",
+        "x": 2,
+        "y": 2,
+        "hp": 358,
+        "atk": 86,
+        "def": 154,
+        "yk": 2,
+        "bk": 0,
+        "money": 61
+      }
+    },
+    {
+      "action": "click",
+      "x": 11,
+      "y": 1,
+      "label": "32F 上楼到 33F",
+      "expect": {
+        "floor": "MT33",
+        "x": 10,
+        "y": 1
+      }
+    },
+    {
+      "action": "click",
+      "x": 7,
+      "y": 1,
+      "label": "33F 开左上黄门",
+      "expect": {
+        "floor": "MT33",
+        "x": 8,
+        "y": 1,
+        "yk": 1
+      }
+    },
+    {
+      "action": "click",
+      "x": 6,
+      "y": 1,
+      "label": "33F 杀幽灵",
+      "expect": {
+        "floor": "MT33",
+        "x": 6,
+        "y": 1,
+        "money": 91
+      }
+    },
+    {
+      "action": "click",
+      "x": 5,
+      "y": 2,
+      "label": "33F 吃 200 血",
+      "expect": {
+        "floor": "MT33",
+        "x": 5,
+        "y": 2,
+        "hp": 558
+      }
+    },
+    {
+      "action": "click",
+      "x": 8,
+      "y": 2,
+      "label": "33F 开右侧黄门",
+      "expect": {
+        "floor": "MT33",
+        "x": 8,
+        "y": 1,
+        "yk": 0
+      }
+    },
+    {
+      "action": "click",
+      "x": 11,
+      "y": 3,
+      "label": "33F 吃 800 血",
+      "expect": {
+        "floor": "MT33",
+        "x": 11,
+        "y": 3,
+        "hp": 1358
+      }
+    },
+    {
+      "action": "click",
+      "x": 10,
+      "y": 5,
+      "label": "33F 触发骑士剑机关",
+      "expect": {
+        "floor": "MT33",
+        "x": 10,
+        "y": 5
+      }
+    },
+    {
+      "action": "click",
+      "x": 9,
+      "y": 5,
+      "label": "33F 左上守卫",
+      "expect": {
+        "floor": "MT33",
+        "x": 9,
+        "y": 5,
+        "hp": 1280,
+        "money": 126
+      }
+    },
+    {
+      "action": "click",
+      "x": 11,
+      "y": 5,
+      "label": "33F 右上守卫",
+      "expect": {
+        "floor": "MT33",
+        "x": 11,
+        "y": 5,
+        "hp": 1202,
+        "money": 161
+      }
+    },
+    {
+      "action": "click",
+      "x": 9,
+      "y": 7,
+      "label": "33F 左下守卫",
+      "expect": {
+        "floor": "MT33",
+        "x": 9,
+        "y": 7,
+        "hp": 788,
+        "money": 206
+      }
+    },
+    {
+      "action": "click",
+      "x": 11,
+      "y": 7,
+      "label": "33F 右下守卫",
+      "expect": {
+        "floor": "MT33",
+        "x": 11,
+        "y": 7,
+        "hp": 374,
+        "money": 251
+      }
+    },
+    {
+      "action": "click",
+      "x": 10,
+      "y": 10,
+      "label": "33F 拿骑士剑",
+      "expect": {
+        "floor": "MT33",
+        "x": 10,
+        "y": 10,
+        "hp": 374,
+        "atk": 126,
+        "def": 154,
+        "money": 251,
+        "yk": 0,
+        "bk": 0
+      }
+    },
+    {
+      "action": "save_slot",
+      "slot": 320,
+      "label": "保存 320：33F 骑士剑后"
+    }
+  ]
+}

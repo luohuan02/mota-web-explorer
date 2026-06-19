@@ -1,0 +1,42 @@
+{
+  "description": "MT12 floor map and events - Shop and Trader floor",
+  "source": "browser eval core.floors.MT12",
+  "timestamp": "2026-06-12",
+  "width": 13,
+  "height": 13,
+  "map": [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,122,2,0,1,21,27,21,1,0,2,3,1],
+    [1,1,1,206,1,0,1,0,1,0,1,1,1],
+    [1,0,0,0,1,218,0,218,1,0,213,0,1],
+    [1,81,1,1,1,1,81,1,1,1,1,0,1],
+    [1,0,218,0,81,0,213,0,1,31,0,206,1],
+    [1,1,1,1,1,0,0,218,81,0,28,0,1],
+    [1,21,21,0,1,0,32,0,1,21,0,203,1],
+    [1,21,22,0,1,1,1,1,1,82,1,81,1],
+    [1,0,0,213,1,7,131,8,1,203,0,213,1],
+    [1,1,1,81,1,31,0,31,1,1,0,1,1],
+    [1,87,0,0,205,0,0,0,205,0,0,88,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1]
+  ],
+  "changeFloor": {
+    "1,11":  {"floorId":":next","stair":"downFloor","time":0},
+    "11,11": {"floorId":":before","stair":"upFloor","time":0}
+  },
+  "events": {
+    "11,1": {
+      "trigger": "action",
+      "enable": true,
+      "data": [{"type":"if","condition":"switch:A","true":[{"type":"while","condition":"true","data":[{"type":"choices","text":"商人: 1000G买1YK","choices":[{"text":"我太需要了","action":[{"type":"if","condition":"(status:money>=1000)","true":[{"type":"setValue","name":"status:money","operator":"-=","value":"1000"},{"type":"setValue","name":"item:yellowKey","operator":"+=","value":"1"}],"false":[{"type":"tip","text":"金币不足1000枚"}]}]},{"text":"下次再说","action":[{"type":"break","n":1}]}]}]}],"false":[{"type":"playSound","name":"开关门"},{"type":"openDoor"},{"type":"setBlock","number":"specialTrader"},{"type":"setValue","name":"switch:A","value":"true"}]}]
+    },
+    "6,9": [{"type":"setValue","name":"flag:ratio","value":"2"},{"type":"insert","name":"商店"}]
+  },
+  "afterBattle": {},
+  "notes": [
+    "specialTrader at x11y1: 1000G per yellowKey",
+    "blueShop at x6y9: ratio=2 shop (level up with gold)",
+    "fakeWall x2y1 and x10y1, fakeWall2 x11y1",
+    "blueKey at x9y8",
+    "Stairs: downFloor x1y11->MT13, upFloor x11y11->MT11"
+  ]
+}

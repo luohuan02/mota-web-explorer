@@ -22,7 +22,7 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def run_agent(cmd, args):
     agent_path = r"D:\nvm4w\nodejs\agent-browser.cmd"
-    full_cmd = [agent_path, "--auto-connect"] + [cmd] + args
+    full_cmd = [agent_path, "--cdp", "9222"] + [cmd] + args
     try:
         result = subprocess.run(
             full_cmd,

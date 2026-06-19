@@ -1,0 +1,297 @@
+{
+  "name": "三区攻略 323 到 321 点击验证",
+  "description": "从清洁 323 重新验证 33F 骑士剑段，并补取 MT33 x6y3 黄钥匙，避免后续 2F 线缺蓝钥匙前置黄钥匙。",
+  "start_slot": 323,
+  "end_slot": 321,
+  "steps": [
+    {
+      "action": "load_slot",
+      "slot": 323,
+      "label": "读取 323：清洁 32F 左上宝石后",
+      "expect": {
+        "floor": "MT32",
+        "x": 2,
+        "y": 2,
+        "hp": 358,
+        "atk": 86,
+        "def": 154,
+        "yk": 2,
+        "bk": 0,
+        "money": 61
+      }
+    },
+    {
+      "action": "move",
+      "direction": "up",
+      "label": "32F 键盘到上方通道",
+      "expect": {
+        "floor": "MT32",
+        "x": 2,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 顶行右移 1",
+      "expect": {
+        "floor": "MT32",
+        "x": 3,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 顶行右移 2",
+      "expect": {
+        "floor": "MT32",
+        "x": 4,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 顶行右移 3",
+      "expect": {
+        "floor": "MT32",
+        "x": 5,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 顶行右移 4",
+      "expect": {
+        "floor": "MT32",
+        "x": 6,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 顶行右移 5",
+      "expect": {
+        "floor": "MT32",
+        "x": 7,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 顶行右移 6",
+      "expect": {
+        "floor": "MT32",
+        "x": 8,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 顶行右移 7",
+      "expect": {
+        "floor": "MT32",
+        "x": 9,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 顶行右移 8",
+      "expect": {
+        "floor": "MT32",
+        "x": 10,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "right",
+      "label": "32F 键盘上楼到 33F",
+      "expect": {
+        "floor": "MT33"
+      }
+    },
+    {
+      "action": "move",
+      "direction": "left",
+      "label": "33F 到左上门前 1",
+      "expect": {
+        "floor": "MT33",
+        "x": 9,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "left",
+      "label": "33F 到左上门前 2",
+      "expect": {
+        "floor": "MT33",
+        "x": 8,
+        "y": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "left",
+      "label": "33F 相邻开左上黄门",
+      "expect": {
+        "floor": "MT33",
+        "x": 7,
+        "y": 1,
+        "yk": 1
+      }
+    },
+    {
+      "action": "move",
+      "direction": "left",
+      "label": "33F 杀幽灵",
+      "expect": {
+        "floor": "MT33",
+        "x": 6,
+        "y": 1,
+        "money": 91
+      }
+    },
+    {
+      "action": "click",
+      "x": 5,
+      "y": 2,
+      "label": "33F 吃 200 血",
+      "expect": {
+        "floor": "MT33",
+        "x": 5,
+        "y": 2,
+        "hp": 558
+      }
+    },
+    {
+      "action": "click",
+      "x": 6,
+      "y": 3,
+      "label": "33F 补取黄钥匙",
+      "expect": {
+        "floor": "MT33",
+        "x": 6,
+        "y": 3,
+        "yk": 2
+      }
+    },
+    {
+      "action": "click",
+      "x": 8,
+      "y": 2,
+      "label": "33F 开右侧黄门",
+      "expect": {
+        "floor": "MT33",
+        "x": 8,
+        "y": 1,
+        "yk": 1
+      }
+    },
+    {
+      "action": "click",
+      "x": 11,
+      "y": 3,
+      "label": "33F 吃 800 血",
+      "expect": {
+        "floor": "MT33",
+        "x": 11,
+        "y": 3,
+        "hp": 1358
+      }
+    },
+    {
+      "action": "click",
+      "x": 10,
+      "y": 5,
+      "label": "33F 触发骑士剑机关",
+      "expect": {
+        "floor": "MT33",
+        "x": 10,
+        "y": 5
+      }
+    },
+    {
+      "action": "click",
+      "x": 9,
+      "y": 5,
+      "label": "33F 左上守卫",
+      "expect": {
+        "floor": "MT33",
+        "x": 9,
+        "y": 5,
+        "hp": 1280,
+        "money": 126
+      }
+    },
+    {
+      "action": "click",
+      "x": 11,
+      "y": 5,
+      "label": "33F 右上守卫",
+      "expect": {
+        "floor": "MT33",
+        "x": 11,
+        "y": 5,
+        "hp": 1202,
+        "money": 161
+      }
+    },
+    {
+      "action": "click",
+      "x": 9,
+      "y": 7,
+      "label": "33F 左下守卫",
+      "expect": {
+        "floor": "MT33",
+        "x": 9,
+        "y": 7,
+        "hp": 788,
+        "money": 206
+      }
+    },
+    {
+      "action": "click",
+      "x": 11,
+      "y": 7,
+      "label": "33F 右下守卫",
+      "expect": {
+        "floor": "MT33",
+        "x": 11,
+        "y": 7,
+        "hp": 374,
+        "money": 251
+      }
+    },
+    {
+      "action": "click",
+      "x": 10,
+      "y": 10,
+      "label": "33F 拿骑士剑",
+      "expect": {
+        "floor": "MT33",
+        "x": 10,
+        "y": 10,
+        "hp": 374,
+        "atk": 126,
+        "def": 154,
+        "money": 251,
+        "yk": 1,
+        "bk": 0
+      }
+    },
+    {
+      "action": "save_slot",
+      "slot": 321,
+      "label": "保存 321：33F 骑士剑后，保留 1 黄钥匙"
+    }
+  ]
+}

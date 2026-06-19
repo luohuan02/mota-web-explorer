@@ -16,7 +16,7 @@ agent = r"D:\nvm4w\nodejs\agent-browser.cmd"
 
 def run(js):
     result = subprocess.run(
-        [agent, "--auto-connect", "eval", js],
+        [agent, "--cdp", "9222", "eval", js],
         capture_output=True, text=True,
         shell=True, encoding='utf-8', errors='ignore',
         timeout=30

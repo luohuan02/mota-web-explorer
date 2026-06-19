@@ -1,0 +1,29 @@
+{
+  "name": "清洁 319 存档到 323",
+  "description": "读取 319 后由执行器清理 route/replay/automaticRoute，并立刻保存到 323，供后续真实点击重放使用。",
+  "start_slot": 319,
+  "end_slot": 323,
+  "steps": [
+    {
+      "action": "load_slot",
+      "slot": 319,
+      "label": "读取 319 并清理自动路线状态",
+      "expect": {
+        "floor": "MT32",
+        "x": 2,
+        "y": 2,
+        "hp": 358,
+        "atk": 86,
+        "def": 154,
+        "yk": 2,
+        "bk": 0,
+        "money": 61
+      }
+    },
+    {
+      "action": "save_slot",
+      "slot": 323,
+      "label": "保存清洁 323"
+    }
+  ]
+}

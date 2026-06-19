@@ -1,0 +1,23 @@
+{
+  "description": "Hero state after defeating MT10 boss (skeletonCaptain), before collecting any MT10 post-boss items",
+  "source": "browser eval core.status.hero",
+  "timestamp": "2026-06-12",
+  "state": {
+    "floor": "MT10",
+    "x": 6,
+    "y": 2,
+    "hp": 25,
+    "atk": 27,
+    "def": 27,
+    "yk": 0,
+    "bk": 0,
+    "rk": 0,
+    "gold": 304
+  },
+  "notes": [
+    "MT10 remaining uncollected items: 3x redGem(x1-3y3), 3x blueGem(x9-11y3), 3x bluePotion(x1-3y4), 3x yellowKey(x9-11y4)",
+    "MT10 remaining monsters: 2x skeleton(x3y6,x11y6), 2x skeletonSoldier(x2y7,x10y7)",
+    "MT10 stairs: downFloor x1y11 -> MT9, upFloor x6y11 -> MT11",
+    "Thief event at x6y9 triggers after boss flag, opens path to upFloor"
+  ]
+}

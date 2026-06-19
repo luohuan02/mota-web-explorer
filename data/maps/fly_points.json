@@ -1,0 +1,644 @@
+{
+  "MT0": {
+    "canFlyTo": false,
+    "downFloor": null,
+    "upFloor": null,
+    "width": 13,
+    "height": 13
+  },
+  "MT1": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      1
+    ],
+    "upFloor": [
+      2,
+      1
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT2": {
+    "canFlyTo": true,
+    "downFloor": [
+      1,
+      2
+    ],
+    "upFloor": [
+      1,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT3": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      11
+    ],
+    "upFloor": [
+      10,
+      11
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT4": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      10
+    ],
+    "upFloor": [
+      1,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT5": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      11
+    ],
+    "upFloor": [
+      1,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT6": {
+    "canFlyTo": true,
+    "downFloor": [
+      1,
+      2
+    ],
+    "upFloor": [
+      11,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT7": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      10
+    ],
+    "upFloor": [
+      1,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT8": {
+    "canFlyTo": true,
+    "downFloor": [
+      1,
+      2
+    ],
+    "upFloor": [
+      6,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT9": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      2
+    ],
+    "upFloor": [
+      1,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT10": {
+    "canFlyTo": true,
+    "downFloor": [
+      1,
+      10
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT11": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      10
+    ],
+    "upFloor": [
+      11,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT12": {
+    "canFlyTo": true,
+    "downFloor": [
+      10,
+      11
+    ],
+    "upFloor": [
+      2,
+      11
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT13": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      11
+    ],
+    "upFloor": [
+      10,
+      11
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT14": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      10
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT15": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      10
+    ],
+    "upFloor": [
+      6,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT16": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      2
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT17": {
+    "canFlyTo": true,
+    "downFloor": [
+      5,
+      11
+    ],
+    "upFloor": [
+      6,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT18": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      2
+    ],
+    "upFloor": [
+      1,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT19": {
+    "canFlyTo": true,
+    "downFloor": [
+      1,
+      2
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT20": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      10
+    ],
+    "upFloor": [
+      6,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT21": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      2
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT22": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      10
+    ],
+    "upFloor": [
+      6,
+      7
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT23": {
+    "canFlyTo": true,
+    "downFloor": [
+      1,
+      2
+    ],
+    "upFloor": [
+      11,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT24": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      11
+    ],
+    "upFloor": [
+      2,
+      11
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT25": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      11
+    ],
+    "upFloor": [
+      2,
+      11
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT26": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      11
+    ],
+    "upFloor": [
+      2,
+      11
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT27": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      11
+    ],
+    "upFloor": [
+      10,
+      11
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT28": {
+    "canFlyTo": true,
+    "downFloor": [
+      10,
+      11
+    ],
+    "upFloor": [
+      2,
+      11
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT29": {
+    "canFlyTo": true,
+    "downFloor": [
+      1,
+      10
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT30": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      10
+    ],
+    "upFloor": [
+      6,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT31": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      2
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT32": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      11
+    ],
+    "upFloor": [
+      10,
+      1
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT33": {
+    "canFlyTo": true,
+    "downFloor": [
+      10,
+      1
+    ],
+    "upFloor": [
+      2,
+      1
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT34": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      1
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT35": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      10
+    ],
+    "upFloor": [
+      10,
+      1
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT36": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      2
+    ],
+    "upFloor": [
+      11,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT37": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      10
+    ],
+    "upFloor": [
+      2,
+      1
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT38": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      1
+    ],
+    "upFloor": [
+      10,
+      1
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT39": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      2
+    ],
+    "upFloor": [
+      11,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT40": {
+    "canFlyTo": true,
+    "downFloor": [
+      10,
+      11
+    ],
+    "upFloor": [
+      6,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT41": {
+    "canFlyTo": true,
+    "downFloor": [
+      6,
+      2
+    ],
+    "upFloor": [
+      6,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT42": {
+    "canFlyTo": true,
+    "downFloor": [
+      5,
+      11
+    ],
+    "upFloor": [
+      1,
+      2
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT43": {
+    "canFlyTo": true,
+    "downFloor": [
+      1,
+      2
+    ],
+    "upFloor": [
+      1,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT44": {
+    "canFlyTo": false,
+    "downFloor": null,
+    "upFloor": null,
+    "width": 13,
+    "height": 13
+  },
+  "MT45": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      1
+    ],
+    "upFloor": [
+      10,
+      1
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT46": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      2
+    ],
+    "upFloor": [
+      11,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT47": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      10
+    ],
+    "upFloor": [
+      2,
+      1
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT48": {
+    "canFlyTo": true,
+    "downFloor": [
+      11,
+      10
+    ],
+    "upFloor": [
+      1,
+      10
+    ],
+    "width": 13,
+    "height": 13
+  },
+  "MT49": {
+    "canFlyTo": true,
+    "downFloor": [
+      2,
+      11
+    ],
+    "upFloor": null,
+    "width": 13,
+    "height": 13
+  },
+  "MT50": {
+    "canFlyTo": false,
+    "downFloor": null,
+    "upFloor": null,
+    "width": 13,
+    "height": 13
+  }
+}
