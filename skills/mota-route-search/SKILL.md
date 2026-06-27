@@ -14,9 +14,22 @@ description: Use this skill whenever working on Magic Tower / h5mota local route
 ## 关键事实
 
 - 追踪稳定结果以 `best/` 为准：
+  - `best/route_chains.json`
+  - `best/route_chains.md`
+  - `best/post40_hp_leaderboard_summary.json`
+  - `best/post40_hp_leaderboard_walk.json`
+  - `best/post40_hp_leaderboard_walk.md`
   - `best/current_best_boss_walk.md`
   - `best/current_best_boss_summary.json`
   - `best/guide_boss_walk.md`
+- 当前 37 号存档 / 40F 后续生命榜单路线：
+  - `HP=22264 ATK=418 DEF=517 YK=4 BK=0 RK=0 G=1235`
+  - `dmg=27134 door=53/10/7`
+  - 已网页实机复现，最终态保存到 42 号存档。
+  - 1-4 区关联、攻略线/非攻略线分支和剩余 stitched replay 缺口见 `best/route_chains.md`。
+- 当前 guide 链：`zone1.guide_baseline -> zone2.guide_canonical -> save36 bridge -> zone3.guide_slot36_to40 -> zone4.save37_hp_leaderboard`。
+- 当前 non-guide 分支：`zone1.current_best -> zone2.current_best_2atk1def_branch -> slot26 bridge -> zone3.slot26_clean_boss8def -> zone4.slot26_tail_pending`；`zone2.current_best_canonical` 是同一 10F 起点下的 sibling 对照分支。
+- 不要把 save37 的 22264 尾段直接套到 slot26；slot26 的 4区尾段需要单独搜索和实机验证。
 - 旧 `1482.5` 结果无效，不要引用为当前最优。
 - 10F 后起点有两类：
   - 攻略起点：`guide_after_mt10_boss_supply`
@@ -51,6 +64,29 @@ python scripts\report_zone2_remaining_diff.py
 ```powershell
 python scripts\search_zone2_macro_routes.py --full --suffix full
 ```
+
+5. 重新生成 37 号存档 / 40F 后续生命榜单路线：
+
+```powershell
+python scripts\search_post40_guide_route.py
+node scripts\prepend_40f_prefix_walk.js
+```
+
+## 生成物整理
+
+- 搜索脚本默认写入 `outputs/`；`outputs/` 是临时区，忽略 git，可在结果提升到 `best/` 后清理。
+- 一个结果只有满足这些条件才提升到 `best/`：
+  - 有 JSON 或 Markdown walk 可以复现；
+  - replay/audit 的 `errors=0`，或 manifest 明确标注为 experimental；
+  - 起点/终点状态能接到 `best/route_chains.json` 的某个 segment；
+  - 生成命令或来源脚本可追溯。
+- 提升后同步：
+  - `best/route_chains.json`
+  - `best/route_chains.md`
+  - `best/README.md`
+  - 必要时同步 `README.md` / `AGENTS.md` / `CLAUDE.md`
+- 不要把旧搜索缓存、失败候选、截图、日志、`.pkl` beam 缓存提升到 `best/`。
+- `outputs/results/*.pkl`、`outputs/logs/`、`outputs/screenshots/`、旧 smoke/seeded 报告通常可删；但如果某个脚本仍依赖 ignored snapshot，例如 `slot26_snapshot.json`、`slot36_snapshot.json`、`guide40_current_snapshot.json`，清理前要确认能重新导出或已有 tracked 替代。
 
 ## 当前最优搜索方案说明
 

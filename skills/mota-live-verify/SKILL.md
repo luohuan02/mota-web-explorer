@@ -9,6 +9,8 @@ description: Use this skill whenever executing a generated Magic Tower / h5mota 
 
 ## 前置检查
 
+0. 如果要复现跨区路线，先读取 `best/route_chains.md` 或 `best/route_chains.json`，确认当前分支是 `guide_chain_to_22264`、`non_guide_current_best_branch`，还是某个独立存档尾段。不要把 save37 的 22264 尾段直接接到 slot26 状态上。
+
 1. 确认本地 route JSON 已生成：
 
 ```powershell
@@ -88,13 +90,19 @@ python scripts\live_zone2_runner.py --load-slot 101 --max-step 30 --checkpoint-s
 
 ## Zone-3 Live Replay Notes
 
-- Use `scripts/live_zone3_mouse_replayer_cdp.js` for the current 31F-40F web replay. It connects to CDP port 9222 and uses the game's map click handlers (`_sys_ondown` / `_sys_onup`) for target clicks.
+- Use `scripts/live_zone3_mouse_replayer_cdp.js` for the current 31F-50F web replay. It connects to CDP port 9222 and uses the game's map click handlers (`_sys_ondown` / `_sys_onup`) for target clicks.
+- Current verified save37/post-40 HP route: `best/post40_hp_leaderboard_walk.json`, final `HP=22264 ATK=418 DEF=517 YK=4 BK=0 RK=0 G=1235`, saved to slot 42 after the final redKing battle. Treat it as a save37 continuation, not a full 1F continuous proof.
 - Do not use `core.moveHero`, `core.setHeroLoc`, `core.changeFloor`, or `core.doAction` to force route progress. Even empty `waitAsync` states should be advanced by real canvas/map clicks; if clicks and waiting cannot advance the event, stop and report.
 - Map clicks can stop adjacent to NPCs, doors, fake walls, enemies, or stair targets. If the first click merely routes to the adjacent tile and the target is still actionable/noPass, click the same target once more before judging mismatch.
+- When already adjacent to a noPass battle target, a real direction input may be required; the 50F final redKing at x6y5 from x6y6 must be triggered by the keyboard/game key event path, not by forced movement.
 - Some route steps are logical targets, not final hero coordinates. Accept them only when stats match and the target side effect is visible in the live map, for example the target enemy/item/door has disappeared.
 - Small coordinate differences are normal for clicks on doors, fake walls, NPCs, enemies, and stair targets when the side effect is visible, such as a door opening or a fake wall disappearing.
 - Major map/event-generation differences must stop the replay. Examples: a hidden path is missing, a reward item such as the 34F red key was not generated, an expected stair/event did not appear, or a floor event seems skipped. Do not conclude the local map data is wrong from one failed replay; reload the last checkpoint, retry, and report if it still fails.
 - `TALK` steps do not always expose choices. A disabled/already-completed dialogue may no-op; an active text dialogue may be `lock=true` without choices. Let the following `EVENT` step advance text with canvas clicks.
 - The 39F pickup item is `centerFly3`, but the usable tool id is `centerFly` with count 3. Use `core.useItem("centerFly")` for the 40F center-symmetry jump.
+- The 48F pickaxe item is hidden from the toolbox and its item effect automatically breaks adjacent breakable walls, then waits for async door animation to finish. Do not click the target wall after using `pickaxe`; just wait for the live state to return to idle and verify the expected wall disappeared.
 - The 40F boss event after actively clearing the 12 guards still battles the captain from `x6y1`; at current DEF this is 0 damage but live grants `+100G`.
+- The final redKing battle can leave `lock=true event=action:text` after the HP/gold values already match and the target block is gone. The verifier may accept this as route-complete; advance the text only when checking the post-clear prompt.
+- `confirmBox` supports keyboard selection. Read `core.status.event.selection` first (`0` = left/yes, `1` = right/no); `ArrowLeft` and `ArrowRight` toggle the selected option, and `Space` / `Enter` / `C` confirm it. With `agent-browser.cmd --cdp 9222`, use `press ArrowLeft`, `press ArrowRight`, and `press Space`. For the final clear prompt, set/verify `selection=1` before pressing `Space` to choose the right/no option and return to the start page.
 - If a live mistake is small, prefer the game's undo key (`a`) for one or two steps, or reload a 100+ checkpoint save slot. Do not rely on script-side window/global backups.
+- If a step leaves a half-applied state (for example an item is consumed or a map block changes, but `event.id` remains stuck such as `action:waitAsync`) and undo does not recover it, stop. Refresh the browser page and reload the last clean save/checkpoint before retrying. Do not keep replaying from that dirty live state.

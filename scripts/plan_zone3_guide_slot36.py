@@ -321,7 +321,7 @@ class GuideReplay:
             "yd": 0,
             "bd": 0,
             "rd": 0,
-            "times1": 3,
+            "times1": int(hero.get("flags", {}).get("times1", 3)),
             "cross": bool(hero.get("constants", {}).get("cross")),
             "pickaxe": bool(hero.get("tools", {}).get("pickaxe")),
         }

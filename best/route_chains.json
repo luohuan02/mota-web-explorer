@@ -1,0 +1,468 @@
+{
+  "schema": "mota.best.route_chains.v1",
+  "updated": "2026-06-27",
+  "game": {
+    "name": "h5mota 51",
+    "game_url": "https://h5mota.com/games/51/",
+    "official_ranking_forum_url": "https://h5mota.com/tower/?name=51",
+    "guide_source_url": "https://www.taptap.cn/moment/15225056477054087"
+  },
+  "score_model": {
+    "yellow_key_hp": 50,
+    "blue_key_hp": 200,
+    "gold_100_hp": 50,
+    "red_potion_base_hp": 50,
+    "blue_potion_base_hp": 200,
+    "notes": [
+      "final-score includes current HP/key/gold stock plus full-map remaining resource groups.",
+      "Post-40 HP leaderboard artifacts optimize final HP, not the earlier final-score model."
+    ]
+  },
+  "continuity_status": {
+    "guide_chain_to_22264": "linked by stable artifacts and matching checkpoints; post-40 tail is web-verified from save37 and saved to slot42; a single stitched 1F-to-50F web replay is still pending.",
+    "non_guide_chain": "stable through current-best Zone 1/2 and slot26 Zone 3 branch; slot26-to-post40 HP tail is not yet searched or web-verified.",
+    "known_gap": "20F-to-31F bridge currently comes from browser save checkpoints, not a tracked machine-readable walk in best/."
+  },
+  "chains": [
+    {
+      "id": "guide_chain_to_22264",
+      "label": "攻略线到当前 22264 后续",
+      "segments": [
+        "zone1.guide_baseline",
+        "zone2.guide_canonical",
+        "bridge.save36_mt20_to_mt31",
+        "zone3.guide_slot36_to40",
+        "zone4.save37_hp_leaderboard"
+      ],
+      "status": "checkpoint-linked; tail web-verified; full stitched replay pending",
+      "final_state": {
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 22264,
+        "atk": 418,
+        "def": 517,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1235,
+        "dmg": 27134
+      }
+    },
+    {
+      "id": "non_guide_current_best_branch",
+      "label": "非攻略/搜索线分支",
+      "segments": [
+        "zone1.current_best",
+        "zone2.current_best_2atk1def_branch",
+        "bridge.slot26_mt20_to_mt31",
+        "zone3.slot26_clean_boss8def",
+        "zone4.slot26_tail_pending"
+      ],
+      "related_alternatives": [
+        "zone2.current_best_canonical"
+      ],
+      "status": "not a single continuous clear yet; keep as branch lineage and search target",
+      "best_known_zone3_hp_state": {
+        "floor": "MT40",
+        "x": 6,
+        "y": 1,
+        "hp": 556,
+        "atk": 170,
+        "def": 198,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 926,
+        "dmg": 7293
+      }
+    }
+  ],
+  "segments": {
+    "zone1.guide_baseline": {
+      "zone": 1,
+      "floor_range": "1F-10F",
+      "variant": "guide",
+      "objective": "guide baseline under current full-map final-score model",
+      "artifacts": [
+        "best/guide_boss_walk.md"
+      ],
+      "end_state_boss": {
+        "floor": "MT10",
+        "x": 6,
+        "y": 2,
+        "hp": 25,
+        "atk": 27,
+        "def": 27,
+        "yk": 0,
+        "bk": 0,
+        "rk": 0,
+        "gold": 304,
+        "dmg": 2601,
+        "door": "40/2/1",
+        "final_score": 1327.5
+      },
+      "post_boss_supply_state": {
+        "floor": "MT10",
+        "x": 6,
+        "y": 2,
+        "hp": 625,
+        "atk": 30,
+        "def": 30,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 304,
+        "dmg": 2601,
+        "door": "40/2/1"
+      },
+      "connects_to": "zone2.guide_canonical"
+    },
+    "zone1.current_best": {
+      "zone": 1,
+      "floor_range": "1F-10F",
+      "variant": "non_guide_current_best",
+      "objective": "full-map final-score at 10F boss",
+      "artifacts": [
+        "best/current_best_boss_summary.json",
+        "best/current_best_boss_walk.md"
+      ],
+      "end_state_boss": {
+        "floor": "MT10",
+        "x": 6,
+        "y": 2,
+        "hp": 122,
+        "atk": 27,
+        "def": 27,
+        "yk": 0,
+        "bk": 0,
+        "rk": 0,
+        "gold": 305,
+        "dmg": 2454,
+        "door": "41/2/1",
+        "final_score": 1376.5
+      },
+      "post_boss_supply_state": {
+        "floor": "MT10",
+        "x": 6,
+        "y": 2,
+        "hp": 722,
+        "atk": 30,
+        "def": 30,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 305,
+        "dmg": 2454,
+        "door": "41/2/1"
+      },
+      "connects_to": "zone2.current_best_canonical"
+    },
+    "zone2.guide_canonical": {
+      "zone": 2,
+      "floor_range": "11F-20F",
+      "variant": "guide_after_mt10_boss_supply",
+      "objective": "guide route replay / canonical 3 attack shops",
+      "artifacts": [
+        "best/zone2_canonical_replay.json",
+        "best/zone2_canonical_walk.md"
+      ],
+      "start_state": {
+        "floor": "MT10",
+        "x": 6,
+        "y": 2,
+        "hp": 625,
+        "atk": 30,
+        "def": 30,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 304,
+        "dmg": 2601
+      },
+      "end_state": {
+        "floor": "MT20",
+        "x": 6,
+        "y": 6,
+        "hp": 76,
+        "atk": 72,
+        "def": 58,
+        "yk": 5,
+        "bk": 0,
+        "rk": 0,
+        "gold": 842,
+        "dmg": 6250,
+        "door": "84/8/2"
+      },
+      "steps": 244,
+      "errors": 0,
+      "connects_to": "bridge.save36_mt20_to_mt31"
+    },
+    "zone2.current_best_canonical": {
+      "zone": 2,
+      "floor_range": "11F-20F",
+      "variant": "best_after_mt10_boss_supply",
+      "objective": "same canonical 3 attack shops from current Zone 1 best",
+      "artifacts": [
+        "best/zone2_canonical_replay.json",
+        "best/zone2_canonical_walk.md"
+      ],
+      "start_state": {
+        "floor": "MT10",
+        "x": 6,
+        "y": 2,
+        "hp": 722,
+        "atk": 30,
+        "def": 30,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 305,
+        "dmg": 2454
+      },
+      "end_state": {
+        "floor": "MT20",
+        "x": 6,
+        "y": 6,
+        "hp": 203,
+        "atk": 72,
+        "def": 58,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 838,
+        "dmg": 6123,
+        "door": "86/8/2"
+      },
+      "steps": 246,
+      "errors": 0,
+      "connects_to": "future best 20F-to-31F bridge; sibling of zone2.current_best_2atk1def_branch, not a sequential predecessor"
+    },
+    "zone2.current_best_2atk1def_branch": {
+      "zone": 2,
+      "floor_range": "11F-20F",
+      "variant": "best_after_mt10_boss_supply_2atk1def",
+      "objective": "branch used for later non-guide/slot26 exploration",
+      "artifacts": [
+        "best/zone2_2atk1def_branch_summary.json",
+        "best/zone2_2atk1def_branch_walk.md"
+      ],
+      "end_state": {
+        "floor": "MT20",
+        "x": 6,
+        "y": 6,
+        "hp": 577,
+        "atk": 70,
+        "def": 66,
+        "yk": 1,
+        "bk": 0,
+        "rk": 0,
+        "gold": 930,
+        "dmg": 6859,
+        "door": "89/9/2"
+      },
+      "errors": 0,
+      "strict_errors": 0,
+      "connects_to": "bridge.slot26_mt20_to_mt31"
+    },
+    "bridge.save36_mt20_to_mt31": {
+      "zone": "2_to_3",
+      "variant": "guide_save36_checkpoint",
+      "status": "checkpoint/save-derived bridge; tracked walk still pending",
+      "checkpoint": {
+        "save_slot": 36,
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1276,
+        "atk": 78,
+        "def": 64,
+        "yk": 8,
+        "bk": 0,
+        "rk": 0,
+        "gold": 864
+      },
+      "connects_to": "zone3.guide_slot36_to40"
+    },
+    "bridge.slot26_mt20_to_mt31": {
+      "zone": "2_to_3",
+      "variant": "slot26_checkpoint",
+      "status": "checkpoint/save-derived bridge; exact 20F-to-31F walk should be reconstructed before full-chain proof",
+      "checkpoint": {
+        "save_slot": 26,
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1249,
+        "atk": 76,
+        "def": 64,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 176
+      },
+      "connects_to": "zone3.slot26_clean_boss8def"
+    },
+    "zone3.guide_slot36_to40": {
+      "zone": 3,
+      "floor_range": "31F-40F",
+      "variant": "guide_slot36_quick_pass",
+      "objective": "reach post-40 state while preserving 0-damage monsters for later double-gold sweep",
+      "artifacts": [
+        "best/zone3_guide_slot36_to_40_walk.json",
+        "best/zone3_guide_slot36_to_40_walk.md",
+        "best/zone3_guide_slot36_to_37_plan.json",
+        "best/zone3_guide_slot36_to_37_plan.md"
+      ],
+      "start_state": {
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1276,
+        "atk": 78,
+        "def": 64,
+        "yk": 8,
+        "bk": 0,
+        "rk": 0,
+        "gold": 864,
+        "dmg": 0
+      },
+      "end_state": {
+        "floor": "MT40",
+        "x": 6,
+        "y": 1,
+        "hp": 78,
+        "atk": 166,
+        "def": 218,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2269,
+        "dmg": 4298,
+        "door": "44/5/1"
+      },
+      "steps": 322,
+      "errors": 0,
+      "connects_to": "zone4.save37_hp_leaderboard"
+    },
+    "zone3.slot26_clean_boss7def": {
+      "zone": 3,
+      "floor_range": "31F-40F",
+      "variant": "slot26_clean_7buy_def",
+      "objective": "higher simple stock among clean slot26 40F finishes",
+      "artifacts": [
+        "best/zone3_slot26_clean_walk.json",
+        "best/zone3_slot26_clean_walk.md"
+      ],
+      "end_state": {
+        "floor": "MT40",
+        "x": 6,
+        "y": 1,
+        "hp": 224,
+        "atk": 170,
+        "def": 182,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1846,
+        "dmg": 7625,
+        "door": "42/4/1",
+        "simple_stock_score": 1297.0
+      },
+      "errors": 0
+    },
+    "zone3.slot26_clean_boss8def": {
+      "zone": 3,
+      "floor_range": "31F-40F",
+      "variant": "slot26_clean_8buy_def",
+      "objective": "highest local HP among clean slot26 40F finishes",
+      "artifacts": [
+        "best/zone3_slot26_clean_walk.json",
+        "best/zone3_slot26_clean_walk.md"
+      ],
+      "start_state": {
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1249,
+        "atk": 76,
+        "def": 64,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 176,
+        "dmg": 0
+      },
+      "end_state": {
+        "floor": "MT40",
+        "x": 6,
+        "y": 1,
+        "hp": 556,
+        "atk": 170,
+        "def": 198,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 926,
+        "dmg": 7293,
+        "door": "42/4/1",
+        "simple_stock_score": 1169.0
+      },
+      "steps": 307,
+      "errors": 0,
+      "connects_to": "zone4.slot26_tail_pending"
+    },
+    "zone4.save37_hp_leaderboard": {
+      "zone": 4,
+      "floor_range": "41F-50F with 1F-40F cleanup",
+      "variant": "save37_hp_leaderboard",
+      "objective": "final HP leaderboard",
+      "artifacts": [
+        "best/post40_hp_leaderboard_summary.json",
+        "best/post40_hp_leaderboard_walk.json",
+        "best/post40_hp_leaderboard_walk.md",
+        "best/51_20260627113720_hp22264.h5route"
+      ],
+      "source_save_slot": 37,
+      "verified_save_slot": 42,
+      "start_state": {
+        "floor": "MT40",
+        "x": 9,
+        "y": 4,
+        "hp": 78,
+        "atk": 166,
+        "def": 218,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2269,
+        "dmg": 0
+      },
+      "end_state": {
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 22264,
+        "atk": 418,
+        "def": 517,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1235,
+        "dmg": 27134,
+        "door": "53/10/7"
+      },
+      "steps": 771,
+      "errors": 0,
+      "web_verified": true,
+      "live_replay_command": "node scripts\\live_zone3_mouse_replayer_cdp.js --walk best\\post40_hp_leaderboard_walk.json --load-slot 37 --target-click-only"
+    },
+    "zone4.slot26_tail_pending": {
+      "zone": 4,
+      "floor_range": "41F-50F",
+      "variant": "slot26_tail",
+      "status": "pending",
+      "reason": "slot26 clean Zone 3 end has different ATK/DEF/HP/gold/key economy from save37; do not reuse the 22264 tail without a new search and web replay."
+    }
+  }
+}

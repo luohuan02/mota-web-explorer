@@ -16,6 +16,47 @@ description: Use this skill whenever auditing Magic Tower / h5mota walkthrough l
 
 ## 常用命令
 
+审计或解释 1-4 区路线关系时，先看：
+
+- `best/route_chains.json`
+- `best/route_chains.md`
+
+这两个文件记录攻略线、非攻略/搜索线、save36/slot26/save37 桥接关系，以及哪些段能连续复现。
+
+审计 37 号存档 / 40F 后续生命榜单 walk：
+
+```powershell
+python scripts\search_post40_guide_route.py
+node scripts\prepend_40f_prefix_walk.js
+```
+
+稳定结果在：
+
+- `best/route_chains.json`
+- `best/route_chains.md`
+- `best/post40_hp_leaderboard_summary.json`
+- `best/post40_hp_leaderboard_walk.json`
+- `best/post40_hp_leaderboard_walk.md`
+- `best/zone2_canonical_replay.json`
+- `best/zone2_canonical_walk.md`
+- `best/zone2_2atk1def_branch_summary.json`
+- `best/zone2_2atk1def_branch_walk.md`
+- `best/zone3_guide_slot36_to_40_walk.json`
+- `best/zone3_guide_slot36_to_40_walk.md`
+- `best/zone3_slot26_clean_walk.json`
+- `best/zone3_slot26_clean_walk.md`
+
+## 清理规则
+
+审计完成后按下面规则整理文件：
+
+- `best/` 是稳定 artifact 区。只有可复现、可解释、能接入 `best/route_chains.*` 的结果放这里。
+- `outputs/` 是临时区。对应结果已经复制到 `best/` 后，`outputs/results`、`outputs/reports`、`outputs/walkthroughs` 里的同名生成物可以删除或重新生成。
+- `outputs/results/*.pkl` 是搜索缓存，不作为审计证据；除非正在恢复长时间搜索，否则可以删除。
+- `outputs/logs/`、`outputs/screenshots/`、`__pycache__/`、`tmp/` 都是本地缓存，上传 git 前不需要保留。
+- 对仍被脚本读取的 snapshot 文件要谨慎，例如 `slot26_snapshot.json`、`slot36_snapshot.json`、`guide40_current_snapshot.json`。如果删除，需要能从浏览器存档重新导出，或先把必要 checkpoint 迁移到 tracked artifact。
+- 删除前先确认该结果没有作为 `best/route_chains.json` 的唯一来源；如果是唯一来源，先保留或把生成命令/状态补进 manifest。
+
 重放二区攻略/当前最优起点：
 
 ```powershell

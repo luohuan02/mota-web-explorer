@@ -4,6 +4,8 @@
 
 游戏地址：https://h5mota.com/games/51/
 
+官网榜单/论坛入口：https://h5mota.com/tower/?name=51
+
 攻略基线来源：https://www.taptap.cn/moment/15225056477054087
 
 后续项目报告、walk、阶段说明和人工阅读文档默认使用中文；脚本名、JSON 字段名、坐标和资源 id 可保留英文，方便程序处理。
@@ -29,6 +31,44 @@
 ## 当前稳定结果
 
 稳定 artifact 以 `best/` 为准。
+
+完整路线家族入口：
+
+- `best/route_chains.json`：1-4 区攻略线/非攻略线的机器可读 manifest
+- `best/route_chains.md`：同一内容的人读版，包含每段起点、终点、artifact 和能否接上
+
+当前可连贯跟踪的两条主线：
+
+```text
+guide_chain_to_22264:
+zone1.guide_baseline -> zone2.guide_canonical -> save36 bridge
+-> zone3.guide_slot36_to40 -> zone4.save37_hp_leaderboard
+
+non_guide_current_best_branch:
+zone1.current_best -> zone2.current_best_2atk1def_branch
+-> slot26 bridge -> zone3.slot26_clean_boss8def -> zone4.slot26_tail_pending
+related sibling: zone2.current_best_canonical
+```
+
+注意：`guide_chain_to_22264` 的 4 区尾段已网页验证并保存到 42 号存档，但 20F->31F 仍是 checkpoint/save 桥接；完整 1F->50F 单条 stitched web replay 还未完成。`slot26` 非攻略分支不能直接套用 save37 的 22264 尾段。
+
+### 生命榜单路线（37 号存档 / 40F 后续）
+
+```text
+HP=22264 ATK=418 DEF=517 YK=4 BK=0 RK=0 G=1235
+dmg=27134 door=53/10/7
+source save=37 verified save=42
+```
+
+对应文件：
+
+- `best/post40_hp_leaderboard_summary.json`
+- `best/post40_hp_leaderboard_walk.json`
+- `best/post40_hp_leaderboard_walk.md`
+
+注意：这是从 37 号存档继续的 40F 后路线，已网页实机复现并保存到 42 号存档；完整关联见 `best/route_chains.md`。
+
+### 1 区到 10F Boss 最优
 
 ```text
 current best:
@@ -109,6 +149,14 @@ python scripts\gen_local_refined_best_walk.py
 python scripts\probe_mt7_red_first_swap_sequence.py --variant user-def-before-key --beam 160 --out-json outputs\results\user_def_before_key_probe_after_mt10_guard.json --out-md outputs\reports\user_def_before_key_probe_after_mt10_guard.md
 ```
 
+重新生成并复现 37 号存档后续生命榜单路线：
+
+```powershell
+python scripts\search_post40_guide_route.py
+node scripts\prepend_40f_prefix_walk.js
+node scripts\live_zone3_mouse_replayer_cdp.js --walk best\post40_hp_leaderboard_walk.json --load-slot 37 --target-click-only
+```
+
 二区重放、宏搜索、审计和剩余资源差异：
 
 ```powershell
@@ -150,7 +198,8 @@ python scripts\live_zone2_runner.py --load-slot 101 --checkpoint-slot 102
 - 不要直接用 `core.changeFloor(...)` 当作合法移动。
 - 到过的楼层可用飞行器行为，脚本封装为 `core.flyTo(...)`。
 - 相邻触发、暗墙、商店菜单需要状态校验，不要只靠固定延时。
-- 31F-40F 实机复现优先用 `scripts/live_zone3_mouse_replayer_cdp.js`；详细边界见 `skills/mota-live-verify/SKILL.md` 的 Zone-3 Live Replay Notes。
+- 31F-50F 实机复现优先用 `scripts/live_zone3_mouse_replayer_cdp.js`；详细边界见 `skills/mota-live-verify/SKILL.md` 的 Zone-3 Live Replay Notes。
+- 最终 50F Boss 相邻触发要走真实方向键/游戏键盘事件入口；不要用 `core.moveHero` 或直接改坐标。
 - `browser-profile/` 保存网页存档，本地忽略，不要删除。
 
 ## 目录说明

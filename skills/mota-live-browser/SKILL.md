@@ -10,9 +10,12 @@ description: Use this skill whenever reading or manipulating the live h5mota bro
 ## 基本原则
 
 - 使用 `agent-browser.cmd --cdp 9222` 连接已经打开的当前游戏页；不要用 `--auto-connect`，它可能连到 agent-browser 自己的空白页。
+- 游戏页是 `https://h5mota.com/games/51/`；官网榜单/论坛入口是 `https://h5mota.com/tower/?name=51`。
 - 读取状态优先走 `core.status`，不要依赖截图识别。
+- 跨区复现或读档前先看 `best/route_chains.md` / `best/route_chains.json`，确认 save36、slot26、save37、slot42 的分支关系。
 - 不要直接用 `core.changeFloor(...)` 当作路线移动；飞楼层要使用游戏道具行为或封装脚本中的 `core.flyTo(...)`。
 - 保存位从用户指定的起点之后递增，不覆盖用户明确保留的存档。
+- 当前 37 号存档后续生命榜单路线已验证到 `HP=22264 ATK=418 DEF=517 YK=4 BK=0 RK=0 G=1235`，最终态保存到 42 号存档；42 号是最终战后文字事件打开的状态。
 - 如果状态不一致，先读取当前状态和最近存档，不要假设还在旧路线。
 
 ## 读取当前状态
@@ -69,3 +72,5 @@ agent-browser.cmd --cdp 9222 eval "(function(){
 - When debugging a stuck route, include `lockControl`, `heroMoving`, `event.id`, current event type, choices, `core.status.asyncId`, and `core.animateFrame.asyncId` counts in the state dump.
 - A page that still answers CDP `eval` is often not fully frozen; it may be stuck in an event such as `action:waitAsync`. Prefer real canvas/map clicks and state reads before refreshing, and refresh/reload only if the game no longer responds.
 - For manual probes, avoid `core.moveHero`, `setHeroLoc`, `changeFloor`, or `doAction`; use real map clicks or the verifier helpers so NPC, shop, fake-wall, and stair behavior matches the page.
+- `confirmBox` supports keyboard selection. Read `core.status.event.selection` first (`0` = left/yes, `1` = right/no); `ArrowLeft` and `ArrowRight` toggle the selected option, and `Space` / `Enter` / `C` confirm it. With `agent-browser.cmd --cdp 9222`, use `press ArrowLeft`, `press ArrowRight`, and `press Space`. For the final clear prompt, set/verify `selection=1` before pressing `Space` to choose the right/no option and return to the start page.
+- Dirty-state recovery: if a probe leaves a half-applied side effect (for example an item is consumed or a wall is removed) while `lockControl` / `event.id` remains stuck and the game's undo key does not restore it, stop the route. Refresh the browser page, reload the last known clean save slot/checkpoint, and retry from there. Do not continue from the half-applied live memory state.

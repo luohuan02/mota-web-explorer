@@ -1,0 +1,98 @@
+[
+  {
+    "label": "guide_after_mt10_boss_supply:2?1?_best",
+    "final": {
+      "hp": 482,
+      "atk": 70,
+      "def": 66,
+      "yk": 1,
+      "bk": 0,
+      "rk": 0,
+      "gold": 922,
+      "floor": "MT20",
+      "x": 6,
+      "y": 6,
+      "dmg": 6954,
+      "yd": 86,
+      "bd": 9,
+      "rd": 2,
+      "cross": true,
+      "pickaxe": false,
+      "superPotion": false
+    },
+    "errors": [],
+    "strict_errors": [],
+    "composite_score": 3281.0,
+    "options": {
+      "take_15_upper_blue_gem": true,
+      "take_12_lower_left_keys": true,
+      "take_final_mt3": true,
+      "talk_mt6_oldman": false,
+      "take_final_mt9": true,
+      "take_final_mt11_blue_potion": true,
+      "take_4f_blue_potion": true,
+      "take_final_mt11_red_potion": true,
+      "take_16_lower_left": true,
+      "take_16_upper_left": false,
+      "take_pre_cross_mt18_red_gem": true,
+      "take_pre_cross_mt11_blue_potion": true,
+      "take_mt16_right_blue_key": true,
+      "take_super_potion16": true,
+      "use_super_potion": true,
+      "delay_mt11_shield": false,
+      "shop12": [
+        "atk",
+        "atk",
+        "def"
+      ]
+    }
+  },
+  {
+    "label": "best_after_mt10_boss_supply:2?1?_best",
+    "final": {
+      "hp": 577,
+      "atk": 70,
+      "def": 66,
+      "yk": 1,
+      "bk": 0,
+      "rk": 0,
+      "gold": 930,
+      "floor": "MT20",
+      "x": 6,
+      "y": 6,
+      "dmg": 6859,
+      "yd": 89,
+      "bd": 9,
+      "rd": 2,
+      "cross": true,
+      "pickaxe": false,
+      "superPotion": false
+    },
+    "errors": [],
+    "strict_errors": [],
+    "composite_score": 3274.0,
+    "options": {
+      "take_15_upper_blue_gem": true,
+      "take_12_lower_left_keys": true,
+      "take_final_mt3": true,
+      "talk_mt6_oldman": false,
+      "take_final_mt9": true,
+      "take_final_mt11_blue_potion": true,
+      "take_4f_blue_potion": true,
+      "take_final_mt11_red_potion": true,
+      "take_16_lower_left": true,
+      "take_16_upper_left": true,
+      "take_pre_cross_mt18_red_gem": true,
+      "take_pre_cross_mt11_blue_potion": true,
+      "take_mt16_right_blue_key": true,
+      "take_super_potion16": true,
+      "use_super_potion": true,
+      "delay_mt11_shield": false,
+      "shop12": [
+        "atk",
+        "atk",
+        "def"
+      ]
+    }
+  }
+]

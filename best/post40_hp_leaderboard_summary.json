@@ -1,0 +1,62 @@
+{
+  "name": "post40_hp_leaderboard_save37",
+  "game": "h5mota 50F / Magic Tower 50",
+  "game_url": "https://h5mota.com/games/51/",
+  "official_ranking_forum_url": "https://h5mota.com/tower/?name=51",
+  "guide_baseline_url": "https://www.taptap.cn/moment/15225056477054087",
+  "objective": "HP leaderboard result after save37 / post-40 continuation",
+  "status": "web-verified",
+  "continuous_from_1f": false,
+  "continuous_note": "This artifact is a reproducible continuation from browser save slot 37, not yet a single generated 1F-to-clear continuous proof. For a full-game claim, concatenate and verify the earlier 1F-40F route with this walk.",
+  "source_save_slot": 37,
+  "verified_save_slot": 42,
+  "walk_json": "best/post40_hp_leaderboard_walk.json",
+  "walk_md": "best/post40_hp_leaderboard_walk.md",
+  "local_generation_commands": [
+    "python scripts\\search_post40_guide_route.py",
+    "node scripts\\prepend_40f_prefix_walk.js"
+  ],
+  "live_replay_command": "node scripts\\live_zone3_mouse_replayer_cdp.js --walk best\\post40_hp_leaderboard_walk.json --load-slot 37 --target-click-only",
+  "final": {
+    "hp": 22264,
+    "atk": 418,
+    "def": 517,
+    "yellowKey": 4,
+    "blueKey": 0,
+    "redKey": 0,
+    "gold": 1235,
+    "floor": "MT50",
+    "x": 6,
+    "y": 5,
+    "damage": 27134,
+    "doors": {
+      "yellow": 53,
+      "blue": 10,
+      "red": 7
+    },
+    "flags": {
+      "coin": true,
+      "knife": true,
+      "magicImmune": true,
+      "won49": true,
+      "won50": true
+    }
+  },
+  "verified_live_state": {
+    "date": "2026-06-27",
+    "method": "CDP live replay against the real h5mota page using map-click handlers and game keyboard event handling for the final adjacent boss trigger.",
+    "state": "MT50 x6y5 HP=22264 ATK=418 DEF=517 YK=4 BK=0 RK=0 G=1235",
+    "save42": "Written after the final redKing battle while the victory text event was open."
+  },
+  "key_improvements_over_21764_tail": [
+    "After the final MT46 HP shop, clear fixed zero-damage monsters on MT47 and MT48 for 1200G total.",
+    "Spend 1000G at MT31 x1y11 for 4 yellow keys and 1 blue key.",
+    "Use the bought blue key to open the MT20 right-side pocket and collect the yellow key, red potion, blue potion, and final bat gold.",
+    "Use remaining yellow keys for final yellow-door potion cleanup before the superPotion and 50F boss."
+  ],
+  "notes": [
+    "MT31 trader text/effect was verified in live game data: 1000G -> 4YK + 1BK.",
+    "MT20 cleanup adds 500 HP from potions and leaves enough keys for the final route.",
+    "The final h5mota prompt after victory can be navigated with left/right selection and Space/Enter; this summary records the route state before submitting to the ranking prompt."
+  ]
+}

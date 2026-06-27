@@ -3,6 +3,10 @@
 This repository searches and audits Magic Tower / h5mota routes for the game linked from the guide baseline:
 https://www.taptap.cn/moment/15225056477054087
 
+Game URL: https://h5mota.com/games/51/
+
+Official ranking / forum URL: https://h5mota.com/tower/?name=51
+
 `CLAUDE.md` should stay synchronized with this file.
 
 ## Project Skills
@@ -21,6 +25,47 @@ For live h5mota access, the current project convention is `agent-browser.cmd --c
 ## Current Canonical Result
 
 Use the tracked `best/` artifacts as the source of truth.
+
+Full route-family index:
+
+```text
+best/route_chains.json
+best/route_chains.md
+```
+
+These files record the 1-4 zone guide and non-guide branches, their checkpoint
+links, and which parts can be replayed continuously. Current chain summary:
+
+```text
+guide_chain_to_22264:
+zone1.guide_baseline -> zone2.guide_canonical -> save36 bridge
+-> zone3.guide_slot36_to40 -> zone4.save37_hp_leaderboard
+
+non_guide_current_best_branch:
+zone1.current_best -> zone2.current_best_2atk1def_branch
+-> slot26 bridge -> zone3.slot26_clean_boss8def -> zone4.slot26_tail_pending
+related sibling: zone2.current_best_canonical
+```
+
+The save37 22264 tail is web-verified, but it must not be reused for slot26
+without a new Zone 4 search/replay.
+
+Current HP-leaderboard continuation from save37 / post-40:
+
+```text
+best/post40_hp_leaderboard_summary.json
+best/post40_hp_leaderboard_walk.json
+best/post40_hp_leaderboard_walk.md
+
+HP=22264 ATK=418 DEF=517 YK=4 BK=0 RK=0 G=1235 dmg=27134 door=53/10/7
+source save=37 verified save=42
+```
+
+This is a web-verified continuation from browser save slot 37. See
+`best/route_chains.md` for the current 1-4 zone linkage and the remaining
+full stitched replay gap.
+
+Phase-1 / 10F boss artifacts:
 
 ```text
 best/current_best_boss_walk.md
@@ -126,6 +171,14 @@ Validated probe for the current best:
 python scripts\probe_mt7_red_first_swap_sequence.py --variant user-def-before-key --beam 160 --out-json outputs\results\user_def_before_key_probe_after_mt10_guard.json --out-md outputs\reports\user_def_before_key_probe_after_mt10_guard.md
 ```
 
+Regenerate and live-verify the save37 post-40 HP route:
+
+```powershell
+python scripts\search_post40_guide_route.py
+node scripts\prepend_40f_prefix_walk.js
+node scripts\live_zone3_mouse_replayer_cdp.js --walk best\post40_hp_leaderboard_walk.json --load-slot 37 --target-click-only
+```
+
 Baseline checks after code edits:
 
 ```powershell
@@ -153,3 +206,5 @@ handlers, not forced hero movement. Known h5mota replay edge cases include empty
 `waitAsync` event shells, adjacent noPass targets that require a second click,
 logical route targets whose live coordinates differ after the side effect, and
 the 39F/40F center-symmetry item (`centerFly3` pickup, `centerFly` usable tool).
+For the final 50F adjacent boss trigger, use the real keyboard/game key event
+path; do not use `core.moveHero` or direct coordinate edits.
