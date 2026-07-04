@@ -1,6 +1,6 @@
-# Current Best Boss Walk
+# 当前最优 Boss Walk
 
-## Summary
+## 摘要
 
 - phase1 seed: HP=272 ATK=22 DEF=21 YK=2 BK=1 RK=0 G=64 dmg=754 door=25/0/0
 - final: HP=122 ATK=27 DEF=27 YK=0 BK=0 RK=0 G=305 dmg=2454 door=41/2/1
@@ -138,12 +138,12 @@
 - MT9 x1y5 take blueGem [DEF 20->21]
 - after: HP=272 ATK=22 DEF=21 YK=2 BK=1 RK=0 G=64 dmg=754 door=25/0/0
 
-## Score Model
+## 分数模型
 
-- Gold is valued as `100G = 1YK = 50HP`, so `1G = 0.5 score`.
-- Future reachable monsters are counted as zero-damage future gold.
-- Future map resources and unused merchant net resources are included in the remaining-resource score.
-- Door/key costs remain part of the state through `door=Y/B/R` and remaining key stock.
+- 金币按 `100G = 1YK = 50HP` 计价，故 `1G = 0.5 分`。
+- 未来可达怪物按零伤害未来金币计。
+- 未来地图资源和未用商人净资源计入剩余资源分。
+- 门/钥匙成本通过 `door=Y/B/R` 和剩余钥匙存量保留在状态里。
 
 ## Post9 Compact Actions
 

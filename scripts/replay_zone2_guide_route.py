@@ -149,7 +149,7 @@ def extract_json_array(text: str, key: str) -> Any:
 
 
 def load_raw_map(path: str) -> dict[str, Any]:
-    text = open(path, encoding="utf-8").read()
+    text = open(path, encoding="utf-8-sig").read()
     try:
         return json.loads(text)
     except json.JSONDecodeError:
@@ -163,12 +163,12 @@ def load_raw_map(path: str) -> dict[str, Any]:
 
 
 def load_tile_mapping() -> dict[int, dict[str, Any]]:
-    raw = json.load(open(os.path.join("data", "maps", "tile_mapping.json"), encoding="utf-8"))
+    raw = json.load(open(os.path.join("data", "maps", "tile_mapping.json"), encoding="utf-8-sig"))
     return {int(k): v for k, v in raw["tiles"].items()}
 
 
 def load_enemy_stats() -> dict[str, dict[str, Any]]:
-    raw = json.load(open(os.path.join("data", "maps", "enemy_stats.json"), encoding="utf-8"))
+    raw = json.load(open(os.path.join("data", "maps", "enemy_stats.json"), encoding="utf-8-sig"))
     return raw["enemys"]
 
 
@@ -373,12 +373,14 @@ class Replay:
             return True
         if pos in self.cleared.get(fid, set()):
             return False
+        block = floor.blocks.get(pos)
+        if block and block.kind == "item":
+            return False
         tile = floor.grid[y][x]
         if tile in {1, 5, 330}:
             return True
         if fid == "MT15" and tile == 17:
             return True
-        block = floor.blocks.get(pos)
         if block and block.eid == "specialDoor":
             return True
         return False
@@ -636,9 +638,10 @@ class Replay:
         if fid == "MT14" and block.eid == "zombieKnight":
             if MT14_RED_KEY_GUARDS <= self.cleared.get(fid, set()) and not self.state.get("mt14_red_key_reward"):
                 before = self.snapshot()
-                self.state["rk"] += 1
                 self.state["mt14_red_key_reward"] = True
-                self.record("事件奖励", pos, "redKey", before, "14F 三兽人武士掉红钥匙")
+                self.floors[fid].blocks[(1, 3)] = Block("item", "redKey")
+                self.cleared.setdefault(fid, set()).discard((1, 3))
+                self.record("事件奖励", (1, 3), "redKey", before, "14F 三兽人武士后在 x1y3 生成红钥匙")
         if fid == "MT19" and pos == (6, 3) and block.eid in {"fakeWall2", "cross"}:
             # The real event replaces the opened center wall/door with cross.
             if not self.state.get("cross"):
@@ -744,7 +747,7 @@ def normalize_event_clears(collected: dict[str, set[tuple[int, int]]]) -> None:
     if MT8_RED_KEY_GUARDS <= collected.get("MT8", set()):
         collected.setdefault("MT8", set()).add((10, 4))
     if MT14_RED_KEY_GUARDS <= collected.get("MT14", set()):
-        collected.setdefault("MT14", set()).add((3, 1))
+        collected.setdefault("MT14", set()).add((1, 3))
     seen17 = collected.get("MT17", set())
     for pair, door in MT17_SPECIAL_PAIRS.items():
         if pair <= seen17:
@@ -1000,6 +1003,7 @@ def run_route(rep: Replay) -> dict[str, Any]:
     rep.go_to("MT14", 5, 1)
     for pos in [(1, 1), (3, 1), (2, 2)]:
         rep.go_to("MT14", *pos)
+    rep.go_to("MT14", 1, 3)
 
     rep.begin_segment("20F 吸血鬼决战")
     rep.teleport("MT20", 6, 11, "回 20F")
@@ -1255,6 +1259,7 @@ def run_route_direct(rep: Replay, options: dict[str, Any] | None = None) -> dict
     if not options.get("buy_red_key_12", False):
         rep.teleport("MT14", 6, 11, "去 14F 红钥匙")
         many("MT14", [(4, 8), (3, 7), (1, 5), (2, 4), (2, 2), (1, 1), (3, 1)])
+        a("MT14", 1, 3, "三兽人武士后生成的红钥匙，实机位置 x1y3")
 
     rep.begin_segment("4F 蓝血瓶")
     if options.get("take_4f_blue_potion", True):

@@ -28,7 +28,7 @@ STATE_JS = r"""
   const loc = h.loc || {};
   const tools = h.items?.tools || {};
   const ev = core.status.event || {};
-  return {
+    return {
     floor: core.status.floorId,
     x: loc.x,
     y: loc.y,
@@ -43,7 +43,8 @@ STATE_JS = r"""
     moving: !!core.status.heroMoving,
     event: ev.id || null,
     ui: !!ev.ui,
-    routeLen: (core.status.route || []).length
+    routeLen: (core.status.route || []).length,
+    auto: h.flags?.__auto__ || null
   };
 })()
 """
@@ -397,6 +398,35 @@ def run_plan(plan: dict[str, Any], *, hold_ms: int, start_step: int = 0, stop_st
             after = browser.load_slot(int(step["slot"]))
         elif action == "save_slot":
             after = browser.save_slot(int(step["slot"]))
+        elif action == "set_auto":
+            after = browser.eval(
+                """(() => {
+  if (!core.status.hero.flags) core.status.hero.flags = {};
+  core.status.hero.flags.__auto__ = {
+    battle: true,
+    item: "nopotion",
+    wall: true
+  };
+  return {
+    floor: core.status.floorId,
+    x: core.status.hero.loc.x,
+    y: core.status.hero.loc.y,
+    hp: core.status.hero.hp,
+    atk: core.status.hero.atk,
+    def: core.status.hero.def,
+    money: core.status.hero.money,
+    yk: core.status.hero.items.tools.yellowKey || 0,
+    bk: core.status.hero.items.tools.blueKey || 0,
+    rk: core.status.hero.items.tools.redKey || 0,
+    lock: !!core.status.lockControl,
+    moving: !!core.status.heroMoving,
+    event: (core.status.event || {}).id || null,
+    ui: !!((core.status.event || {}).ui),
+    routeLen: (core.status.route || []).length,
+    auto: core.status.hero.flags.__auto__
+  };
+})()"""
+            )
         elif action == "fly":
             after = browser.fly_to(step["floor"])
         elif action == "click":
@@ -460,7 +490,7 @@ def main() -> int:
     parser.add_argument("--out-md", type=Path, default=ROOT / "outputs/reports/live_click_route_run_zh.md")
     args = parser.parse_args()
 
-    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    plan = json.loads(args.plan.read_text(encoding="utf-8-sig"))
     logs = run_plan(plan, hold_ms=args.hold_ms, start_step=args.start_step, stop_step=args.stop_step)
     write_report(plan, logs, args.out_json, args.out_md)
     return 0

@@ -1,4 +1,4 @@
-# Scripts Index
+# 脚本索引
 
 脚本保持平铺，是为了继续支持 `python scripts\xxx.py` 直接运行和旧脚本的同目录 import。
 
@@ -35,9 +35,9 @@
 
 - `download_data.py`
 - `extract_maps.py`
-- `extract_high_maps_cdp.js`: direct CDP extractor for MT41+ map data; avoids Python/PowerShell capturing `agent-browser.cmd` output.
-- `extract_high_maps.py` / `extract_high_maps.ps1`: thin wrappers around `extract_high_maps_cdp.js`.
-- `live_zone3_walk_replayer_cdp.js`: direct CDP live replay/checker for `outputs/results/zone3_quick_pass_walk.json`.
+- `extract_high_maps_cdp.js`：MT41+ 地图数据的直连 CDP 提取器；避免 Python/PowerShell 捕获 `agent-browser.cmd` 输出时出问题。
+- `extract_high_maps.py` / `extract_high_maps.ps1`：`extract_high_maps_cdp.js` 的薄封装。
+- `live_zone3_walk_replayer_cdp.js`：`outputs/results/zone3_quick_pass_walk.json` 的直连 CDP 实机回放/检查器。
 - `snapshot_state.py`
 - `grab_state.py`
 - `read_full_state.py`
@@ -46,12 +46,14 @@
 - `test_browser.py`
 - `test_core.py`
 
-网页操作使用 agent-browser 读取或控制已经打开的 h5mota 游戏页时，使用 `--cdp 9222` 直连现有 Chrome DevTools 端口；不要用 `--auto-connect`，它可能连到 agent-browser 自己的空白页。
+读取或控制已经打开的 h5mota 游戏页时，chrome 必须在真实端口 9222 上外部启动并带 `--user-data-dir=browser-profile`，然后 `agent-browser connect 9222` 并用裸 `agent-browser eval`/`get`；**不要用 `--cdp 9222` flag**，**不要用 `--auto-connect`**（会粘到 agent-browser 自己的空白页）。
 
 ```powershell
-agent-browser.cmd --cdp 9222 eval "(() => ({ floor: core.status.floorId, hero: core.status.hero.loc }))()"
+agent-browser connect 9222
+agent-browser eval "(function(){return JSON.stringify({floor:core.status.floorId,x:core.status.hero.loc.x,y:core.status.hero.loc.y})})()"
 ```
-## Fixed-prefix JIT supply audit
+
+## 固定前缀 JIT 补给审计
 
 - `audit_fixed_prefix_user_post9_compressed.py`：逐步验证固定攻略前缀后的攻略路线可以由压缩图表达，最终应为 `HP=25 dmg=2601 door=40/2/1`。
 - `post9_gem_supply_search.py --stat-local-refine-jit-supply`：只重排宝石与上楼主干，主干不可达时再动态补钥匙或药水。

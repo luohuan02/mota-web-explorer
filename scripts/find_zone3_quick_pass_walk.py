@@ -127,11 +127,13 @@ def open_mt39_puzzle(g: Any) -> None:
     g.go_to("MT39", 6, 4, "39F 谜题：第二行右边")
     add_mt39_center_fly_if_solved(g)
     g.go_to("MT39", 4, 4, "39F 拾取中心对称飞行器")
+    g.state["centerFly"] = max(int(g.state.get("centerFly", 0)), 3)
     g.state["centerFly3"] = True
 
 
 def use_center_fly_to_mt40_boss_area(g: Any) -> None:
-    if not g.state.get("centerFly3"):
+    center_count = int(g.state.get("centerFly", 0))
+    if center_count <= 0 and not g.state.get("centerFly3"):
         g.error("没有中心对称飞行器，不能飞入40F Boss区域")
         return
     if g.state["floor"] != "MT40":
@@ -141,7 +143,10 @@ def use_center_fly_to_mt40_boss_area(g: Any) -> None:
     # In this tower the 39F item is the center-symmetry fly item.  From the
     # lower-right 40F entrance it lands at the upper-left boss area.
     g.state["x"], g.state["y"] = 12 - g.state["x"], 12 - g.state["y"]
-    g.state["centerFly3"] = False
+    if center_count > 0:
+        g.state["centerFly"] = center_count - 1
+    g.state["centerFly3"] = int(g.state.get("centerFly", 0)) > 0
+    g.state["usedCenterFly40"] = True
     g.record("事件", (g.state["x"], g.state["y"]), "centerFly3", before, "40F 使用中心对称飞行器进入Boss区域")
 
 

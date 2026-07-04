@@ -42,6 +42,18 @@ guided = load_module("zone3_seeded_guided", GUIDED_PATH)
 macro = load_module("zone3_seeded_macro", MACRO_PATH)
 base = guided.base
 
+MT17_RIGHT_RESOURCE_TARGETS = [
+    ("MT17", 9, 8, "17F right lower zombie opens lower special door 1/2"),
+    ("MT17", 11, 8, "17F right lower zombie opens lower special door 2/2"),
+    ("MT17", 9, 5, "17F right upper zombieKnight opens upper special door 1/2"),
+    ("MT17", 11, 5, "17F right upper zombieKnight opens upper special door 2/2"),
+    ("MT17", 9, 3, "17F right yellowKey after special doors"),
+    ("MT17", 9, 1, "17F right redGem"),
+    ("MT17", 11, 3, "17F right yellowKey"),
+    ("MT17", 11, 1, "17F right blueGem"),
+    ("MT17", 10, 2, "17F right bluePotion"),
+]
+
 
 def shop_buys(g: Any) -> int:
     return max(0, int(g.state.get("times1", 2)) - 2)
@@ -257,8 +269,518 @@ def build_seeds(args: argparse.Namespace) -> list[Any]:
                                             add_seed(seeds, seen, done, label + f" finish:{prep}")
                     if len(seeds) >= args.max_seeds:
                         break
+    if len(seeds) < args.max_seeds:
+        build_bridge_entry_seeds(args, seeds, seen)
     seeds.sort(key=base.score, reverse=True)
     return seeds[: args.max_seeds]
+
+
+def apply_targets(g: Any, targets: list[tuple[str, int, int, str]]) -> bool:
+    for fid, x, y, note in targets:
+        before_errors = len(g.errors)
+        ok = base.move_to(g, fid, x, y, note)
+        if not ok or len(g.errors) != before_errors:
+            return False
+    return valid(g)
+
+
+def trigger_mt32_event(g: Any) -> bool:
+    before_errors = len(g.errors)
+    if not base.move_to(g, "MT31", 6, 11, "bridge seed 31F up"):
+        return False
+    g.transition("MT32", 6, 11, "31F to 32F")
+    base.mark_visited(g, "MT32")
+    if not base.move_to(g, "MT32", 6, 10, "bridge seed 32F event"):
+        return False
+    g.event_mt32_yellow_knight()
+    return valid(g) and len(g.errors) == before_errors
+
+
+def buy_order(g: Any, order: str) -> bool:
+    if not order:
+        return valid(g)
+    if g.state["floor"] != "MT32":
+        if base.floor_no(g.state["floor"]) > 32 and base.can_fly_to(g, "MT31"):
+            g.fly("MT31")
+        g.fly("MT32")
+    if not prepare_mt32_shop_access(g):
+        return False
+    if not base.move_to(g, "MT32", 10, 10, "continuous seed 32F shop"):
+        return False
+    for ch in order:
+        cost = base.p.shop_cost(g.state["times1"])
+        if g.state["gold"] < cost:
+            return False
+        g.buy_shop("atk" if ch == "A" else "def", 1)
+    return valid(g)
+
+
+def move_required(g: Any, fid: str, x: int, y: int, note: str) -> bool:
+    before_errors = len(g.errors)
+    return base.move_to(g, fid, x, y, note) and len(g.errors) == before_errors and valid(g)
+
+
+def move_optional(g: Any, fid: str, x: int, y: int, note: str) -> bool:
+    before_errors = len(g.errors)
+    before = g.snapshot()
+    ok = base.move_to(g, fid, x, y, note)
+    if len(g.errors) > before_errors:
+        del g.errors[before_errors:]
+        return False
+    return bool(ok and g.snapshot() != before)
+
+
+MT32_SHOP_ACCESS_GHOST = ("MT32", 8, 11)
+MT32_SHOP_EMERGENCY_POTIONS = [
+    ("MT20", 6, 8),
+    ("MT20", 5, 8),
+    ("MT20", 7, 8),
+]
+
+
+def can_survive_enemy(g: Any, eid: str) -> bool:
+    dmg = g.damage_for(eid)
+    return dmg != float("inf") and g.state["hp"] - int(dmg) > 0
+
+
+def prepare_mt32_shop_access(g: Any) -> bool:
+    """Open the real live path to the 32F shop.
+
+    The web shop is three no-pass tiles wide. From the central corridor the
+    hero must first clear MT32 x8y11 to stand below the shop; the local map
+    used to treat the shop wings as passable and could buy too early.
+    """
+
+    block = g.block_at("MT32", (8, 11))
+    if not block:
+        return True
+    if block.kind != "enemy":
+        return False
+    while not can_survive_enemy(g, block.eid):
+        picked = False
+        for fid, x, y in MT32_SHOP_EMERGENCY_POTIONS:
+            potion = g.block_at(fid, (x, y))
+            if not potion or potion.kind != "item" or potion.eid != "bluePotion":
+                continue
+            if not move_required(g, fid, x, y, f"continuous seed 32F shop emergency potion {fid} x{x}y{y}"):
+                return False
+            picked = True
+            break
+        if not picked:
+            return False
+    return move_required(g, "MT32", 8, 11, "continuous seed 32F shop access ghostSkeleton")
+
+
+def build_continuous_36_seed(args: argparse.Namespace) -> Any | None:
+    """A legal continuous 31F->37F seed for the strict 4F route.
+
+    This avoids the old slot26 macro assumptions: it farms enough yellow keys
+    for 34F, takes the 34F/32F potions before the 2F thief event, then opens
+    the 35F passage, then takes the remaining 34F/31F blue potions needed to
+    cross 36F and stops at the 37F entry for the generic beam search.
+    """
+
+    g = base.init_replay(args.snapshot)
+    for fid, x, y, note in MT17_RIGHT_RESOURCE_TARGETS:
+        if not move_required(g, fid, x, y, f"continuous seed {note}"):
+            return None
+    if not move_required(g, "MT31", 6, 11, "continuous seed 31F up"):
+        return None
+    g.transition("MT32", 6, 11, "31F to 32F")
+    base.mark_visited(g, "MT32")
+    if not move_required(g, "MT32", 6, 10, "continuous seed 32F event"):
+        return None
+    g.event_mt32_yellow_knight()
+    if not buy_order(g, "AADD"):
+        return None
+    if not move_required(g, "MT32", 11, 1, "continuous seed 32F up"):
+        return None
+    g.transition("MT33", 10, 1, "32F to 33F")
+    base.mark_visited(g, "MT33")
+    for x, y in [(7, 1), (6, 1), (5, 2), (6, 3), (8, 2), (11, 3)]:
+        if not move_required(g, "MT33", x, y, f"continuous seed 33F pre x{x}y{y}"):
+            return None
+    for fid, x, y in [
+        ("MT14", 9, 1),
+        ("MT14", 10, 1),
+        ("MT14", 11, 1),
+        ("MT14", 11, 2),
+        ("MT14", 6, 1),
+        ("MT14", 5, 1),
+        ("MT15", 11, 8),
+        ("MT20", 11, 11),
+        ("MT18", 11, 11),
+        ("MT19", 4, 1),
+        ("MT14", 9, 6),
+        ("MT18", 10, 10),
+        ("MT18", 10, 11),
+        ("MT19", 8, 1),
+        ("MT20", 10, 10),
+        ("MT20", 2, 10),
+        ("MT18", 3, 5),
+        ("MT18", 1, 5),
+    ]:
+        move_optional(g, fid, x, y, f"continuous seed resource {fid} x{x}y{y}")
+    if not buy_order(g, "A"):
+        return None
+    if not move_required(g, "MT33", 10, 5, "continuous seed 33F sword trap"):
+        return None
+    g.event_mt33_sword_trap()
+    g.state.setdefault("special_done", set()).add("mt33_sword_trap")
+    for x, y in [(9, 5), (11, 5), (9, 7), (11, 7), (10, 10)]:
+        if not move_required(g, "MT33", x, y, f"continuous seed sword x{x}y{y}"):
+            return None
+    # Re-land at the 33F upper entry before going to 34F.
+    g.fly("MT31")
+    g.fly("MT33")
+    if not move_required(g, "MT33", 1, 1, "continuous seed 33F to 34F"):
+        return None
+    g.transition("MT34", 2, 1, "33F to 34F")
+    base.mark_visited(g, "MT34")
+    for fid, x, y in [
+        ("MT34", 3, 1),
+        ("MT32", 11, 4),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous seed potion {fid} x{x}y{y}"):
+            return None
+    for fid, x, y in [
+        ("MT2", 3, 1),
+        ("MT2", 6, 2),
+        ("MT2", 8, 2),
+        ("MT2", 3, 5),
+        ("MT2", 3, 4),
+        ("MT2", 4, 4),
+        ("MT2", 11, 4),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous seed 2F x{x}y{y}"):
+            return None
+    g.oldman_mt2_1000g()
+    if not move_required(g, "MT2", 10, 11, "continuous seed 2F thief"):
+        return None
+    g.thief_mt2_open_35()
+    if not move_required(g, "MT34", 6, 11, "continuous seed 34F lower"):
+        return None
+    g.transition("MT35", 6, 11, "34F to 35F")
+    base.mark_visited(g, "MT35")
+    if not move_required(g, "MT35", 5, 10, "continuous seed 35F thief"):
+        return None
+    g.thief_mt35_depart()
+    if not move_required(g, "MT35", 11, 1, "continuous seed 35F to 36F"):
+        return None
+    g.transition("MT36", 11, 2, "35F to 36F")
+    base.mark_visited(g, "MT36")
+    for fid, x, y in [
+        ("MT34", 1, 11),
+        ("MT31", 8, 8),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous seed late potion {fid} x{x}y{y}"):
+            return None
+    if not move_required(g, "MT36", 11, 11, "continuous seed 36F to 37F"):
+        return None
+    g.transition("MT37", 11, 10, "36F to 37F")
+    base.mark_visited(g, "MT37")
+    return g if valid(g) else None
+
+
+def build_continuous_38_pickaxe_seed(args: argparse.Namespace) -> Any | None:
+    """Extend the strict 37F seed through the 15F pickaxe and 37F red key."""
+
+    g = build_continuous_36_seed(args)
+    if g is None:
+        return None
+    for fid, x, y in [
+        ("MT2", 4, 10),
+        ("MT2", 3, 11),
+        ("MT2", 3, 10),
+        ("MT32", 10, 4),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous pickaxe seed resource {fid} x{x}y{y}"):
+            return None
+    if not buy_order(g, "AA"):
+        return None
+    if not move_required(g, "MT36", 1, 11, "continuous pickaxe seed 36F bluePotion"):
+        return None
+    g.fly("MT14")
+    g.fly("MT15")
+    for fid, x, y in [
+        ("MT15", 6, 6),
+        ("MT15", 6, 5),
+        ("MT37", 11, 5),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous pickaxe seed {fid} x{x}y{y}"):
+            return None
+    before_errors = len(g.errors)
+    g.use_pickaxe("MT37", 10, 5, "continuous pickaxe seed 37F break wall")
+    if len(g.errors) != before_errors:
+        return None
+    for fid, x, y in [
+        ("MT37", 7, 5),
+        ("MT37", 11, 1),
+        ("MT37", 1, 1),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous pickaxe seed {fid} x{x}y{y}"):
+            return None
+    g.transition("MT38", 2, 1, "37F to 38F")
+    base.mark_visited(g, "MT38")
+    return g if valid(g) else None
+
+
+def build_continuous_40_pickaxe_seed(args: argparse.Namespace) -> Any | None:
+    """Extend the strict pickaxe route to the 40F boss reward endpoint."""
+
+    g = build_continuous_38_pickaxe_seed(args)
+    if g is None:
+        return None
+    for fid, x, y in [
+        ("MT37", 7, 3),
+        ("MT37", 8, 3),
+        ("MT14", 1, 11),
+        ("MT31", 8, 10),
+        ("MT31", 9, 10),
+        ("MT31", 8, 11),
+        ("MT31", 9, 11),
+        ("MT38", 3, 1),
+        ("MT38", 5, 2),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous 40 seed {fid} x{x}y{y}"):
+            return None
+    g.buy_mt38_yellow_keys()
+    for fid, x, y in [
+        ("MT38", 5, 8),
+        ("MT38", 1, 10),
+        ("MT38", 3, 10),
+        ("MT38", 2, 7),
+        ("MT38", 11, 1),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous 40 seed {fid} x{x}y{y}"):
+            return None
+    g.transition("MT39", 11, 1, "38F to 39F")
+    base.mark_visited(g, "MT39")
+    for fid, x, y in [
+        ("MT39", 11, 3),
+        ("MT39", 11, 6),
+        ("MT38", 11, 11),
+        ("MT38", 11, 1),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous 40 seed {fid} x{x}y{y}"):
+            return None
+    g.transition("MT39", 11, 1, "38F to 39F puzzle")
+    base.mark_visited(g, "MT39")
+    before_errors = len(g.errors)
+    base.quick.open_mt39_puzzle(g)
+    if len(g.errors) != before_errors:
+        return None
+    for fid, x, y in [
+        ("MT39", 3, 11),
+        ("MT39", 5, 9),
+        ("MT39", 6, 9),
+        ("MT39", 11, 11),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous 40 seed {fid} x{x}y{y}"):
+            return None
+    g.transition("MT40", 11, 11, "39F to 40F")
+    base.mark_visited(g, "MT40")
+    before_errors = len(g.errors)
+    base.quick.use_center_fly_to_mt40_boss_area(g)
+    if len(g.errors) != before_errors:
+        return None
+    for x, y in [(2, 2), (3, 2), (4, 2), (3, 4), (4, 4), (5, 4), (7, 4), (8, 4), (9, 4), (8, 2), (9, 2), (10, 2)]:
+        if not move_required(g, "MT40", x, y, f"continuous 40 seed MT40 x{x}y{y}"):
+            return None
+    if not move_required(g, "MT40", 6, 7, "continuous 40 seed boss trigger"):
+        return None
+    before_errors = len(g.errors)
+    base.quick.event_mt40_boss(g)
+    g.state["boss40"] = True
+    if len(g.errors) != before_errors:
+        return None
+    for x, y in [(2, 2), (3, 2), (4, 2), (8, 2), (9, 2), (10, 2), (7, 4), (8, 4), (9, 4)]:
+        if not move_required(g, "MT40", x, y, f"continuous 40 seed reward MT40 x{x}y{y}"):
+            return None
+    if not move_required(g, "MT40", 6, 1, "continuous 40 seed 40F stairs"):
+        return None
+    return g if valid(g) else None
+
+
+def build_continuous_40_preserve_pickaxe_seed(args: argparse.Namespace) -> Any | None:
+    """Strict 4F-chain 40F endpoint that leaves the 15F pickaxe available.
+
+    The route gets the 34F center red key instead of spending the 15F pickaxe on
+    the 37F red-key wall. It then takes the 38F shield/core, buys one 32F DEF
+    shop, and uses 39F/40F potions to pass the 40F guards with low HP.
+    """
+
+    g = build_continuous_36_seed(args)
+    if g is None:
+        return None
+    for fid, x, y in [
+        ("MT2", 4, 10),
+        ("MT2", 3, 11),
+        ("MT2", 3, 10),
+        ("MT32", 10, 4),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous preserve prep {fid} x{x}y{y}"):
+            return None
+    if not buy_order(g, "AA"):
+        return None
+    if not move_required(g, "MT36", 1, 11, "continuous preserve 36F bluePotion"):
+        return None
+    for fid, x, y in [
+        ("MT31", 8, 10),
+        ("MT31", 9, 10),
+        ("MT31", 8, 11),
+        ("MT31", 9, 11),
+        ("MT31", 3, 1),
+        ("MT31", 4, 1),
+        ("MT31", 3, 2),
+        ("MT31", 4, 2),
+        ("MT32", 2, 5),
+        ("MT34", 6, 1),
+        ("MT9", 1, 7),
+        ("MT9", 5, 7),
+        ("MT18", 5, 11),
+        ("MT18", 7, 11),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous preserve key {fid} x{x}y{y}"):
+            return None
+    for x, y in [(5, 4), (7, 4), (9, 4), (11, 4), (5, 8), (7, 8), (9, 8), (11, 8)]:
+        if not move_required(g, "MT34", x, y, f"continuous preserve 34F center x{x}y{y}"):
+            return None
+    for x, y in [(2, 6), (1, 5), (3, 5), (1, 7), (3, 7)]:
+        if not move_required(g, "MT34", x, y, f"continuous preserve 34F reward x{x}y{y}"):
+            return None
+    if not move_required(g, "MT14", 1, 11, "continuous preserve 14F blueKey"):
+        return None
+    act37 = base.next_floor_action(g, "MT37")
+    if not act37 or not act37["apply"](g) or not valid(g):
+        return None
+    for fid, x, y in [
+        ("MT38", 3, 1),
+        ("MT38", 5, 2),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous preserve 38F merchant path {fid} x{x}y{y}"):
+            return None
+    g.buy_mt38_yellow_keys()
+    if not valid(g):
+        return None
+    for fid, x, y in [
+        ("MT37", 11, 1),
+        ("MT38", 6, 2),
+        ("MT34", 10, 1),
+        ("MT34", 9, 1),
+        ("MT38", 11, 11),
+        ("MT31", 4, 4),
+        ("MT38", 9, 4),
+        ("MT38", 5, 8),
+        ("MT38", 1, 10),
+        ("MT38", 3, 10),
+        ("MT38", 2, 7),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous preserve 38F prep {fid} x{x}y{y}"):
+            return None
+    if not buy_order(g, "D"):
+        return None
+    if not move_required(g, "MT38", 11, 1, "continuous preserve 38F up"):
+        return None
+    g.transition("MT39", 11, 1, "38F to 39F preserve")
+    base.mark_visited(g, "MT39")
+    if not move_required(g, "MT39", 11, 3, "continuous preserve 39F yellowKey"):
+        return None
+    before_errors = len(g.errors)
+    base.quick.open_mt39_puzzle(g)
+    if len(g.errors) != before_errors or not valid(g):
+        return None
+    for fid, x, y in [
+        ("MT39", 3, 11),
+        ("MT39", 5, 9),
+        ("MT39", 6, 9),
+        ("MT39", 9, 11),
+        ("MT39", 11, 11),
+    ]:
+        if not move_required(g, fid, x, y, f"continuous preserve 39F after puzzle {fid} x{x}y{y}"):
+            return None
+    g.transition("MT40", 11, 11, "39F to 40F preserve")
+    base.mark_visited(g, "MT40")
+    if not move_required(g, "MT40", 9, 9, "continuous preserve 40F redPotion before centerFly"):
+        return None
+    before_errors = len(g.errors)
+    base.quick.use_center_fly_to_mt40_boss_area(g)
+    if len(g.errors) != before_errors or not valid(g):
+        return None
+    for x, y in [(2, 2), (3, 2), (4, 2), (3, 4), (4, 4), (5, 4), (7, 4), (8, 4), (9, 4), (8, 2), (9, 2), (10, 2)]:
+        if not move_required(g, "MT40", x, y, f"continuous preserve 40F guard x{x}y{y}"):
+            return None
+    if not move_required(g, "MT40", 6, 7, "continuous preserve 40F boss trigger"):
+        return None
+    before_errors = len(g.errors)
+    base.quick.event_mt40_boss(g)
+    g.state["boss40"] = True
+    if len(g.errors) != before_errors or not valid(g):
+        return None
+    g = base.finish_goal_candidate(g)
+    return g if valid(g) and g.block_at("MT15", (6, 5)) else None
+
+
+def build_bridge_entry_seeds(args: argparse.Namespace, seeds: list[Any], seen: set[tuple[Any, ...]]) -> None:
+    """Fallback seeds for a continuous 20F->31F bridge snapshot."""
+
+    base_start = base.init_replay(args.snapshot)
+    prelude_variants = [
+        [
+            *MT17_RIGHT_RESOURCE_TARGETS,
+        ],
+        [
+            *MT17_RIGHT_RESOURCE_TARGETS,
+            ("MT31", 8, 10, "bridge seed 31F yellowKey"),
+            ("MT31", 9, 10, "bridge seed 31F yellowKey"),
+            ("MT31", 8, 11, "bridge seed 31F yellowKey"),
+            ("MT31", 9, 11, "bridge seed 31F yellowKey"),
+        ],
+        [
+            *MT17_RIGHT_RESOURCE_TARGETS,
+            ("MT31", 8, 10, "bridge seed 31F yellowKey"),
+            ("MT31", 9, 10, "bridge seed 31F yellowKey"),
+            ("MT31", 8, 11, "bridge seed 31F yellowKey"),
+            ("MT31", 9, 11, "bridge seed 31F yellowKey"),
+            ("MT31", 8, 8, "bridge seed 31F bluePotion"),
+        ],
+        [
+            *MT17_RIGHT_RESOURCE_TARGETS,
+            ("MT31", 8, 10, "bridge seed 31F yellowKey"),
+            ("MT31", 9, 10, "bridge seed 31F yellowKey"),
+            ("MT31", 8, 11, "bridge seed 31F yellowKey"),
+            ("MT31", 9, 11, "bridge seed 31F yellowKey"),
+            ("MT14", 5, 1, "bridge seed 14F blueGem"),
+        ],
+    ]
+    shop_orders = ["", "A", "D", "AA", "AD", "DA", "DD", "AAD", "ADA", "DAA", "ADD", "DAD", "DDA", "AADD", "ADAD", "DDAA"]
+    for idx, targets in enumerate(prelude_variants, 1):
+        if len(seeds) >= args.max_seeds:
+            return
+        pre = clone(base_start)
+        if not apply_targets(pre, targets):
+            continue
+        event_state = clone(pre)
+        if not trigger_mt32_event(event_state):
+            continue
+        add_seed(seeds, seen, clone(event_state), f"bridgePrelude{idx}:event")
+        for order in shop_orders:
+            if len(seeds) >= args.max_seeds:
+                return
+            cand = clone(event_state)
+            macro.buy(cand, order)
+            if not valid(cand):
+                continue
+            add_seed(seeds, seen, cand, f"bridgePrelude{idx}:event shop={order}")
+    continuous = build_continuous_36_seed(args)
+    if continuous is not None:
+        add_seed(seeds, seen, continuous, "continuousStrict20:to36")
+    continuous38 = build_continuous_38_pickaxe_seed(args)
+    if continuous38 is not None:
+        add_seed(seeds, seen, continuous38, "continuousStrict20:to38Pickaxe")
+    continuous40 = build_continuous_40_pickaxe_seed(args)
+    if continuous40 is not None:
+        add_seed(seeds, seen, continuous40, "continuousStrict20:to40Pickaxe")
 
 
 def finish_goal_candidate(g: Any) -> Any:
@@ -366,6 +888,7 @@ def write_report(data: dict[str, Any], out_json: Path, out_md: Path) -> None:
         f"- expanded/generated: `{data['expanded']}` / `{data['generated']}`",
         f"- beam: `{data['beam']}`",
         f"- seeds: `{data['seed_count']}`",
+        f"- snapshot: `{data.get('snapshot', '-')}`",
         "",
     ]
     for key, title in (("best_goal", "最好 40F Boss 候选"), ("best_any", "最好中间候选")):
@@ -407,6 +930,7 @@ def main() -> int:
     parser.add_argument("--max-depth", type=int, default=320)
     parser.add_argument("--max-seeds", type=int, default=260)
     parser.add_argument("--focused-seeds", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--snapshot", type=Path, default=base.DEFAULT_SNAPSHOT)
     parser.add_argument("--report-interval", type=float, default=60)
     parser.add_argument("--progress-log", type=Path, default=OUT_LOG)
     parser.add_argument("--out-json", type=Path, default=OUT_JSON)
@@ -420,11 +944,13 @@ def main() -> int:
     if args.daemon_stderr:
         args.daemon_stderr.parent.mkdir(parents=True, exist_ok=True)
         sys.stderr = args.daemon_stderr.open("a", encoding="utf-8", buffering=1)
+    macro.set_snapshot(args.snapshot)
     seeds = build_seeds(args)
     if not seeds:
         print("no legal seeds")
         return 1
     data = explore_from_seeds(args, seeds)
+    data["snapshot"] = str(args.snapshot)
     write_report(data, args.out_json, args.out_md)
     print(f"wrote {args.out_json}")
     print(f"wrote {args.out_md}")

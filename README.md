@@ -28,6 +28,17 @@
 3. 用 `mota-live-verify` 在网页游戏中复现路线。
 4. 若只是查状态或存档，用 `mota-live-browser`。
 
+## 当前探索目标
+
+当前阶段主目标是 `50层魔塔（H5）-2026全新复刻版` 的 `纯净版-TE（生命/最高血量）` 最优。
+
+外部参考：
+- 官网榜单/评论：https://h5mota.com/tower/?name=51
+- 版本说明：https://h5mota.com/bbs/thread/?tid=1790&p=1
+- 2026-06-28 读取到的生命榜单参考：`纯净版-NE=26164`，`纯净版-TE=41477`，`特性版-NE=29848`，`特性版-TE=50675`。
+
+这些榜单值只作为攻略和搜索方向参考；项目内“最优”仍以 `best/` 中可 replay、可审计、必要时可网页实机复现的 walk 为准。
+
 ## 当前稳定结果
 
 稳定 artifact 以 `best/` 为准。
@@ -179,12 +190,12 @@ python tests\run_floorsearch_test.py
 
 网页自动化使用 `agent-browser` 和本地 `browser-profile/`。
 
-读取或控制已经打开的 h5mota 游戏页时，必须直连当前 Chrome 的 CDP 端口：使用 `--cdp 9222`，不要用 `--auto-connect`。`--auto-connect` 可能连到 agent-browser 自己启动的空白页，而不是实际游戏页面。
+读取或控制已经打开的 h5mota 游戏页时，chrome 必须在真实端口 9222 上外部启动并带 `--user-data-dir=browser-profile`（运行 `scripts/launch_h5mota_chrome.ps1`），然后 `agent-browser connect 9222` 并用裸 `agent-browser eval`/`get`。**不要用 `--cdp 9222` flag**（启动 agent-browser 自管 chrome，用 temp profile，browser-profile 存档丢失），**不要用 `--auto-connect`**（粘到错误 tab）。状态读取优先用 `node scripts/live_read_state.js`（楼层感知，避免 cmd.exe 破坏 JS `||`/`&&`）。
 
 读取当前英雄状态：
 
 ```powershell
-agent-browser.cmd --cdp 9222 eval "(() => { const h = core.status.hero, loc = h.loc, t = h.items.tools; return { floor: core.status.floorId, x: loc.x, y: loc.y, hp: h.hp, atk: h.atk, def: h.def, yk: t.yellowKey || 0, bk: t.blueKey || 0, rk: t.redKey || 0, gold: h.money || 0 }; })()"
+node scripts/live_read_state.js
 ```
 
 实机执行二区路线：
@@ -198,7 +209,7 @@ python scripts\live_zone2_runner.py --load-slot 101 --checkpoint-slot 102
 - 不要直接用 `core.changeFloor(...)` 当作合法移动。
 - 到过的楼层可用飞行器行为，脚本封装为 `core.flyTo(...)`。
 - 相邻触发、暗墙、商店菜单需要状态校验，不要只靠固定延时。
-- 31F-50F 实机复现优先用 `scripts/live_zone3_mouse_replayer_cdp.js`；详细边界见 `skills/mota-live-verify/SKILL.md` 的 Zone-3 Live Replay Notes。
+- 31F-50F 实机复现优先用 `scripts/live_zone3_mouse_replayer_cdp.js`；详细边界见 `skills/mota-live-verify/SKILL.md` 的「三区实机复现笔记」。
 - 最终 50F Boss 相邻触发要走真实方向键/游戏键盘事件入口；不要用 `core.moveHero` 或直接改坐标。
 - `browser-profile/` 保存网页存档，本地忽略，不要删除。
 

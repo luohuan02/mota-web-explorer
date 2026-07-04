@@ -28,7 +28,7 @@
   "notes": [
     "blueKey at x1y11",
     "rock(x6y5) blocks path, kill it to proceed",
-    "unbreakableWall(x1y3) - cannot be broken",
+    "unbreakableWall(x1y3) initially; after the three zombieKnight guards, live runtime places the redKey item at x1y3",
     "fakeWall at x7y9",
     "Stairs: downFloor x6y11->MT15, upFloor x11y11->MT13"
   ]

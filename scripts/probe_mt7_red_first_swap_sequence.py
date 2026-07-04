@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from typing import Any
 
@@ -19,11 +20,16 @@ from scripts import compare_merchant_resource_paths as cm
 from scripts import merchant_finalscore_audit as audit
 from scripts import post9_resource_group_search as rg
 from scripts import run_corrected_phase1_best_boss_until_deadline as runner
-from src.solver import gen_walkthrough as gw
+from src.solver.full_search import FLOOR_13_COLLECTED
 
 
 OUT_JSON = os.path.join("outputs", "results", "mt7_red_first_swap_sequence.json")
 OUT_MD = os.path.join("outputs", "reports", "mt7_red_first_swap_sequence.md")
+
+PHASE1_RE = re.compile(
+    r"^- (?P<fid>MT\d+) x(?P<x>\d+)y(?P<y>\d+) "
+    r"(?P<action>open|kill|take|pass) (?P<eid>[A-Za-z0-9_]+)"
+)
 
 SEQUENCES = {
     "blue-up": [
@@ -112,9 +118,66 @@ def compact(label: str, ent: dict[str, Any] | None, source: str) -> dict[str, An
     return audit.compact_record(audit.score_record(label, ent, source=source))
 
 
+def load_seed_from_current_best(path: str = os.path.join("best", "current_best_boss_walk.md")) -> dict[str, Any]:
+    text = open(path, encoding="utf-8").read().splitlines()
+    summary = next(line for line in text if line.startswith("- phase1 seed:"))
+    m = re.search(
+        r"HP=(?P<hp>-?\d+) ATK=(?P<atk>\d+) DEF=(?P<def>\d+) "
+        r"YK=(?P<yk>-?\d+) BK=(?P<bk>-?\d+) RK=(?P<rk>-?\d+) "
+        r"G=(?P<gold>-?\d+) dmg=(?P<dmg>\d+) door=(?P<yd>\d+)/(?P<bd>\d+)/(?P<rd>\d+)",
+        summary,
+    )
+    if not m:
+        raise RuntimeError(f"cannot parse phase1 summary: {summary}")
+
+    collected: dict[str, set[tuple[int, int]]] = {
+        fid: set(pos) for fid, pos in FLOOR_13_COLLECTED.items()
+    }
+    in_phase1 = False
+    for line in text:
+        if line.startswith("## Phase1 4F-9F Detailed Walk"):
+            in_phase1 = True
+            continue
+        if in_phase1 and line.startswith("## Score Model"):
+            break
+        if not in_phase1:
+            continue
+        sm = PHASE1_RE.match(line)
+        if not sm:
+            continue
+        if sm.group("action") in {"open", "kill", "take"}:
+            fid = sm.group("fid")
+            collected.setdefault(fid, set()).add((int(sm.group("x")), int(sm.group("y"))))
+
+    ent = {
+        "hp": int(m.group("hp")),
+        "atk": int(m.group("atk")),
+        "def": int(m.group("def")),
+        "yk": int(m.group("yk")),
+        "bk": int(m.group("bk")),
+        "rk": int(m.group("rk")),
+        "collected": {fid: frozenset(pos) for fid, pos in collected.items()},
+        "_dmg": int(m.group("dmg")),
+        "_yd": int(m.group("yd")),
+        "_bd": int(m.group("bd")),
+        "_rd": int(m.group("rd")),
+        "_seed_source": "best/current_best_boss_walk phase1 seed fallback",
+    }
+    expected_gold = int(m.group("gold"))
+    actual_gold = cm.inferred_gold(ent, include_boss_spawn=False)
+    if actual_gold != expected_gold:
+        ent["_gold_parse_warning"] = {"expected": expected_gold, "actual": actual_gold}
+    return ent
+
+
 def load_seed(args: argparse.Namespace) -> dict[str, Any]:
     ns = argparse.Namespace(state_cache=args.state_cache, rescore_json=args.rescore_json)
-    return runner.load_corrected_best_seed(ns)
+    try:
+        return runner.load_corrected_best_seed(ns)
+    except FileNotFoundError as exc:
+        seed = load_seed_from_current_best()
+        seed["_fallback_reason"] = str(exc)
+        return seed
 
 
 def unique_trim(entries: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:

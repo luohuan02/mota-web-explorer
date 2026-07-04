@@ -9,9 +9,11 @@ const path = require("node:path");
 const ROOT = path.resolve(__dirname, "..");
 const DEFAULT_WALK = path.join(ROOT, "outputs", "results", "zone3_quick_pass_walk.json");
 const CDP_LIST = "http://127.0.0.1:9222/json/list";
+const FLY_POINTS = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "maps", "fly_points.json"), "utf8"));
 
 const RUNTIME = {
   targetClickOnly: false,
+  strictHumanInput: false,
 };
 
 const ACT = {
@@ -39,6 +41,7 @@ const ACT = {
   PICKAXE: "\u4f7f\u7528\u9550",
   USE: "\u4f7f\u7528",
   OLDMAN: "\u8001\u4eba",
+  SET_AUTO: "\u8bbe\u7f6e\u81ea\u52a8",
 };
 
 function parseArgs(argv) {
@@ -62,6 +65,11 @@ function parseArgs(argv) {
     // up (default 0 = stop immediately). Cheaper and faster than reload+replay.
     undoOnFailure: 0,
     targetClickOnly: false,
+    strictHumanInput: false,
+    setAuto: null,
+    expectAuto: null,
+    outJson: null,
+    recordOnly: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -76,9 +84,65 @@ function parseArgs(argv) {
     else if (arg === "--checkpoint-every") out.checkpointEvery = Number(argv[++i]);
     else if (arg === "--undo-on-failure") out.undoOnFailure = Number(argv[++i]);
     else if (arg === "--target-click-only") out.targetClickOnly = true;
+    else if (arg === "--strict-human-input") out.strictHumanInput = true;
+    else if (arg === "--allow-extra-gold") {
+      throw new Error("--allow-extra-gold is disabled; gold must match exactly");
+    }
+    else if (arg === "--set-auto") out.setAuto = parseAutoSpec(argv[++i]);
+    else if (arg === "--expect-auto") out.expectAuto = parseAutoSpec(argv[++i]);
+    else if (arg === "--out-json") out.outJson = path.resolve(argv[++i]);
+    else if (arg === "--record-only") out.recordOnly = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return out;
+}
+
+function parseAutoValue(raw) {
+  if (raw === "true") return true;
+  if (raw === "false") return false;
+  if (raw === "nopotion") return "nopotion";
+  throw new Error(`unknown auto value ${raw}`);
+}
+
+function parseAutoSpec(raw) {
+  const out = {};
+  for (const part of String(raw || "").split(",")) {
+    if (!part.trim()) continue;
+    const [key, value] = part.split("=");
+    if (!["battle", "item", "wall"].includes(key)) throw new Error(`unknown auto key ${key}`);
+    if (value == null) throw new Error(`missing value for auto key ${key}`);
+    out[key] = parseAutoValue(value);
+  }
+  return out;
+}
+
+function autoSpecText(spec) {
+  if (!spec) return "-";
+  return ["battle", "item", "wall"]
+    .filter((key) => Object.prototype.hasOwnProperty.call(spec, key))
+    .map((key) => `${key}=${spec[key]}`)
+    .join(",");
+}
+
+function normalizeAutoSpec(raw) {
+  if (!raw) return null;
+  if (typeof raw === "string") return parseAutoSpec(raw);
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error(`bad auto spec: ${JSON.stringify(raw)}`);
+  }
+  const out = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (!["battle", "item", "wall"].includes(key)) throw new Error(`unknown auto key ${key}`);
+    if (![true, false, "nopotion"].includes(value)) {
+      throw new Error(`unknown auto value for ${key}: ${value}`);
+    }
+    out[key] = value;
+  }
+  return out;
+}
+
+function stepAutoSpec(step) {
+  return normalizeAutoSpec(step.auto || step.setAuto || step.autoSpec);
 }
 
 async function getJson(url) {
@@ -121,7 +185,38 @@ async function connectGameTarget() {
   };
 }
 
+async function ensurePageActive(cdp) {
+  try { await cdp.send("Page.setWebLifecycleState", { state: "active" }); } catch (_) { /* best effort */ }
+  try { await cdp.send("Emulation.setFocusEmulationEnabled", { enabled: true }); } catch (_) { /* best effort */ }
+  try { await cdp.send("Page.bringToFront"); } catch (_) { /* best effort */ }
+}
+
 async function evalValue(cdp, expression, awaitPromise = true) {
+  if (RUNTIME.strictHumanInput || RUNTIME.targetClickOnly) {
+    // target-click-only is the verification mode: forbid state-changing forces
+    // (core.doAction/moveHero/changeFloor/...) per skill -- never use these to
+    // advance route progress; rely on real map clicks + natural event settle.
+    // The cleanup helpers (stopAutomaticRoute/unlockControl/heroMoving=) are
+    // only forbidden under --strict-human-input; target-click-only keeps them
+    // so stale route/lock/moving state can still be cleared between clicks.
+    const forbidden = [
+      "core.doAction(",
+      "core.moveHero(",
+      "core.setHeroLoc(",
+      "core.changeFloor(",
+      "core.control.saveData(",
+    ];
+    if (RUNTIME.strictHumanInput) {
+      forbidden.push(
+        "core.status.heroMoving=",
+        "core.unlockControl(",
+        "core.stopAutomaticRoute(",
+        "core.clearContinueAutomaticRoute(",
+      );
+    }
+    const hit = forbidden.find((pattern) => expression.includes(pattern));
+    if (hit) throw new Error(`strict mode forbids state-changing eval: ${hit}`);
+  }
   const result = await cdp.send("Runtime.evaluate", {
     expression,
     returnByValue: true,
@@ -168,9 +263,13 @@ const STATE_EXPR = String.raw`(function(){
     moving: !!core.status.heroMoving,
     eventId: ev.id||null,
     eventType: eventType,
+    pendingType: pendingType,
     eventUi: !!ev.ui,
     hasChoices: !!(choices&&choices.length),
     choices: choices ? choices.map(function(c){ return String(c.text||""); }) : [],
+    selection: typeof ev.selection==="number" ? ev.selection :
+      (typeof data.selection==="number" ? data.selection :
+      (typeof ui.selection==="number" ? ui.selection : null)),
     autoHeroMove: !!(core.status.automaticRoute&&core.status.automaticRoute.autoHeroMove),
     pendingAction: !!(!rawCurrent&&pending),
     hasAsyncAnimate: !!(core.hasAsyncAnimate&&core.hasAsyncAnimate()),
@@ -183,6 +282,55 @@ async function state(cdp) {
   return evalJson(cdp, STATE_EXPR);
 }
 
+async function autoState(cdp) {
+  return evalJson(
+    cdp,
+    String.raw`(function(){
+      var h=core.status.hero||{}, flags=h.flags||{}, auto=flags.__auto__||{};
+      function norm(v) {
+        if (v === true) return true;
+        if (v === "nopotion") return "nopotion";
+        return false;
+      }
+      return JSON.stringify({
+        battle: norm(auto.battle),
+        item: norm(auto.item),
+        wall: norm(auto.wall)
+      });
+    })()`
+  );
+}
+
+async function setAutoState(cdp, spec) {
+  if (!spec) return autoState(cdp);
+  const assignments = Object.entries(spec)
+    .map(([key, value]) => `auto[${JSON.stringify(key)}]=${JSON.stringify(value)};`)
+    .join("");
+  await evalValue(
+    cdp,
+    `(function(){
+      if (!core.status.hero.flags) core.status.hero.flags={};
+      var flags=core.status.hero.flags;
+      if (!flags.__auto__) flags.__auto__={};
+      var auto=flags.__auto__;
+      ${assignments}
+      return true;
+    })()`
+  );
+  return autoState(cdp);
+}
+
+async function expectAutoState(cdp, spec) {
+  const live = await autoState(cdp);
+  if (!spec) return live;
+  const bad = [];
+  for (const [key, value] of Object.entries(spec)) {
+    if (live[key] !== value) bad.push(`${key}: expected ${value}, got ${live[key]}`);
+  }
+  if (bad.length) throw new Error(`auto setting mismatch: ${bad.join("; ")}; live=${autoSpecText(live)}`);
+  return live;
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -192,6 +340,10 @@ function stateText(s) {
     `YK=${s.yk} BK=${s.bk} RK=${s.rk} G=${s.money} ` +
     `lock=${s.lock} moving=${s.moving} event=${s.eventId || "-"}:${s.eventType || "-"} ` +
     `choices=${s.hasChoices} async=${s.statusAsyncCount || 0}/${s.animateAsyncCount || 0}`;
+}
+
+function isLabelEvent(s) {
+  return s.eventId === "action" && (s.eventType === "_label" || s.pendingType === "_label");
 }
 
 function sameObservableState(a, b) {
@@ -215,6 +367,7 @@ function sameObservableState(a, b) {
 }
 
 async function continuePendingAction(cdp) {
+  if (RUNTIME.strictHumanInput || RUNTIME.targetClickOnly) return { ok: false, reason: "strict-human-input" };
   return evalJson(
     cdp,
     `(function(){
@@ -228,13 +381,14 @@ async function continuePendingAction(cdp) {
       var canFinishSleep=ev.id==="action" && currentType==="sleep";
       var canFinishCurtain=ev.id==="action" && currentType==="setCurtain" && !(core.hasAsyncAnimate&&core.hasAsyncAnimate());
       var canFinishMapMutation=ev.id==="action" && noAsync && ["setBlock","setBgFgBlock","openDoor","waitAsync","move"].indexOf(currentType)>=0;
-      if (canStart || canFinishHide || canFinishShow || canFinishSleep || canFinishCurtain || canFinishMapMutation) {
+      var canFinishGenerateMove=ev.id==="action" && currentType==="generateMove";
+      if (canStart || canFinishHide || canFinishShow || canFinishSleep || canFinishCurtain || canFinishMapMutation || canFinishGenerateMove) {
         if (canFinishSleep && core.timeout && core.timeout.sleepTimeout) {
           clearTimeout(core.timeout.sleepTimeout);
           core.timeout.sleepTimeout=null;
         }
         core.doAction();
-        return JSON.stringify({ok:true, reason:canStart?"start":canFinishSleep?"finishSleep":canFinishCurtain?"finishCurtain":canFinishShow?"finishShow":canFinishMapMutation?"finishMapMutation":"finishHide"});
+        return JSON.stringify({ok:true, reason:canStart?"start":canFinishSleep?"finishSleep":canFinishCurtain?"finishCurtain":canFinishShow?"finishShow":canFinishGenerateMove?"finishGenerateMove":canFinishMapMutation?"finishMapMutation":"finishHide"});
       }
       return JSON.stringify({ok:false});
     })()`
@@ -242,6 +396,7 @@ async function continuePendingAction(cdp) {
 }
 
 async function clearStaleLock(cdp) {
+  if (RUNTIME.strictHumanInput) return { ok: false, reason: "strict-human-input" };
   return evalJson(
     cdp,
     `(function(){
@@ -256,26 +411,65 @@ async function clearStaleLock(cdp) {
   );
 }
 
+async function continueCurrentChangeFloor(cdp, live) {
+  if (RUNTIME.strictHumanInput || RUNTIME.targetClickOnly) return { ok: false, reason: "strict-human-input" };
+  if (!live.lock || live.eventId || live.hasChoices || live.moving) return { ok: false };
+  const ev = await targetEvent(cdp, live.floor, live.x, live.y);
+  if (!ev || ev.trigger !== "changeFloor") return { ok: false };
+  await evalValue(cdp, `(function(){ core.doAction(); return true; })()`);
+  return { ok: true };
+}
+
 async function clearStaleMoving(cdp) {
+  if (RUNTIME.strictHumanInput) return { ok: false, reason: "strict-human-input" };
   return evalJson(
     cdp,
     `(function(){
-      var ev=core.status.event||{}, ar=core.status.automaticRoute||{};
-      if (core.status.heroMoving && !ar.autoHeroMove && !ev.id && !ev.ui) {
-        core.status.heroMoving=0;
-        core.status.route=[];
-        if (core.status.lockControl) {
-          if (core.unlockControl) core.unlockControl();
-          else core.status.lockControl=false;
-        }
-        return JSON.stringify({ok:true});
+      function compact() {
+        var h=core.status.hero, loc=h.loc, t=h.items.tools, ev=core.status.event||{}, ar=core.status.automaticRoute||{};
+        return {
+          floor: core.status.floorId, x: loc.x, y: loc.y,
+          hp: h.hp, atk: h.atk, def: h.def, money: h.money,
+          yk: t.yellowKey||0, bk: t.blueKey||0, rk: t.redKey||0,
+          moving: !!core.status.heroMoving,
+          eventId: ev.id||null, eventUi: !!ev.ui,
+          autoHeroMove: !!(ar&&ar.autoHeroMove)
+        };
       }
-      return JSON.stringify({ok:false});
+      function same(a,b) {
+        return a.floor===b.floor && a.x===b.x && a.y===b.y &&
+          a.hp===b.hp && a.atk===b.atk && a.def===b.def && a.money===b.money &&
+          a.yk===b.yk && a.bk===b.bk && a.rk===b.rk &&
+          a.moving===b.moving && a.eventId===b.eventId && a.eventUi===b.eventUi &&
+          a.autoHeroMove===b.autoHeroMove;
+      }
+      var ev=core.status.event||{}, ar=core.status.automaticRoute||{};
+      if (!(core.status.heroMoving && !ar.autoHeroMove && !ev.id && !ev.ui)) {
+        return Promise.resolve(JSON.stringify({ok:false}));
+      }
+      var first=compact();
+      return new Promise(function(resolve){
+        setTimeout(function(){
+          var ev2=core.status.event||{}, ar2=core.status.automaticRoute||{};
+          var second=compact();
+          if (core.status.heroMoving && !ar2.autoHeroMove && !ev2.id && !ev2.ui && same(first, second)) {
+            core.status.heroMoving=0;
+            core.status.route=[];
+            if (core.status.lockControl) {
+              if (core.unlockControl) core.unlockControl();
+              else core.status.lockControl=false;
+            }
+            resolve(JSON.stringify({ok:true}));
+          }
+          else resolve(JSON.stringify({ok:false}));
+        }, 900);
+      });
     })()`
   );
 }
 
 async function clearRuntimeRoute(cdp) {
+  if (RUNTIME.strictHumanInput) return;
   await evalValue(
     cdp,
     String.raw`(function(){
@@ -327,7 +521,7 @@ async function waitMovementSettled(cdp, timeoutMs = 60000) {
   while (Date.now() < end) {
     last = await state(cdp);
     if (!last.moving) return last;
-    if (last.moving && !last.autoHeroMove && !last.eventId && !last.hasChoices) {
+    if (!RUNTIME.strictHumanInput && last.moving && !last.autoHeroMove && !last.eventId && !last.hasChoices) {
       await clearStaleMoving(cdp);
       last = await state(cdp);
       if (!last.moving) return last;
@@ -343,6 +537,7 @@ async function targetEvent(cdp, floor, x, y) {
     `(function(){
       var m=core.status.maps[${JSON.stringify(floor)}]||{};
       var block=(m.blocks||[]).find(function(b){return b.x===${x}&&b.y===${y};});
+      if (!block && core.getBlock) block=core.getBlock(${x}, ${y}, ${JSON.stringify(floor)});
       var ev=block&&block.event;
       return JSON.stringify(ev ? {
         id: ev.id||null,
@@ -354,13 +549,97 @@ async function targetEvent(cdp, floor, x, y) {
   );
 }
 
+// General logic: a map-click step's side effect (door opened / enemy killed /
+// item taken) may already be visible in the live map because auto-processing
+// handled it -- e.g. wall=true auto-opens fakeWalls/dark-walls, or an earlier
+// auto-BFS already cleared the target. In that case the block at (x,y) is gone
+// and the click has nothing to do; the hero just moves toward (x,y) and stops
+// short with no stat change. Accept the step (side effect achieved) instead of
+// throwing "target click stopped before target". Per the live-verify skill:
+// "Accept them only when stats match and the target side effect is visible in
+// the live map, for example the target enemy/item/door has disappeared."
+async function targetSideEffectDone(cdp, step, x, y) {
+  if (![ACT.OPEN_DOOR, ACT.KILL, ACT.PICKUP, ACT.EVENT_BATTLE].includes(step.action)) return false;
+  if (step.floor !== step.floor) return false;
+  try {
+    const ev = await targetEvent(cdp, step.floor, x, y);
+    return !ev; // block gone -> side effect achieved
+  } catch (_) {
+    return false;
+  }
+}
+
 function canRetryAdjacentTarget(action, live, floor, x, y, ev) {
   if (live.floor !== floor || live.lock || live.eventId || live.hasChoices || live.moving) return false;
   if (Math.abs(live.x - x) + Math.abs(live.y - y) !== 1) return false;
+  if ([ACT.SHOP, ACT.MERCHANT].includes(action) && isShopLikeEvent(ev, true)) return true;
   if ([ACT.TALK, ACT.PASS, ACT.OPEN_DOOR, ACT.KILL, ACT.EVENT_BATTLE].includes(action)) return true;
   if (action === ACT.ARRIVE && (!ev || ev.noPass)) return true;
   if (!ev) return false;
+  if (ev.trigger === "changeFloor") return true;
   return ev.noPass && ["action", "openDoor", "battle"].includes(ev.trigger);
+}
+
+function isShopLikeEvent(ev, includeGenericAction = false) {
+  if (!ev) return false;
+  const id = ev.id || "";
+  return id === "shop" || id === "blueShop" || id.startsWith("blueShop") ||
+    id === "trader" || (includeGenericAction && ev.trigger === "action");
+}
+
+async function findItemPos(cdp, floor, eid) {
+  // Scan the live floor for an undisabled item block whose event.id matches
+  // `eid`. Used when a PICKUP step's recorded pos doesn't match the live map
+  // (e.g. the logic verify modeled a reward as an event drop at the killer's
+  // tile, but the live game places the item elsewhere). Returns [x, y] or null.
+  const pos = await evalJson(
+    cdp,
+    `(function(){
+      var m=core.status.maps[${JSON.stringify(floor)}]||{};
+      var blocks=m.blocks||[];
+      var found=null;
+      for (var i=0;i<blocks.length;i++){
+        var b=blocks[i];
+        if (b.disable) continue;
+        var ev=b.event||{};
+        if (ev.cls==="items" && ev.id===${JSON.stringify(eid)}){
+          found={x:b.x,y:b.y};
+          break;
+        }
+      }
+      return JSON.stringify(found);
+    })()`
+  );
+  return pos ? [pos.x, pos.y] : null;
+}
+
+async function openChoicesFromActionTarget(cdp, step, x, y, timeoutMs = 15000, includeGenericAction = true) {
+  let st = await state(cdp);
+  if (st.hasChoices) return st;
+  const tryTiles = [[x, y]];
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, 1], [0, -1]]) {
+    tryTiles.push([x + dx, y + dy]);
+  }
+  for (const [tx, ty] of tryTiles) {
+    st = await state(cdp);
+    if (st.hasChoices || st.lock || st.eventId) break;
+    const ev = await targetEvent(cdp, step.floor, tx, ty);
+    if (!isShopLikeEvent(ev, includeGenericAction) && !(tx === x && ty === y)) continue;
+    await mouseClickTile(cdp, tx, ty);
+    try {
+      return await waitForChoices(cdp, timeoutMs);
+    } catch (_) {
+      await maybeRetryAdjacentTarget(cdp, { ...step, pos: [tx, ty] });
+      st = await state(cdp);
+      if (st.hasChoices) return st;
+      try {
+        return await waitForChoices(cdp, Math.max(1500, Math.min(timeoutMs, 5000)));
+      } catch (_) {
+        st = await state(cdp);
+      }
+    }
+  }
+  return st;
 }
 
 async function maybeRetryAdjacentTarget(cdp, step) {
@@ -372,6 +651,10 @@ async function maybeRetryAdjacentTarget(cdp, step) {
   }
   const ev = await targetEvent(cdp, step.floor, x, y);
   if (!canRetryAdjacentTarget(step.action, st, step.floor, x, y, ev)) return;
+  await sleep(180);
+  st = await waitMovementSettled(cdp);
+  const evBeforeRetry = await targetEvent(cdp, step.floor, x, y);
+  if (!canRetryAdjacentTarget(step.action, st, step.floor, x, y, evBeforeRetry)) return;
   await mouseClickTile(cdp, x, y);
   st = await waitMovementSettled(cdp);
   if (st.lock && !st.eventId && !st.hasChoices && !st.moving) {
@@ -431,14 +714,22 @@ async function stepwiseMoveTo(cdp, tx, ty, maxSteps = 60) {
       if (await nextCellIsStair(cdp, st.floor, st.x, st.y, secondary, tx, ty)) return;
     }
     const before = { x: st.x, y: st.y, floor: st.floor };
-    await evalValue(cdp, `(function(){ core.moveHero(${JSON.stringify(dir)}); return true; })()`);
+    if (RUNTIME.strictHumanInput) {
+      await pressDirection(cdp, dir);
+    } else {
+      await evalValue(cdp, `(function(){ core.moveHero(${JSON.stringify(dir)}); return true; })()`);
+    }
     const settled = await waitForStepAdvance(cdp, before);
     if (settled.blocked && settled.floor === before.floor) {
       // Blocked on this axis; try the other axis (if different).
       if (secondary === dir) return;
       if (await nextCellIsStair(cdp, settled.floor, settled.x, settled.y, secondary, tx, ty)) return;
       const before2 = { x: settled.x, y: settled.y, floor: settled.floor };
-      await evalValue(cdp, `(function(){ core.moveHero(${JSON.stringify(secondary)}); return true; })()`);
+      if (RUNTIME.strictHumanInput) {
+        await pressDirection(cdp, secondary);
+      } else {
+        await evalValue(cdp, `(function(){ core.moveHero(${JSON.stringify(secondary)}); return true; })()`);
+      }
       const settled2 = await waitForStepAdvance(cdp, before2);
       if (settled2.blocked && settled2.floor === before2.floor) return; // truly stuck
     }
@@ -472,6 +763,21 @@ async function waitForStepAdvance(cdp, before, timeoutMs = 6000) {
 }
 
 async function mouseClickTile(cdp, x, y) {
+  if (RUNTIME.strictHumanInput) {
+    let before = await state(cdp);
+    if (before.lock || before.moving || before.eventId || before.hasChoices) {
+      throw new Error(`strict mode cannot click while busy: ${stateText(before)}`);
+    }
+    const metrics = await rawMouseClickTile(cdp, x, y);
+    await sleep(220);
+    const after = await state(cdp);
+    const adjacent = Math.abs(x - before.x) + Math.abs(y - before.y) === 1;
+    if (adjacent && sameObservableState(before, after)) {
+      await rawMouseClickTile(cdp, x, y);
+      await sleep(220);
+    }
+    return { before, metrics };
+  }
   await clearRuntimeRoute(cdp);
   let before = await state(cdp);
   if (before.lock && !before.eventId && !before.hasChoices && !before.moving) {
@@ -534,16 +840,72 @@ async function mouseClickTile(cdp, x, y) {
   return { before, metrics: result.metrics };
 }
 
+async function rawTilePoint(cdp, x, y) {
+  return evalJson(
+    cdp,
+    `(function(){
+      var target={x:${x},y:${y}};
+      var draw=main.dom.gameDraw || document.getElementById("fg");
+      var rect=draw.getBoundingClientRect();
+      var tileW=rect.width/(core.bigmap.width-core.bigmap.offsetX/32*2);
+      var tileH=rect.height/(core.bigmap.height-core.bigmap.offsetY/32*2);
+      var vx=target.x-core.bigmap.offsetX/32;
+      var vy=target.y-core.bigmap.offsetY/32;
+      var clientX=rect.left+(vx+0.5)*tileW;
+      var clientY=rect.top+(vy+0.5)*tileH;
+      var loc=core.actions._getClickLoc(clientX,clientY);
+      var tile={x:target.x,y:target.y};
+      return JSON.stringify({
+        target:target,
+        rect:{left:rect.left,top:rect.top,width:rect.width,height:rect.height},
+        visible:{x:vx,y:vy,tileW:tileW,tileH:tileH},
+        clientX:clientX,
+        clientY:clientY,
+        loc:loc,
+        tile:tile,
+        dpr:window.devicePixelRatio
+      });
+    })()`
+  );
+}
+
+async function dispatchHumanMouseClick(cdp, x, y, holdMs = 60) {
+  await ensurePageActive(cdp);
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x,
+    y,
+    button: "none",
+    buttons: 0,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    x,
+    y,
+    button: "left",
+    buttons: 1,
+    clickCount: 1,
+  });
+  await sleep(holdMs);
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    x,
+    y,
+    button: "left",
+    buttons: 0,
+    clickCount: 1,
+  });
+}
+
 async function rawMouseClickTile(cdp, x, y) {
-  const point = await tileMetrics(cdp, x, y);
-  if (point.tile.x !== x || point.tile.y !== y) {
+  const point = RUNTIME.strictHumanInput
+    ? await rawTilePoint(cdp, x, y)
+    : await tileMetrics(cdp, x, y);
+  if (point.tile && (point.tile.x !== x || point.tile.y !== y)) {
     throw new Error(`raw click tile mismatch x${x}y${y}: ${JSON.stringify(point)}`);
   }
-  const click = { x: point.clientX, y: point.clientY, button: "left", clickCount: 1 };
-  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: click.x, y: click.y });
-  await cdp.send("Input.dispatchMouseEvent", { type: "mousePressed", ...click });
-  await sleep(60);
-  await cdp.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...click });
+  await dispatchHumanMouseClick(cdp, point.clientX, point.clientY, 60);
+  return point;
 }
 
 function isWaitingForTargetSelection(st) {
@@ -552,18 +914,146 @@ function isWaitingForTargetSelection(st) {
 
 function expectedState(step) {
   const after = step.after;
+  return stateFromSnapshot(after);
+}
+
+function stateFromSnapshot(snapshot) {
   return {
-    floor: after.floor,
-    x: after.x,
-    y: after.y,
-    hp: after.hp,
-    atk: after.atk,
-    def: after.def,
-    money: after.gold,
-    yk: after.yk,
-    bk: after.bk,
-    rk: after.rk,
+    floor: snapshot.floor,
+    x: snapshot.x,
+    y: snapshot.y,
+    hp: snapshot.hp,
+    atk: snapshot.atk,
+    def: snapshot.def,
+    money: snapshot.gold,
+    yk: snapshot.yk,
+    bk: snapshot.bk,
+    rk: snapshot.rk,
   };
+}
+
+function compactLiveState(s) {
+  return {
+    floor: s.floor,
+    x: s.x,
+    y: s.y,
+    hp: s.hp,
+    atk: s.atk,
+    def: s.def,
+    gold: s.money,
+    yk: s.yk,
+    bk: s.bk,
+    rk: s.rk,
+  };
+}
+
+function strictMismatchText(live, expected) {
+  const bad = [];
+  for (const key of ["floor", "x", "y", "hp", "atk", "def", "yk", "bk", "rk"]) {
+    if (live[key] !== expected[key]) bad.push(`${key}: expected ${expected[key]}, got ${live[key]}`);
+  }
+  if (live.money !== expected.money) bad.push(`money: expected ${expected.money}, got ${live.money}`);
+  return bad.join("; ");
+}
+
+function strictValueMismatchText(live, expected) {
+  const bad = [];
+  for (const key of ["floor", "hp", "atk", "def", "yk", "bk", "rk"]) {
+    if (live[key] !== expected[key]) bad.push(`${key}: expected ${expected[key]}, got ${live[key]}`);
+  }
+  if (live.money !== expected.money) bad.push(`money: expected ${expected.money}, got ${live.money}`);
+  return bad.join("; ");
+}
+
+function autoHandledNote(steps, startStep, consumedStep) {
+  if (consumedStep <= startStep) return "";
+  const pieces = [];
+  for (let idx = startStep + 1; idx <= consumedStep; idx += 1) {
+    const step = steps[idx - 1];
+    const [x, y] = step.pos || ["?", "?"];
+    pieces.push(`${step.floor} x${x}y${y} ${step.eid || step.action}`);
+  }
+  return pieces.length ? `自动处理：${pieces.join("、")}` : "";
+}
+
+function recordOnlyPositionMatchedStep(live, steps, candidateIndexes) {
+  const startFloor = steps[candidateIndexes[0] - 1].floor;
+  for (let i = candidateIndexes.length - 1; i >= 0; i -= 1) {
+    const expected = expectedState(steps[candidateIndexes[i] - 1]);
+    if (live.floor === expected.floor && live.x === expected.x && live.y === expected.y) {
+      if (live.floor !== startFloor || valuesMatch(live, expected)) {
+        return candidateIndexes[i];
+      }
+    }
+  }
+  return candidateIndexes[0];
+}
+
+function appendSkippedRecordStep(entries, oneBased, step, note) {
+  if (!entries.length) return false;
+  const last = entries[entries.length - 1];
+  const [x, y] = step.pos || ["?", "?"];
+  const piece = `${step.floor} x${x}y${y} ${step.eid || step.action}`;
+  const autoNote = note || `自动处理：${piece}`;
+  last.consumedStep = oneBased;
+  last.consumed.push({
+    step: oneBased,
+    floor: step.floor,
+    pos: step.pos,
+    action: step.action,
+    eid: step.eid || null,
+    note: step.note || "",
+  });
+  last.autoHandledNote = last.autoHandledNote
+    ? `${last.autoHandledNote}；${autoNote}`
+    : autoNote;
+  return true;
+}
+
+function buildStrictWalkFromLog(walk, entries) {
+  const steps = entries.map((entry) => {
+    const step = { ...entry.step };
+    step.before = compactLiveState(entry.before);
+    step.after = compactLiveState(entry.after);
+    const notes = [];
+    if (step.note) notes.push(step.note);
+    if (entry.autoHandledNote) notes.push(entry.autoHandledNote);
+    if (entry.strictMismatch) notes.push(`旧期望差异：${entry.strictMismatch}`);
+    step.note = notes.join("；");
+    return step;
+  });
+  return {
+    ...walk,
+    ok: true,
+    source_walk: walk.source || null,
+    source_expected_walk: walk.name || null,
+    generated_by: "live_zone3_mouse_replayer_cdp.js --out-json",
+    steps,
+    expected_final: steps.length ? steps[steps.length - 1].after : null,
+  };
+}
+
+function writeRunLog(args, walk, entries, finalState) {
+  if (!args.outJson) return;
+  const strictWalk = buildStrictWalkFromLog(walk, entries);
+  const payload = {
+    ok: true,
+    sourceWalk: path.relative(ROOT, args.walk),
+    goldMode: "exact",
+    targetClickOnly: !!args.targetClickOnly,
+    strictHumanInput: !!args.strictHumanInput,
+    setAuto: args.setAuto,
+    expectAuto: args.expectAuto,
+    loadSlot: args.loadSlot,
+    startStep: args.startStep,
+    stopStep: args.stopStep || walk.steps.length,
+    finalState: compactLiveState(finalState),
+    entries,
+    strictWalk,
+  };
+  fs.mkdirSync(path.dirname(args.outJson), { recursive: true });
+  fs.writeFileSync(args.outJson, JSON.stringify(payload, null, 2), "utf8");
+  console.log(`wrote ${path.relative(ROOT, args.outJson)}`);
 }
 
 function loosePositionAction(action) {
@@ -577,6 +1067,7 @@ function loosePositionAction(action) {
     ACT.EVENT,
     ACT.EVENT_REWARD,
     ACT.OPEN_DOOR,
+    ACT.SET_AUTO,
   ]).has(action);
 }
 
@@ -668,7 +1159,55 @@ async function targetClearedMatch(cdp, live, step) {
   if (step.action === ACT.KILL) return !ev || ev.cls !== "enemys";
   if (step.action === ACT.PICKUP) return !ev || ev.cls !== "items";
   if (step.action === ACT.OPEN_DOOR) return !ev || ev.trigger !== "openDoor";
-  if (step.action === ACT.PASS) return !ev || ev.id !== step.eid;
+  if (step.action === ACT.PASS) {
+    if (expected.floor && expected.floor !== step.floor) return live.floor === expected.floor;
+    return !!step.eid && (!ev || ev.id !== step.eid);
+  }
+  return false;
+}
+
+async function sideEffectOnlySatisfied(cdp, live, step) {
+  if (!RUNTIME.strictHumanInput) return false;
+  if (live.lock || live.eventId || live.moving || live.hasChoices) return false;
+  const expected = expectedState(step);
+  if (step.action === ACT.FLY) return live.floor === step.floor;
+  if (step.action === ACT.CHANGE_FLOOR) return live.floor === expected.floor;
+  if (live.floor !== step.floor) return false;
+  const [x, y] = step.pos || [];
+  const ev = await targetEvent(cdp, step.floor, x, y);
+  if (step.action === ACT.OPEN_DOOR) return valuesMatch(live, expected) && (!ev || ev.trigger !== "openDoor");
+  if (step.action === ACT.KILL || step.action === ACT.EVENT_BATTLE) return valuesMatch(live, expected) && (!ev || ev.cls !== "enemys");
+  if (step.action === ACT.PICKUP) return valuesMatch(live, expected) && (!ev || ev.cls !== "items");
+  if (
+    step.floor === "MT29" &&
+    step.eid === "thief" &&
+    [ACT.TALK, ACT.EVENT].includes(step.action)
+  ) {
+    return valuesMatch(live, expected) && live.x === x && live.y === y && !ev;
+  }
+  if (step.floor === "MT30" && step.eid === "specialDoor" && step.action === ACT.EVENT) {
+    return valuesMatch(live, expected) && live.x === x && live.y === y && !ev;
+  }
+  if (step.action === ACT.PASS) {
+    if (expected.floor && expected.floor !== step.floor) return valuesMatch(live, expected) && live.floor === expected.floor;
+    return valuesMatch(live, expected) && !!step.eid && (!ev || ev.id !== step.eid);
+  }
+  if (step.action === ACT.ARRIVE) return valuesMatch(live, expected) && live.x === x && live.y === y;
+  return false;
+}
+
+async function targetAlreadyClearedForAction(cdp, live, step) {
+  if (!RUNTIME.strictHumanInput) return false;
+  if (step.eid === "postBossSupply") return false;
+  if (live.lock || live.eventId || live.moving || live.hasChoices) return false;
+  if (live.floor !== step.floor) return false;
+  const [x, y] = step.pos || [];
+  const ev = await targetEvent(cdp, step.floor, x, y);
+  if (step.action === ACT.OPEN_DOOR) return !ev || ev.trigger !== "openDoor";
+  if (step.action === ACT.KILL || step.action === ACT.EVENT_BATTLE) return !ev || ev.cls !== "enemys";
+  if (step.action === ACT.PICKUP) return !ev || ev.cls !== "items";
+  if (step.action === ACT.PASS && step.eid === "autoResourceGroup") return false;
+  if (step.action === ACT.PASS) return !!step.eid && (!ev || ev.id !== step.eid);
   return false;
 }
 
@@ -679,6 +1218,12 @@ function rewardItemNeedsPresence(step) {
 
 async function sideEffectSatisfied(cdp, live, step) {
   const expected = expectedState(step);
+  if (step.action === ACT.SET_AUTO) {
+    const spec = stepAutoSpec(step);
+    if (!spec) return true;
+    const auto = await autoState(cdp);
+    return Object.entries(spec).every(([key, value]) => auto[key] === value);
+  }
   if (step.action === ACT.EVENT && step.eid === "centerFly3") {
     return live.floor === expected.floor && live.x === expected.x && live.y === expected.y;
   }
@@ -686,9 +1231,15 @@ async function sideEffectSatisfied(cdp, live, step) {
     const ev = await targetEvent(cdp, "MT42", 5, 10);
     return !ev || ev.trigger !== "action";
   }
+  if (step.action === ACT.EVENT_REWARD && step.floor === "MT14" && step.eid === "redKey") {
+    const [x, y] = step.pos;
+    const ev = await targetEvent(cdp, step.floor, x, y);
+    return !!ev && ev.cls === "items" && ev.id === "redKey";
+  }
   if (rewardItemNeedsPresence(step)) {
     const [x, y] = step.pos;
     const ev = await targetEvent(cdp, step.floor, x, y);
+    if (valuesMatch(live, expected)) return !ev || ev.cls !== "items";
     return !!ev && ev.id === step.eid && ev.cls === "items";
   }
   if (step.action === ACT.EVENT_REWARD && step.floor === "MT40" && step.eid === "yellowKnight") {
@@ -699,6 +1250,10 @@ async function sideEffectSatisfied(cdp, live, step) {
     const tunnel = await targetEvent(cdp, "MT35", 4, 9);
     const thief = await targetEvent(cdp, "MT35", 5, 10);
     return !tunnel && !!thief && thief.id === "thief";
+  }
+  if (step.action === ACT.EVENT && step.floor === "MT10" && step.eid === "thief") {
+    const thief = await targetEvent(cdp, "MT10", 6, 10);
+    return !thief;
   }
   if (step.action === ACT.EVENT && step.floor === "MT35" && step.eid === "thief") {
     const thief = await targetEvent(cdp, "MT35", 5, 10);
@@ -736,7 +1291,7 @@ async function stepMatches(cdp, live, step) {
       ev.id === "upFloor" ||
       ev.id === "downFloor"
     );
-    if (hasTrigger) {
+    if (hasTrigger && !isShopLikeEvent(ev, true)) {
       if (live.x !== x || live.y !== y) return false;
       if (live.lock || live.eventId || live.moving || live.hasChoices) return false;
     }
@@ -748,9 +1303,10 @@ async function stepMatches(cdp, live, step) {
 function mismatchText(live, step) {
   const expected = expectedState(step);
   const bad = [];
-  for (const key of ["floor", "x", "y", "hp", "atk", "def", "money", "yk", "bk", "rk"]) {
+  for (const key of ["floor", "x", "y", "hp", "atk", "def", "yk", "bk", "rk"]) {
     if (live[key] !== expected[key]) bad.push(`${key}: expected ${expected[key]}, got ${live[key]}`);
   }
+  if (live.money !== expected.money) bad.push(`money: expected ${expected.money}, got ${live.money}`);
   return bad.join("; ");
 }
 
@@ -806,11 +1362,42 @@ async function mouseClickCanvas(cdp) {
       });
     })()`
   );
-  const click = { x: point.x, y: point.y, button: "left", clickCount: 1 };
-  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: click.x, y: click.y });
-  await cdp.send("Input.dispatchMouseEvent", { type: "mousePressed", ...click });
-  await sleep(50);
-  await cdp.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...click });
+  await dispatchHumanMouseClick(cdp, point.x, point.y, 50);
+}
+
+const KEY_SPECS = {
+  ArrowUp: ["ArrowUp", "ArrowUp", 38],
+  ArrowDown: ["ArrowDown", "ArrowDown", 40],
+  ArrowLeft: ["ArrowLeft", "ArrowLeft", 37],
+  ArrowRight: ["ArrowRight", "ArrowRight", 39],
+  Space: [" ", "Space", 32, " "],
+  KeyG: ["g", "KeyG", 71, "g"],
+  Digit1: ["1", "Digit1", 49, "1"],
+  Digit2: ["2", "Digit2", 50, "2"],
+  Digit3: ["3", "Digit3", 51, "3"],
+  Digit4: ["4", "Digit4", 52, "4"],
+};
+
+async function pressKey(cdp, keyName, holdMs = 60) {
+  const spec = KEY_SPECS[keyName];
+  if (!spec) throw new Error(`unknown key ${keyName}`);
+  const [key, code, windowsVirtualKeyCode] = spec;
+  await focusGame(cdp);
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key,
+    code,
+    windowsVirtualKeyCode,
+    nativeVirtualKeyCode: windowsVirtualKeyCode,
+  });
+  await sleep(holdMs);
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key,
+    code,
+    windowsVirtualKeyCode,
+    nativeVirtualKeyCode: windowsVirtualKeyCode,
+  });
 }
 
 async function pressUndo(cdp, count) {
@@ -843,7 +1430,7 @@ async function pressUndo(cdp, count) {
 }
 
 async function focusGame(cdp) {
-  try { await cdp.send("Page.bringToFront"); } catch (_) { /* best effort */ }
+  await ensurePageActive(cdp);
   await evalValue(
     cdp,
     String.raw`(function(){
@@ -861,32 +1448,11 @@ async function focusGame(cdp) {
 }
 
 async function pressDirection(cdp, direction) {
-  const keys = {
-    up: ["ArrowUp", "ArrowUp", 38],
-    down: ["ArrowDown", "ArrowDown", 40],
-    left: ["ArrowLeft", "ArrowLeft", 37],
-    right: ["ArrowRight", "ArrowRight", 39],
-  };
-  const entry = keys[direction];
-  if (!entry) return;
-  const [key, code, windowsVirtualKeyCode] = entry;
-  await focusGame(cdp);
+  const keys = { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight" };
+  const keyName = keys[direction];
+  if (!keyName) return;
   const before = await state(cdp);
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
-    key,
-    code,
-    windowsVirtualKeyCode,
-    nativeVirtualKeyCode: windowsVirtualKeyCode,
-  });
-  await sleep(60);
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key,
-    code,
-    windowsVirtualKeyCode,
-    nativeVirtualKeyCode: windowsVirtualKeyCode,
-  });
+  await pressKey(cdp, keyName);
   await sleep(120);
   const after = await state(cdp);
   const changed = after.floor !== before.floor ||
@@ -894,7 +1460,8 @@ async function pressDirection(cdp, direction) {
     after.hp !== before.hp || after.atk !== before.atk || after.def !== before.def ||
     after.money !== before.money || after.yk !== before.yk || after.bk !== before.bk || after.rk !== before.rk ||
     after.lock || after.eventId || after.moving || after.hasChoices;
-  if (!changed) {
+  if (!changed && !RUNTIME.strictHumanInput) {
+    const windowsVirtualKeyCode = KEY_SPECS[keyName][2];
     await evalValue(
       cdp,
       `(function(){
@@ -990,13 +1557,23 @@ async function waitForCandidates(cdp, steps, candidateIndexes, desc, timeoutMs =
   let last = await state(cdp);
   while (Date.now() < end) {
     last = await state(cdp);
+    if (isLabelEvent(last)) {
+      await sleep(600);
+      continue;
+    }
     for (const idx of candidateIndexes) {
       const step = steps[idx - 1];
       if (await stepMatches(cdp, last, step)) {
         return { state: last, matchedStep: idx };
       }
     }
-    if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move")) {
+    for (const idx of candidateIndexes) {
+      const step = steps[idx - 1];
+      if (await sideEffectOnlySatisfied(cdp, last, step)) {
+        return { state: last, matchedStep: idx };
+      }
+    }
+    if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move" || last.eventType === "generateMove")) {
       const progressed = await continuePendingAction(cdp);
       if (progressed.ok) {
         await sleep(250);
@@ -1013,9 +1590,11 @@ async function waitForCandidates(cdp, steps, candidateIndexes, desc, timeoutMs =
       continue;
     }
     if (last.hasChoices) {
-      const shopCandidate = candidateIndexes.some((idx) =>
-        [ACT.SHOP, ACT.MERCHANT].includes(steps[idx - 1].action)
-      );
+      const shopCandidate = candidateIndexes.some((idx) => {
+        const candidate = steps[idx - 1];
+        return [ACT.SHOP, ACT.MERCHANT].includes(candidate.action) ||
+          (candidate.action === ACT.TALK && ["shop", "blueShop", "trader"].includes(candidate.eid || ""));
+      });
       if (!shopCandidate) {
         await choose(cdp, "confirm");
         await sleep(450);
@@ -1025,6 +1604,11 @@ async function waitForCandidates(cdp, steps, candidateIndexes, desc, timeoutMs =
       continue;
     }
     if (last.lock && !last.eventId && !last.hasChoices) {
+      const continued = await continueCurrentChangeFloor(cdp, last);
+      if (continued.ok) {
+        await sleep(250);
+        continue;
+      }
       const cleared = await clearStaleLock(cdp);
       await sleep(cleared.ok ? 80 : 150);
       continue;
@@ -1054,7 +1638,11 @@ async function waitIdle(cdp, timeoutMs = 15000) {
   let last = await state(cdp);
   while (Date.now() < end) {
     last = await state(cdp);
-    if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move")) {
+    if (isLabelEvent(last)) {
+      await sleep(600);
+      continue;
+    }
+    if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move" || last.eventType === "generateMove")) {
       const progressed = await continuePendingAction(cdp);
       if (progressed.ok) {
         await sleep(250);
@@ -1072,6 +1660,11 @@ async function waitIdle(cdp, timeoutMs = 15000) {
     }
     if (last.hasChoices) return last;
     if (last.lock && !last.eventId && !last.hasChoices) {
+      const continued = await continueCurrentChangeFloor(cdp, last);
+      if (continued.ok) {
+        await sleep(250);
+        continue;
+      }
       const cleared = await clearStaleLock(cdp);
       await sleep(cleared.ok ? 80 : 150);
       continue;
@@ -1095,6 +1688,10 @@ async function waitForChoices(cdp, timeoutMs = 15000) {
   let last = await state(cdp);
   while (Date.now() < end) {
     last = await state(cdp);
+    if (isLabelEvent(last)) {
+      await sleep(600);
+      continue;
+    }
     if (last.hasChoices) return last;
     if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move")) {
       const progressed = await continuePendingAction(cdp);
@@ -1113,6 +1710,11 @@ async function waitForChoices(cdp, timeoutMs = 15000) {
       continue;
     }
     if (last.lock && !last.eventId && !last.hasChoices) {
+      const continued = await continueCurrentChangeFloor(cdp, last);
+      if (continued.ok) {
+        await sleep(250);
+        continue;
+      }
       const cleared = await clearStaleLock(cdp);
       await sleep(cleared.ok ? 80 : 150);
       continue;
@@ -1148,6 +1750,9 @@ async function settleAlreadyCompletedStep(cdp, step) {
   // change hero stats or position, so a position+values match would falsely
   // mark them done. Always execute them.
   if (step.action === ACT.EARTHQUAKE || step.action === ACT.BOMB || step.action === ACT.BIG_KEY || step.action === ACT.USE) return null;
+  if (step.action === ACT.SET_AUTO) {
+    return await stepMatches(cdp, st, step) ? st : null;
+  }
   // ARRIVE means "walk onto this tile". It must always execute even if the
   // hero is adjacent (e.g. stepping onto an opened-door tile to reach the
   // lava edge, or reaching a boss trigger). Never skip ARRIVE from adjacent
@@ -1160,6 +1765,7 @@ async function settleAlreadyCompletedStep(cdp, step) {
 }
 
 async function flyTo(cdp, floor) {
+  if (RUNTIME.strictHumanInput) return humanFlyTo(cdp, floor);
   await clearRuntimeRoute(cdp);
   const before = await state(cdp);
   if (before.floor === floor) return before;
@@ -1167,8 +1773,248 @@ async function flyTo(cdp, floor) {
 }
 
 async function useItem(cdp, item) {
+  if (RUNTIME.strictHumanInput) return humanUseItem(cdp, item);
   await clearRuntimeRoute(cdp);
   await evalValue(cdp, `(function(){return core.useItem(${JSON.stringify(item)})})()`);
+}
+
+async function flyPanelInfo(cdp, targetFloor) {
+  return evalJson(
+    cdp,
+    `(function(){
+      var ev=core.status.event||{}, data=ev.data;
+      var index=typeof data==="number" ? data : null;
+      var targetIndex=core.floorIds.indexOf(${JSON.stringify(targetFloor)});
+      return JSON.stringify({
+        eventId: ev.id||null,
+        index: index,
+        selectedFloor: index==null ? null : core.floorIds[index],
+        targetIndex: targetIndex,
+        canFly: !!(core.status.maps[${JSON.stringify(targetFloor)}]&&core.status.maps[${JSON.stringify(targetFloor)}].canFlyTo)
+      });
+    })()`
+  );
+}
+
+async function waitFlyPanel(cdp, floor, timeoutMs = 8000) {
+  const end = Date.now() + timeoutMs;
+  let info = await flyPanelInfo(cdp, floor);
+  while (Date.now() < end) {
+    info = await flyPanelInfo(cdp, floor);
+    if (info.eventId === "fly" && typeof info.index === "number") return info;
+    await sleep(120);
+  }
+  throw new Error(`timeout opening fly panel to ${floor}: ${JSON.stringify(info)}`);
+}
+
+async function humanFlyTo(cdp, floor) {
+  const before = await state(cdp);
+  if (before.floor === floor) return before;
+  await moveToFlyUsePointIfNeeded(cdp);
+  await pressKey(cdp, "KeyG");
+  let info = await waitFlyPanel(cdp, floor);
+  if (info.targetIndex < 0 || !info.canFly) {
+    throw new Error(`floor ${floor} is not selectable in fly panel: ${JSON.stringify(info)}`);
+  }
+  let guard = 0;
+  while (info.index !== info.targetIndex && guard < 80) {
+    const diff = info.targetIndex - info.index;
+    if (Math.abs(diff) >= 10) await pressKey(cdp, diff > 0 ? "ArrowRight" : "ArrowLeft");
+    else await pressKey(cdp, diff > 0 ? "ArrowUp" : "ArrowDown");
+    await sleep(120);
+    info = await flyPanelInfo(cdp, floor);
+    guard += 1;
+  }
+  if (info.index !== info.targetIndex) {
+    throw new Error(`failed to select fly target ${floor}: ${JSON.stringify(info)}`);
+  }
+  await pressKey(cdp, "Space");
+}
+
+async function canUseFlyItem(cdp) {
+  return evalJson(
+    cdp,
+    `(function(){ return JSON.stringify({ok: !!(core.canUseItem && core.canUseItem("fly"))}); })()`
+  );
+}
+
+async function moveToFlyUsePointIfNeeded(cdp) {
+  let usable = await canUseFlyItem(cdp);
+  if (usable.ok) return;
+  let st = await state(cdp);
+  const points = FLY_POINTS[st.floor] || {};
+  const candidates = [points.downFloor, points.upFloor].filter(Boolean);
+  if (!candidates.length) return;
+  candidates.sort((a, b) =>
+    (Math.abs(st.x - a[0]) + Math.abs(st.y - a[1])) -
+    (Math.abs(st.x - b[0]) + Math.abs(st.y - b[1]))
+  );
+  for (const [x, y] of candidates) {
+    st = await state(cdp);
+    if (st.lock || st.eventId || st.hasChoices || st.moving) return;
+    for (let attempt = 0; attempt < 6 && (st.x !== x || st.y !== y); attempt += 1) {
+      await mouseClickTile(cdp, x, y);
+      await waitMovementSettled(cdp);
+      st = await state(cdp);
+      if (st.lock || st.eventId || st.hasChoices || st.moving) return;
+    }
+    usable = await canUseFlyItem(cdp);
+    if (usable.ok) return;
+  }
+}
+
+async function statusItemPoint(cdp, item) {
+  return evalJson(
+    cdp,
+    `(function(){
+      var vertical = !!core.domStyle.isVertical;
+      var layout = vertical
+        ? {
+            mx: core.ui.statusBar.itemMxVertical,
+            left: 8,
+            top: 538,
+            colStep: 33,
+            rowStep: 32
+          }
+        : {
+            mx: core.getFlag("fly") ? core.ui.statusBar.itemMx : core.ui.statusBar.itemMx2,
+            left: 13,
+            top: 190,
+            colStep: 33,
+            rowStep: 32
+          };
+      var hit = null;
+      for (var y = 0; y < layout.mx.length; y++) {
+        for (var x = 0; x < layout.mx[y].length; x++) {
+          if (layout.mx[y][x] === ${JSON.stringify(item)}) hit = {x:x, y:y};
+        }
+      }
+      if (!hit) return JSON.stringify({ok:false, reason:"missing-layout", item:${JSON.stringify(item)}});
+      if (!core.hasItem(${JSON.stringify(item)})) {
+        return JSON.stringify({ok:false, reason:"missing-item", item:${JSON.stringify(item)}});
+      }
+      var rect = main.dom.outerUI.getBoundingClientRect();
+      var logicalX = layout.left + (hit.x + 0.5) * layout.colStep;
+      var logicalY = layout.top + (hit.y + 0.5) * layout.rowStep;
+      return JSON.stringify({
+        ok: true,
+        item: ${JSON.stringify(item)},
+        vertical: vertical,
+        grid: hit,
+        logicalX: logicalX,
+        logicalY: logicalY,
+        clientX: rect.left + logicalX * core.domStyle.scale,
+        clientY: rect.top + logicalY * core.domStyle.scale,
+        selectedItem: core.ui.statusBar.selectedItem || null
+      });
+    })()`
+  );
+}
+
+async function clickStatusItem(cdp, item) {
+  const point = await statusItemPoint(cdp, item);
+  if (!point.ok) throw new Error(`cannot click status item ${item}: ${JSON.stringify(point)}`);
+  await dispatchHumanMouseClick(cdp, point.clientX, point.clientY, 60);
+  return point;
+}
+
+async function hasItem(cdp, item) {
+  return evalValue(cdp, `(function(){ return !!core.hasItem(${JSON.stringify(item)}); })()`);
+}
+
+async function humanUseCenterFly(cdp, x, y) {
+  const before = await state(cdp);
+  try {
+    await clickStatusItem(cdp, "centerFly");
+  } catch (_) {
+    await pressKey(cdp, "Digit3");
+  }
+  await sleep(300);
+  let mid = await state(cdp);
+  if (mid.floor === before.floor && mid.x === x && mid.y === y) return;
+  if (
+    mid.floor === before.floor &&
+    mid.x === before.x &&
+    mid.y === before.y &&
+    !mid.lock &&
+    !mid.eventId &&
+    !mid.hasChoices &&
+    !mid.moving
+  ) {
+    try {
+      await clickStatusItem(cdp, "centerFly");
+      await sleep(300);
+      mid = await state(cdp);
+      if (mid.floor === before.floor && mid.x === x && mid.y === y) return;
+    } catch (_) {
+      // Fall through to target-click mode below.
+    }
+  }
+  await rawMouseClickTile(cdp, x, y);
+  await sleep(250);
+}
+
+async function humanUseItem(cdp, item) {
+  const shortcut = {
+    pickaxe: "Digit1",
+    bomb: "Digit2",
+    centerFly: "Digit3",
+    centerFly3: "Digit3",
+    earthquake: "Digit4",
+    upFly: "Digit4",
+    downFly: "Digit4",
+  }[item];
+  if (item === "snow") {
+    await clickStatusItem(cdp, item);
+    await sleep(250);
+    return;
+  }
+  if (item === "superPotion") {
+    await clickStatusItem(cdp, item);
+    await sleep(180);
+    if (await hasItem(cdp, item)) await clickStatusItem(cdp, item);
+    await sleep(350);
+    return;
+  }
+  if (item === "bigKey") {
+    await clickStatusItem(cdp, item);
+    await sleep(180);
+    if (await hasItem(cdp, item)) await clickStatusItem(cdp, item);
+    await sleep(350);
+    return;
+  }
+  if (item === "earthquake") {
+    await clickStatusItem(cdp, item);
+    await sleep(180);
+    if (await hasItem(cdp, item)) await clickStatusItem(cdp, item);
+    await sleep(180);
+    await mouseClickCanvas(cdp);
+    await sleep(1200);
+    return;
+  }
+  if (!shortcut) throw new Error(`strict mode has no human shortcut for item ${item}`);
+  await pressKey(cdp, shortcut);
+  await sleep(250);
+}
+
+async function choiceInfo(cdp) {
+  return evalJson(
+    cdp,
+    `(function(){
+      var ev=core.status.event||{}, data=ev.data||{}, ui=ev.ui||{};
+      var current=data.current&&typeof data.current==="object" ? data.current : null;
+      var choices=(current&&current.choices)||(ui&&ui.choices)||[];
+      var selection=typeof ev.selection==="number" ? ev.selection :
+        (typeof data.selection==="number" ? data.selection :
+        (typeof ui.selection==="number" ? ui.selection : 0));
+      return JSON.stringify({
+        eventId: ev.id||null,
+        eventType: current ? current.type : (ui.type||data.type||null),
+        choices: choices.map(function(c){return String(c.text||"");}),
+        selection: selection
+      });
+    })()`
+  );
 }
 
 async function choose(cdp, kind) {
@@ -1185,6 +2031,24 @@ async function choose(cdp, kind) {
     keyBundle31: 0,
   };
   const index = defaults[kind] ?? 0;
+  if (RUNTIME.strictHumanInput) {
+    let info = await choiceInfo(cdp);
+    if (!info.choices.length || !info.choices[index]) {
+      throw new Error(`choose ${kind} failed: ${JSON.stringify({ ok: false, reason: "no-choice", index, choices: info.choices })}`);
+    }
+    let guard = 0;
+    while (info.selection !== index && guard < 20) {
+      await pressKey(cdp, info.selection < index ? "ArrowDown" : "ArrowUp");
+      await sleep(100);
+      info = await choiceInfo(cdp);
+      guard += 1;
+    }
+    if (info.selection !== index) {
+      throw new Error(`choose ${kind} failed to select index ${index}: ${JSON.stringify(info)}`);
+    }
+    await pressKey(cdp, "Space");
+    return { ok: true, index, text: info.choices[index], strictHumanInput: true };
+  }
   const result = await evalJson(
     cdp,
     `(function(){
@@ -1200,6 +2064,43 @@ async function choose(cdp, kind) {
   );
   if (!result.ok) throw new Error(`choose ${kind} failed: ${JSON.stringify(result)}`);
   return result;
+}
+
+async function closeChoiceMenu(cdp, timeoutMs = 8000) {
+  const end = Date.now() + timeoutMs;
+  let last = await state(cdp);
+  while (Date.now() < end) {
+    last = await state(cdp);
+    if (isLabelEvent(last)) {
+      await sleep(600);
+      continue;
+    }
+    if (!last.hasChoices) {
+      if (!last.lock && !last.eventId && !last.moving) return last;
+      await waitIdle(cdp, 2000);
+      last = await state(cdp);
+      if (!last.hasChoices) return last;
+    }
+    if (last.hasChoices) {
+      await choose(cdp, "exit");
+      await sleep(250);
+      continue;
+    }
+    if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move")) {
+      const progressed = await continuePendingAction(cdp);
+      if (progressed.ok) {
+        await sleep(250);
+        continue;
+      }
+    }
+    if (last.lock || last.eventId) {
+      await mouseClickCanvas(cdp);
+      await sleep(300);
+      continue;
+    }
+    return last;
+  }
+  throw new Error(`timeout closing choices; last=${stateText(last)}`);
 }
 
 function isMapClickAction(action) {
@@ -1235,7 +2136,31 @@ async function repeatTargetClick(cdp, step, baseFloor, attempts = 3) {
 }
 
 async function executeStep(cdp, step) {
-  const [x, y] = step.pos;
+  let [x, y] = step.pos;
+  if (step.action === ACT.SET_AUTO) {
+    const spec = stepAutoSpec(step);
+    if (!spec) throw new Error("SET_AUTO step requires auto/setAuto/autoSpec");
+    const liveAuto = await setAutoState(cdp, spec);
+    await expectAutoState(cdp, spec);
+    console.log(`      auto ${autoSpecText(spec)} -> ${autoSpecText(liveAuto)}`);
+    return;
+  }
+  if (step.action === ACT.PICKUP && step.eid) {
+    // The recorded pickup pos may not match the live map (e.g. a reward the
+    // logic verify placed at the killer's tile but the live game places
+    // elsewhere). If no item with step.eid sits at step.pos, scan the floor and
+    // retarget the real item location.
+    const ev = await targetEvent(cdp, step.floor, x, y);
+    const hereOk = ev && ev.cls === "items" && ev.id === step.eid;
+    if (!hereOk) {
+      const real = await findItemPos(cdp, step.floor, step.eid);
+      if (real) {
+        console.log(`      [pickup retarget] ${step.eid}: recorded x${x}y${y} not an item, using live x${real[0]}y${real[1]}`);
+        x = real[0];
+        y = real[1];
+      }
+    }
+  }
   if (step.action === ACT.CHECK || step.action === ACT.CHANGE_FLOOR) {
     return;
   }
@@ -1244,64 +2169,62 @@ async function executeStep(cdp, step) {
     await waitIdle(cdp, 20000);
     return;
   }
+  if (RUNTIME.strictHumanInput) {
+    const current = await state(cdp);
+    const expectedFloor =
+      (step.action === ACT.UP_FLY || step.action === ACT.DOWN_FLY) && step.before && step.before.floor
+        ? step.before.floor
+        : step.floor;
+    if (current.floor !== expectedFloor) {
+      throw new Error(`strict mode floor mismatch before ${step.action}: expected ${expectedFloor}, got ${stateText(current)}`);
+    }
+  }
+  const stepTargetEvent = await targetEvent(cdp, step.floor, x, y);
+  if (step.action === ACT.TALK && isShopLikeEvent(stepTargetEvent, false)) {
+    const st = await openChoicesFromActionTarget(cdp, step, x, y, 15000, false);
+    if (!st.hasChoices) throw new Error(`failed to open choices for ${step.eid || step.action} at x${x}y${y}: ${stateText(st)}`);
+    return;
+  }
   if (step.action === ACT.SHOP || step.action === ACT.MERCHANT) {
     // The shop/trader dialog must be opened first by clicking the NPC tile;
     // only then do choices appear. If already in a choices dialog, choose now.
     let st = await state(cdp);
     if (!st.hasChoices) {
-      // step.pos is the hero's adjacent landing tile, NOT always the shop's
-      // action tile (some shops span 3 cells; only the center has trigger=action).
-      // Try the recorded tile first, then scan its neighbours for the real shop
-      // action tile.
-      const tryTiles = [[x, y]];
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        tryTiles.push([x + dx, y + dy]);
-      }
-      for (const [tx, ty] of tryTiles) {
-        st = await state(cdp);
-        if (st.hasChoices || st.lock || st.eventId) break;
-        const ev = await targetEvent(cdp, step.floor, tx, ty);
-        if (!ev) continue;
-        const isShop = ev.id === "shop" || ev.id === "blueShop" ||
-          (ev.id || "").startsWith("blueShop") || ev.id === "trader" || ev.trigger === "action";
-        if (!isShop && !(tx === x && ty === y)) continue;
-        await mouseClickTile(cdp, tx, ty);
-        try {
-          st = await waitForChoices(cdp, 15000);
-        } catch (_) {
-          await maybeRetryAdjacentTarget(cdp, { ...step, pos: [tx, ty] });
-          st = await state(cdp);
-          if (!st.hasChoices) {
-            try { st = await waitForChoices(cdp, 15000); } catch (_) { st = await state(cdp); }
-          }
-        }
-        if (st.hasChoices || st.lock || st.eventId) break;
-      }
+      // step.pos can be the adjacent landing tile or the shop action tile.
+      st = await openChoicesFromActionTarget(cdp, step, x, y, 15000, true);
     }
     if (!st.hasChoices) st = await waitForChoices(cdp, 15000);
     await choose(cdp, step.eid || "confirm");
     return;
   }
   if (step.action === ACT.EVENT_REWARD) {
+    if (rewardItemNeedsPresence(step)) {
+      await mouseClickTile(cdp, x, y);
+      return;
+    }
     const st = await state(cdp);
     if (st.hasChoices) await choose(cdp, "confirm");
     else await mouseClickCanvas(cdp);
     return;
   }
   if (step.action === ACT.EVENT && step.eid === "centerFly3") {
-    await useItem(cdp, "centerFly");
+    if (RUNTIME.strictHumanInput) await humanUseCenterFly(cdp, x, y);
+    else await useItem(cdp, "centerFly");
     return;
   }
   if (step.action === ACT.CENTER_FLY) {
-    await useItem(cdp, "centerFly");
+    if (RUNTIME.strictHumanInput) await humanUseCenterFly(cdp, x, y);
+    else await useItem(cdp, "centerFly");
     return;
   }
   if (step.action === ACT.UP_FLY) {
     await useItem(cdp, "upFly");
+    await waitIdle(cdp, 20000);
     return;
   }
   if (step.action === ACT.DOWN_FLY) {
     await useItem(cdp, "downFly");
+    await waitIdle(cdp, 20000);
     return;
   }
   if (step.action === ACT.BIG_KEY) {
@@ -1309,6 +2232,13 @@ async function executeStep(cdp, step) {
     return;
   }
   if (step.action === ACT.EARTHQUAKE) {
+    if (RUNTIME.strictHumanInput) {
+      await useItem(cdp, "earthquake");
+      await waitIdle(cdp, 20000);
+      await mouseClickTile(cdp, x, y);
+      await waitIdle(cdp, 20000);
+      return;
+    }
     await useItem(cdp, "earthquake");
     return;
   }
@@ -1347,6 +2277,36 @@ async function executeStep(cdp, step) {
     const st = await state(cdp);
     if (st.hasChoices) await choose(cdp, "confirm");
     else if (st.lock || st.eventId) await mouseClickCanvas(cdp);
+    else if (step.floor === "MT10" && step.eid === "thief") {
+      let live = st;
+      let direction = directionFromTo(live, x, y);
+      if (live.x === x && live.y === y) {
+        await pressKey(cdp, "Space");
+      } else if (!direction) {
+        await mouseClickTile(cdp, x, y);
+        await waitMovementSettled(cdp);
+        live = await state(cdp);
+        direction = directionFromTo(live, x, y);
+      }
+      if (direction) {
+        await pressDirection(cdp, direction);
+        await sleep(200);
+        live = await state(cdp);
+        if (
+          live.floor === step.floor &&
+          live.x === x &&
+          live.y === y &&
+          !live.lock &&
+          !live.eventId &&
+          !live.hasChoices &&
+          !live.moving
+        ) {
+          await pressKey(cdp, "Space");
+        }
+      } else if (live.x !== x || live.y !== y) {
+        await mouseClickTile(cdp, x, y);
+      }
+    }
     else {
       await mouseClickTile(cdp, x, y);
       const after = await state(cdp);
@@ -1378,6 +2338,9 @@ async function executeStep(cdp, step) {
   }
   if (isMapClickAction(step.action)) {
     let st = await state(cdp);
+    if (st.floor === step.floor && await targetSideEffectDone(cdp, step, x, y)) {
+      return; // target's side effect already visible (auto-processed); accept step
+    }
     if (step.action === ACT.KILL && st.floor === step.floor && st.x === x && st.y === y) {
       const ev = await targetEvent(cdp, step.floor, x, y);
       if (ev && ev.cls === "enemys") {
@@ -1449,10 +2412,22 @@ async function executeStep(cdp, step) {
           }
           return;
         }
+        if (dist === 1) {
+          const direction = directionFromTo(after, x, y);
+          if (direction) {
+            await pressDirection(cdp, direction);
+            await waitIdle(cdp, 20000);
+            return;
+          }
+        }
         await stepwiseMoveTo(cdp, x, y);
       }
     } else {
-      await mouseClickTile(cdp, x, y);
+      if (RUNTIME.strictHumanInput && step.action === ACT.ARRIVE) {
+        await stepwiseMoveTo(cdp, x, y);
+      } else {
+        await mouseClickTile(cdp, x, y);
+      }
       await maybeRetryAdjacentTarget(cdp, step);
       const after = await state(cdp);
       const floorChanged = after.floor !== st.floor;
@@ -1468,9 +2443,14 @@ async function executeStep(cdp, step) {
         const changed = after.hp !== st.hp || after.atk !== st.atk || after.def !== st.def ||
           after.money !== st.money || after.yk !== st.yk || after.bk !== st.bk || after.rk !== st.rk;
         if (changed) return;
+        if (await targetSideEffectDone(cdp, step, x, y)) return;
+        const ev = await targetEvent(cdp, step.floor, x, y);
+        if (step.action === ACT.ARRIVE && dist === 1 && isShopLikeEvent(ev, true)) return;
         if (RUNTIME.targetClickOnly) {
           const retried = await repeatTargetClick(cdp, step, st.floor);
           const retryDist = Math.abs(retried.x - x) + Math.abs(retried.y - y);
+          const retryEv = await targetEvent(cdp, step.floor, x, y);
+          if (step.action === ACT.ARRIVE && retryDist === 1 && isShopLikeEvent(retryEv, true)) return;
           if (
             retryDist >= 1 &&
             retried.floor === st.floor &&
@@ -1494,8 +2474,7 @@ async function executeStep(cdp, step) {
 async function maybeCloseMenu(cdp, step, next) {
   if (!next || next.action !== step.action) {
     if ((step.action === ACT.SHOP || step.action === ACT.MERCHANT) && (await state(cdp)).hasChoices) {
-      try { await choose(cdp, "exit"); } catch (_) { /* menu auto-closed */ }
-      await waitIdle(cdp);
+      try { await closeChoiceMenu(cdp); } catch (_) { /* menu auto-closed */ }
     }
   }
 }
@@ -1518,6 +2497,42 @@ async function runOneStep(cdp, steps, oneBased, stop) {
     console.log(`      -> already completed ${stateText(already)}`);
     await maybeCloseMenu(cdp, step, steps[oneBased]);
     return { state: already, consumed: oneBased };
+  }
+  const liveBeforeExec = await state(cdp);
+  if (await sideEffectOnlySatisfied(cdp, liveBeforeExec, step)) {
+    console.log(`      -> live side effect already completed ${stateText(liveBeforeExec)}`);
+    await maybeCloseMenu(cdp, step, steps[oneBased]);
+    return { state: liveBeforeExec, consumed: oneBased };
+  }
+  if (
+    step.action === ACT.PICKUP &&
+    steps[oneBased] &&
+    steps[oneBased].action === ACT.CENTER_FLY &&
+    valuesMatch(liveBeforeExec, expectedState(step)) &&
+    liveBeforeExec.floor === step.floor &&
+    (liveBeforeExec.x !== x || liveBeforeExec.y !== y) &&
+    !liveBeforeExec.lock &&
+    !liveBeforeExec.eventId &&
+    !liveBeforeExec.moving &&
+    !liveBeforeExec.hasChoices
+  ) {
+    const ev = await targetEvent(cdp, step.floor, x, y);
+    if (!ev || ev.cls !== "items") {
+      await mouseClickTile(cdp, x, y);
+      const result = await waitForCandidates(cdp, steps, candidates, `arrive at cleared pre-centerFly pickup step ${oneBased}`, 8000);
+      console.log(`      -> arrived for centerFly ${stateText(result.state)}`);
+      return { state: result.state, consumed: oneBased };
+    }
+  }
+  if (await targetAlreadyClearedForAction(cdp, liveBeforeExec, step)) {
+    const result = await waitForCandidates(cdp, steps, candidates, `pre-cleared step ${oneBased}`, 1500);
+    if (result.matchedStep !== oneBased) {
+      console.log(`      -> auto-coalesced cleared target through step ${result.matchedStep}`);
+    }
+    console.log(`      -> ${stateText(result.state)}`);
+    const consumed = result.matchedStep;
+    await maybeCloseMenu(cdp, steps[consumed - 1], steps[consumed]);
+    return { state: result.state, consumed };
   }
   if (step.action === ACT.ARRIVE && steps[oneBased] && steps[oneBased].action === ACT.FLY) {
     const live = await state(cdp);
@@ -1565,18 +2580,117 @@ async function runOneStep(cdp, steps, oneBased, stop) {
   return { state: result.state, consumed };
 }
 
+async function runRecordOnly(cdp, walk, steps, args, stop) {
+  const entries = [];
+  for (let oneBased = args.startStep; oneBased <= stop;) {
+    const step = steps[oneBased - 1];
+    const [x, y] = step.pos;
+    console.log(`[${String(oneBased).padStart(3, "0")}] ${step.floor} x${x}y${y} ${step.action} ${step.eid || ""} [record]`);
+    const beforeStep = await state(cdp);
+    const candidates = coalesceCandidateIndexes(steps, oneBased).filter((idx) => idx <= stop);
+    let after = beforeStep;
+    let note = "";
+    let consumedStep = oneBased;
+    if (step.action === ACT.CHECK || step.action === ACT.CHANGE_FLOOR) {
+      after = beforeStep;
+    } else if (await targetAlreadyClearedForAction(cdp, beforeStep, step)) {
+      const skipped = appendSkippedRecordStep(
+        entries,
+        oneBased,
+        step,
+        `自动处理：${step.floor} x${x}y${y} ${step.eid || step.action}`
+      );
+      if (skipped) {
+        console.log(`      -> skipped; already covered by previous input ${stateText(beforeStep)}`);
+        oneBased += 1;
+        continue;
+      }
+      note = "live target already cleared by prior automatic handling";
+      after = beforeStep;
+    } else {
+      await executeStep(cdp, step);
+      const timeout = step.action === ACT.KILL || step.action === ACT.EVENT_BATTLE || step.action === ACT.EVENT
+        ? 180000
+        : 60000;
+      after = await waitIdle(cdp, timeout);
+      const next = steps[oneBased];
+      const keepChoices = [ACT.SHOP, ACT.MERCHANT].includes(step.action) ||
+        (step.action === ACT.TALK && ["shop", "blueShop", "trader"].includes(step.eid || "")) ||
+        (next && [ACT.SHOP, ACT.MERCHANT].includes(next.action));
+      if (after.hasChoices && !keepChoices) {
+        await choose(cdp, "confirm");
+        after = await waitIdle(cdp, timeout);
+      }
+      consumedStep = recordOnlyPositionMatchedStep(after, steps, candidates);
+    }
+    const handled = autoHandledNote(steps, oneBased, consumedStep);
+    if (handled) note = note ? `${note}；${handled}` : handled;
+    const expectedStep = steps[consumedStep - 1];
+    const expectedAfter = expectedState(expectedStep);
+    const strictMismatch = strictValueMismatchText(after, expectedAfter);
+    // record-only adapts the walk to live (auto-bfs) states: mismatches are
+    // expected (the source walk's expected states are auto-OFF/naive). Log them
+    // as warnings but keep recording so strictWalk is built from live states.
+    if (strictMismatch) {
+      console.log(`      !! record-only value mismatch at step ${consumedStep}: ${strictMismatch} (live wins, adapting)`);
+    }
+    if (!(await stepMatches(cdp, after, expectedStep))) {
+      console.log(`      !! record-only position/side-effect mismatch at step ${consumedStep}: ${mismatchText(after, expectedStep)} (live wins, adapting)`);
+    }
+    console.log(`      -> ${stateText(after)}${note ? ` (${note})` : ""}`);
+    entries.push({
+      startStep: oneBased,
+      consumedStep,
+      step,
+      consumed: steps.slice(oneBased - 1, consumedStep).map((consumed, offset) => ({
+        step: oneBased + offset,
+        floor: consumed.floor,
+        pos: consumed.pos,
+        action: consumed.action,
+        eid: consumed.eid || null,
+        note: consumed.note || "",
+      })),
+      before: beforeStep,
+      after,
+      expectedAfter,
+      strictMismatch,
+      autoHandledNote: note,
+    });
+    await maybeCloseMenu(cdp, steps[consumedStep - 1], steps[consumedStep]);
+    oneBased = consumedStep + 1;
+  }
+  const finalState = await state(cdp);
+  writeRunLog(args, walk, entries, finalState);
+  return finalState;
+}
+
 async function run() {
   const args = parseArgs(process.argv);
   RUNTIME.targetClickOnly = !!args.targetClickOnly;
+  RUNTIME.strictHumanInput = !!args.strictHumanInput;
+  if (RUNTIME.strictHumanInput) {
+    if (args.loadSlot != null) throw new Error("--strict-human-input forbids --load-slot; load the save through the UI before starting proof replay");
+    if (args.checkpointStart != null) throw new Error("--strict-human-input forbids checkpoint saves");
+    if (args.undoSteps > 0 || args.undoOnFailure > 0) throw new Error("--strict-human-input forbids scripted undo");
+  }
   const walk = JSON.parse(fs.readFileSync(args.walk, "utf8"));
   if (!walk.ok) throw new Error(`walk is not ok: ${walk.errors}`);
   const steps = walk.steps;
   const stop = args.stopStep || steps.length;
   const cdp = await connectGameTarget();
   try {
+    await ensurePageActive(cdp);
     if (args.loadSlot != null) {
       await loadSlot(cdp, args.loadSlot);
       console.log(`loaded save${args.loadSlot} ${stateText(await state(cdp))}`);
+    }
+    if (args.setAuto) {
+      const liveAuto = await setAutoState(cdp, args.setAuto);
+      console.log(`set auto ${autoSpecText(args.setAuto)} -> ${autoSpecText(liveAuto)}`);
+    }
+    if (args.expectAuto) {
+      const liveAuto = await expectAutoState(cdp, args.expectAuto);
+      console.log(`auto ok ${autoSpecText(liveAuto)}`);
     }
     if (args.undoSteps > 0) {
       console.log(`before undo ${stateText(await state(cdp))}`);
@@ -1587,14 +2701,25 @@ async function run() {
     let st = await state(cdp);
     console.log(`start ${stateText(st)}`);
     if (args.requireStart) {
-      const first = expectedState(steps[args.startStep - 1]);
-      if (!matchesStep(st, steps[args.startStep - 1])) {
-        throw new Error(`live state does not match start step ${args.startStep}: ${mismatchText(st, steps[args.startStep - 1])}; live=${stateText(st)}`);
+      const expectedStart = stateFromSnapshot(steps[args.startStep - 1].before);
+      const mismatch = strictMismatchText(st, expectedStart);
+      if (mismatch || st.lock || st.eventId || st.moving || st.hasChoices) {
+        const busy = st.lock || st.eventId || st.moving || st.hasChoices
+          ? `; live is busy lock=${st.lock} moving=${st.moving} event=${st.eventId || "-"} choices=${st.hasChoices}`
+          : "";
+        throw new Error(`live state does not match start-before step ${args.startStep}: ${mismatch || "values ok"}${busy}; live=${stateText(st)}`);
       }
     }
 
+    if (args.recordOnly) {
+      await runRecordOnly(cdp, walk, steps, args, stop);
+      return;
+    }
+
+    const entries = [];
     for (let oneBased = args.startStep; oneBased <= stop;) {
       let stepResult;
+      const beforeStep = await state(cdp);
       try {
         stepResult = await runOneStep(cdp, steps, oneBased, stop);
       } catch (err) {
@@ -1609,6 +2734,26 @@ async function run() {
         }
       }
       st = stepResult.state;
+      const consumedStep = stepResult.consumed;
+      const consumedExpected = expectedState(steps[consumedStep - 1]);
+      entries.push({
+        startStep: oneBased,
+        consumedStep,
+        step: steps[oneBased - 1],
+        consumed: steps.slice(oneBased - 1, consumedStep).map((step, offset) => ({
+          step: oneBased + offset,
+          floor: step.floor,
+          pos: step.pos,
+          action: step.action,
+          eid: step.eid || null,
+          note: step.note || "",
+        })),
+        before: beforeStep,
+        after: st,
+        expectedAfter: consumedExpected,
+        strictMismatch: strictMismatchText(st, consumedExpected),
+        autoHandledNote: autoHandledNote(steps, oneBased, consumedStep),
+      });
       // Stage checkpoint chain: 101, 102, 103, ... every N successful steps.
       if (args.checkpointStart != null && oneBased % args.checkpointEvery === 0) {
         const slot = args.checkpointStart + Math.floor(oneBased / args.checkpointEvery) - 1;
@@ -1617,6 +2762,7 @@ async function run() {
       }
       oneBased = stepResult.consumed + 1;
     }
+    writeRunLog(args, walk, entries, st);
   } finally {
     cdp.close();
   }

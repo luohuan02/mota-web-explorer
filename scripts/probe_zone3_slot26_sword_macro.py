@@ -31,6 +31,7 @@ def load_base() -> Any:
 
 
 b = load_base()
+SNAPSHOT_PATH = b.DEFAULT_SNAPSHOT
 quick_spec = importlib.util.spec_from_file_location("slot26_sword_quick", QUICK)
 if quick_spec is None or quick_spec.loader is None:
     raise RuntimeError(QUICK)
@@ -41,6 +42,11 @@ quick_spec.loader.exec_module(quick)
 
 def line(g: Any) -> str:
     return b.state_line(g)
+
+
+def set_snapshot(path: str | Path) -> None:
+    global SNAPSHOT_PATH
+    SNAPSHOT_PATH = Path(path)
 
 
 def buy(g: Any, order: str) -> None:
@@ -71,8 +77,8 @@ def sell(g: Any, n: int) -> None:
         g.record("merchant", (8, 4), "sellYK", before, "sell 1 YK")
 
 
-def start_to_right_resources(open_order: str) -> Any:
-    g = b.init_replay(b.DEFAULT_SNAPSHOT)
+def start_to_right_resources(open_order: str, snapshot_path: str | Path | None = None) -> Any:
+    g = b.init_replay(Path(snapshot_path) if snapshot_path is not None else SNAPSHOT_PATH)
     # Early blue gem path keeps the 32F event survivable without consuming the
     # 15F blue potion before the event.
     b.move_to(g, "MT14", 5, 1, "14F blue gem path")

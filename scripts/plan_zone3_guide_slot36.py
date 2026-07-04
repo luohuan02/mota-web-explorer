@@ -100,6 +100,7 @@ MT34_CENTER_REWARD = {
     (1, 7): ("item", "yellowKey", 21),
     (3, 7): ("item", "yellowKey", 21),
 }
+MT15_BARRIER = {(5, 4), (5, 5), (5, 6), (6, 4), (7, 4), (7, 5), (7, 6)}
 MT38_BLUE_GUARDS = {(1, 10), (3, 10)}
 
 ITEM_CN = {
@@ -332,6 +333,15 @@ class GuideReplay:
         self.warnings: list[str] = []
         self.blocked_items = set(OPTIONAL_BLOCKED_ITEMS)
         self.relaxed_hp_assert = bool(self.blocked_items)
+        auto = hero.get("flags", {}).get("__auto__", {})
+        if not isinstance(auto, dict):
+            auto = {}
+        self.auto_flags: dict[str, Any] = {
+            "battle": auto.get("battle", False) is True,
+            "item": auto.get("item", False),
+            "wall": auto.get("wall", False) is True,
+        }
+        self.strict_live_model = False
         self.segment = "起点"
 
     def snapshot(self) -> dict[str, Any]:
@@ -365,6 +375,15 @@ class GuideReplay:
                 "note": note,
             }
         )
+
+    def refresh_last_step(self, before: dict[str, Any], note_suffix: str = "") -> None:
+        if not self.steps:
+            return
+        step = self.steps[-1]
+        step["after"] = self.snapshot()
+        step["delta"] = delta_text(before, self.snapshot())
+        if note_suffix:
+            step["note"] = f"{step.get('note')}; {note_suffix}" if step.get("note") else note_suffix
 
     def error(self, message: str) -> None:
         self.errors.append(f"{self.segment}: {message}")
@@ -438,6 +457,20 @@ class GuideReplay:
             return self.state["rk"] > 0
         return False
 
+    def can_enter_click_path(self, fid: str, pos: tuple[int, int], target: tuple[int, int]) -> bool:
+        if pos == target:
+            return self.can_enter(fid, pos, target)
+        if self.is_wall(fid, pos):
+            return False
+        block = self.block_at(fid, pos)
+        if not block:
+            return True
+        if block.kind == "item":
+            return (fid, pos[0], pos[1]) not in self.blocked_items
+        if block.kind == "terrain":
+            return block.eid not in {"upFloor", "downFloor"}
+        return False
+
     def path_cost(self, fid: str, pos: tuple[int, int]) -> int:
         block = self.block_at(fid, pos)
         if not block:
@@ -457,7 +490,7 @@ class GuideReplay:
             return 5000
         return 10
 
-    def path_to(self, fid: str, target: tuple[int, int]) -> list[tuple[int, int]] | None:
+    def path_to(self, fid: str, target: tuple[int, int], *, strict_click: bool = False) -> list[tuple[int, int]] | None:
         if self.state["floor"] != fid:
             self.error(f"当前楼层 {self.state['floor']}，不能寻路到 {fid} x{target[0]}y{target[1]}")
             return None
@@ -476,7 +509,8 @@ class GuideReplay:
                 break
             cx, cy = cur
             for nxt in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
-                if not self.can_enter(fid, nxt, target):
+                can_enter = self.can_enter_click_path if strict_click else self.can_enter
+                if not can_enter(fid, nxt, target):
                     continue
                 new_cost = cost + self.path_cost(fid, nxt)
                 if new_cost >= best.get(nxt, 10**12):
@@ -494,23 +528,221 @@ class GuideReplay:
             cur = parent[cur]
         return list(reversed(out))
 
+    @staticmethod
+    def _auto_item_allowed(eid: str, item_mode: Any) -> bool:
+        if item_mode is True:
+            return True
+        if item_mode == "nopotion":
+            return eid not in {"redPotion", "bluePotion"}
+        return False
+
+    def _auto_cell_passable(self, fid: str, pos: tuple[int, int], *, battle: bool, item_mode: Any, wall: bool) -> bool:
+        floor = self.floors[fid]
+        x, y = pos
+        if x < 0 or y < 0 or x >= floor.width or y >= floor.height:
+            return False
+        block = self.block_at(fid, pos)
+        if self.is_wall(fid, pos):
+            return bool(block and block.kind == "terrain" and block.eid in {"fakeWall", "fakeWall2", "flower"} and wall)
+        if not block:
+            return True
+        if block.kind == "terrain":
+            return block.eid in {"fakeWall", "fakeWall2", "flower"} and wall
+        if block.kind == "item":
+            if (fid, pos[0], pos[1]) in self.blocked_items:
+                return False
+            return self._auto_item_allowed(block.eid, item_mode)
+        if block.kind == "enemy" and battle:
+            return self.damage_for(block.eid) == 0
+        return False
+
+    def _auto_reachable(self, fid: str, *, battle: bool, item_mode: Any, wall: bool) -> dict[tuple[int, int], int]:
+        start = (self.state["x"], self.state["y"])
+        floor = self.floors[fid]
+        if start[0] < 0 or start[1] < 0 or start[0] >= floor.width or start[1] >= floor.height:
+            return {}
+        seen = {start: 0}
+        queue = [start]
+        for cur in queue:
+            cx, cy = cur
+            for nxt in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
+                if nxt in seen:
+                    continue
+                if not self._auto_cell_passable(fid, nxt, battle=battle, item_mode=item_mode, wall=wall):
+                    continue
+                seen[nxt] = seen[cur] + 1
+                queue.append(nxt)
+        return seen
+
+    def _auto_item_candidates(self, fid: str, *, battle: bool, item_mode: Any, wall: bool) -> list[tuple[int, int, tuple[int, int], Block]]:
+        reach = self._auto_reachable(fid, battle=battle, item_mode=item_mode, wall=wall)
+        out: list[tuple[int, int, tuple[int, int], Block]] = []
+        for pos, block in self.floors[fid].blocks.items():
+            if block.kind != "item" or pos not in reach:
+                continue
+            if not self._auto_item_allowed(block.eid, item_mode):
+                continue
+            if (fid, pos[0], pos[1]) in self.blocked_items:
+                continue
+            out.append((reach[pos], pos[1], pos, block))
+        out.sort()
+        return out
+
+    def _auto_enemy_candidates(self, fid: str, *, battle: bool, item_mode: Any, wall: bool) -> list[tuple[int, int, tuple[int, int], Block]]:
+        reach = self._auto_reachable(fid, battle=battle, item_mode=item_mode, wall=wall)
+        out: list[tuple[int, int, tuple[int, int], Block]] = []
+        for pos, block in self.floors[fid].blocks.items():
+            if block.kind != "enemy" or self.damage_for(block.eid) != 0:
+                continue
+            x, y = pos
+            adjacent = [
+                reach[(x + dx, y + dy)]
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                if (x + dx, y + dy) in reach
+            ]
+            if adjacent:
+                out.append((min(adjacent) + 1, pos[1], pos, block))
+        out.sort()
+        return out
+
+    def auto_sweep(
+        self,
+        fid: str | None = None,
+        *,
+        battle: bool | None = None,
+        item: Any = None,
+        wall: bool | None = None,
+        max_rounds: int = 200,
+    ) -> list[str]:
+        fid = fid or self.state["floor"]
+        if fid != self.state["floor"] or fid not in self.floors:
+            return []
+        if battle is None:
+            battle = bool(self.auto_flags.get("battle"))
+        if item is None:
+            item = self.auto_flags.get("item")
+        if wall is None:
+            wall = bool(self.auto_flags.get("wall"))
+        if not battle and not item:
+            return []
+
+        handled: list[str] = []
+        for _ in range(max_rounds):
+            changed = False
+            if item:
+                for _dist, _y, pos, block in self._auto_item_candidates(fid, battle=battle, item_mode=item, wall=wall):
+                    live = self.block_at(fid, pos)
+                    if not live or live.kind != "item" or live.eid != block.eid:
+                        continue
+                    self.apply_item(fid, live.eid)
+                    self.set_ground(fid, pos)
+                    self.after_action(fid, pos, live)
+                    handled.append(f"{fid} x{pos[0]}y{pos[1]} {live.eid}")
+                    changed = True
+                if changed:
+                    continue
+            if battle:
+                for _dist, _y, pos, block in self._auto_enemy_candidates(fid, battle=battle, item_mode=item, wall=wall):
+                    live = self.block_at(fid, pos)
+                    if not live or live.kind != "enemy" or live.eid != block.eid:
+                        continue
+                    if self.damage_for(live.eid) != 0:
+                        continue
+                    self.state["gold"] += int(self.enemies[live.eid].get("money", 0))
+                    self.set_ground(fid, pos)
+                    self.after_action(fid, pos, live)
+                    handled.append(f"{fid} x{pos[0]}y{pos[1]} {live.eid}")
+                    changed = True
+                if changed:
+                    continue
+            if not changed:
+                break
+        return handled
+
+    def _apply_door_live(self, fid: str, pos: tuple[int, int], block: Block, note: str = "") -> None:
+        before = self.snapshot()
+        eid = block.eid
+        if eid == "yellowDoor":
+            self.state["yk"] -= 1
+            self.state["yd"] += 1
+        elif eid == "blueDoor":
+            self.state["bk"] -= 1
+            self.state["bd"] += 1
+        elif eid == "redDoor":
+            self.state["rk"] -= 1
+            self.state["rd"] += 1
+        else:
+            self.error(f"cannot open live door {fid} x{pos[0]}y{pos[1]} {eid}")
+        if self.state["yk"] < 0 or self.state["bk"] < 0 or self.state["rk"] < 0:
+            self.error(f"key negative after door {fid} x{pos[0]}y{pos[1]}")
+        self.set_ground(fid, pos)
+        self.after_action(fid, pos, block)
+        door_note = "live door click opens from adjacent tile; no auto BFS on this click"
+        self.record("开门", pos, eid, before, f"{note}; {door_note}" if note else door_note)
+
     def go_to(self, fid: str, x: int, y: int, note: str = "") -> None:
         target = (x, y)
         block = self.block_at(fid, target)
         if (fid, x, y) in self.blocked_items and block and block.kind == "item":
             return
-        path = self.path_to(fid, target)
+        if (
+            self.strict_live_model
+            and block
+            and block.kind == "enemy"
+            and self.auto_flags.get("battle") is True
+            and self.damage_for(block.eid) == 0
+        ):
+            adjacent_paths = []
+            for adj in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                adj_path = self.path_to(fid, adj)
+                if adj_path:
+                    adjacent_paths.append((len(adj_path), adj_path))
+            path = min(adjacent_paths, default=(0, None))[1]
+        else:
+            path = self.path_to(fid, target)
         if not path:
             self.error(f"无路径到 {fid} x{x}y{y}: {note}")
             return
+        strict_start_steps = len(self.steps)
+        strict_click_before = self.snapshot()
+        strict_opened_door = False
         for pos in path[1:]:
-            self.state["x"], self.state["y"] = pos
             block = self.block_at(fid, pos)
+            if self.strict_live_model and block and block.kind == "door":
+                self._apply_door_live(fid, pos, block, note if pos == target else "")
+                strict_opened_door = True
+                # core.plugin.auto fires after every action including door-open:
+                # run auto_sweep here so newly-accessible items behind the opened
+                # door are picked up (the early return below otherwise skips the
+                # auto_sweep at the end of go_to).
+                if self.strict_live_model:
+                    handled = self.auto_sweep(fid)
+                    if handled:
+                        note_suffix = "auto_sweep: " + ", ".join(handled)
+                        if len(self.steps) > strict_start_steps:
+                            self.refresh_last_step(self.steps[-1]["before"], note_suffix)
+                        else:
+                            self.record("auto_sweep", None, None, strict_click_before, note_suffix)
+                if pos != target:
+                    self.go_to(fid, x, y, note)
+                return
+            self.state["x"], self.state["y"] = pos
             if block:
                 self.apply_block(fid, pos, block, note if pos == target else "")
             elif pos == target and note:
                 before = self.snapshot()
                 self.record("到达", pos, None, before, note)
+        if self.strict_live_model:
+            # core.plugin.auto fires after every action settles, including after
+            # opening a door. Always run auto_sweep so newly-accessible items
+            # behind an opened door are picked up (matches live auto-BFS).
+            handled = self.auto_sweep(fid)
+            if handled:
+                note_suffix = "auto_sweep: " + ", ".join(handled)
+                if len(self.steps) > strict_start_steps:
+                    self.refresh_last_step(self.steps[-1]["before"], note_suffix)
+                else:
+                    self.record("auto_sweep", None, None, strict_click_before, note_suffix)
 
     def fly(self, fid: str) -> None:
         if fid == self.state["floor"]:
@@ -554,6 +786,7 @@ class GuideReplay:
             return
         before = self.snapshot()
         self.set_ground(fid, (x, y))
+        self.state["pickaxe"] = False
         self.record("用镐", (x, y), "pickaxe", before, note)
 
     def transition(self, fid: str, x: int, y: int, note: str) -> None:
@@ -668,6 +901,10 @@ class GuideReplay:
                     if not self.block_at(fid, reward_pos):
                         self.set_block(fid, reward_pos, kind, eid, tile)
                 self.record("事件奖励", (2, 6), "redKey", before, "34F 中间8怪生成4黄1红")
+        if fid == "MT15" and block.kind == "enemy" and (pos == (6, 6) or block.eid == "octopus"):
+            for barrier_pos in MT15_BARRIER:
+                self.set_ground(fid, barrier_pos)
+            self.set_ground(fid, (6, 3))
         if fid == "MT38" and block.kind == "enemy" and pos in MT38_BLUE_GUARDS:
             remaining = {p for p in MT38_BLUE_GUARDS if self.block_at(fid, p)}
             if not remaining:

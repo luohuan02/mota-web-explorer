@@ -36,9 +36,10 @@ RESOURCE_IDS = {
     "blueGem",
     "sword3",
     "shield3",
+    "pickaxe",
     "centerFly3",
 }
-KEY_RESOURCE_IDS = {"yellowKey", "blueKey", "redKey", "redGem", "blueGem", "sword3", "shield3", "centerFly3"}
+KEY_RESOURCE_IDS = {"yellowKey", "blueKey", "redKey", "redGem", "blueGem", "sword3", "shield3", "pickaxe", "centerFly3"}
 POTION_IDS = {"redPotion", "bluePotion"}
 SHOP_POS = ("MT32", 10, 10)
 MT40_REWARD = [(2, 2), (3, 2), (4, 2), (8, 2), (9, 2), (10, 2), (7, 4), (8, 4), (9, 4)]
@@ -91,9 +92,18 @@ def init_replay(snapshot_path: Path) -> Any:
         visited = {f"MT{i}" for i in range(1, floor_no(snapshot["floorId"]) + 1)}
     visited.add(snapshot["floorId"])
     g.state["visited"] = visited
+    g.state["centerFly"] = 0
     g.state["centerFly3"] = False
     g.state["boss40"] = False
     g.state["special_done"] = set()
+    auto = flags.get("__auto__", {})
+    if isinstance(auto, dict) and auto:
+        g.strict_live_model = True
+        g.auto_flags = {
+            "battle": auto.get("battle", False) is True,
+            "item": auto.get("item", False),
+            "wall": auto.get("wall", False) is True,
+        }
     return g
 
 
@@ -164,6 +174,8 @@ def item_value(eid: str, g: Any) -> int:
         return 4500
     if eid == "shield3":
         return 4800
+    if eid == "pickaxe":
+        return 5200
     if eid == "centerFly3":
         return 5000
     if eid == "redGem":
@@ -310,7 +322,7 @@ def special_actions(g: Any) -> list[dict[str, Any]]:
 
         actions.append({"label": "MT39:event:centerFlyPuzzle", "kind": "event", "priority": 11000, "apply": puzzle39})
 
-    if can_fly_to(g, "MT40") and g.state.get("centerFly3"):
+    if can_fly_to(g, "MT40") and g.state.get("centerFly3") and not g.state.get("usedCenterFly40"):
         def center40(candidate: Any) -> bool:
             before_errors = len(candidate.errors)
             if candidate.state["floor"] != "MT40":
@@ -333,6 +345,38 @@ def special_actions(g: Any) -> list[dict[str, Any]]:
             return no_new_error(before_errors, candidate)
 
         actions.append({"label": "MT40:event:bossReward", "kind": "event", "priority": 15000, "apply": boss40})
+
+    if (
+        can_fly_to(g, "MT14")
+        and can_fly_to(g, "MT15")
+        and not g.state.get("pickaxe")
+        and g.block_at("MT15", (6, 5))
+    ):
+        def pickaxe15(candidate: Any) -> bool:
+            before_errors = len(candidate.errors)
+            if candidate.state["floor"] != "MT14":
+                candidate.fly("MT14")
+            candidate.fly("MT15")
+            octopus = candidate.block_at("MT15", (6, 6))
+            if octopus and not move_to(candidate, "MT15", 6, 6, "15F 打章鱼取稿"):
+                return False
+            if not no_new_error(before_errors, candidate):
+                return False
+            return move_to(candidate, "MT15", 6, 5, "15F 拾取稿")
+
+        actions.append({"label": "MT15:event:octopusPickaxe", "kind": "event", "priority": 13000, "apply": pickaxe15})
+
+    if can_fly_to(g, "MT37") and g.state.get("pickaxe") and g.block_at("MT37", (7, 5)):
+        def pickaxe37(candidate: Any) -> bool:
+            before_errors = len(candidate.errors)
+            if not move_to(candidate, "MT37", 11, 5, "37F 稿破墙前站位"):
+                return False
+            candidate.use_pickaxe("MT37", 10, 5, "37F 用稿破墙进入红钥匙区")
+            if not no_new_error(before_errors, candidate):
+                return False
+            return move_to(candidate, "MT37", 7, 5, "37F 拿红钥匙")
+
+        actions.append({"label": "MT37:use:pickaxeRedKeyWall", "kind": "event", "priority": 12500, "apply": pickaxe37})
 
     if can_fly_to(g, "MT38") and g.block_at("MT38", (5, 2)) and g.state["gold"] >= 200:
         def merchant38(candidate: Any) -> bool:
