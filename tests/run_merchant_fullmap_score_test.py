@@ -16,8 +16,8 @@ if SCRIPTS not in sys.path:
     sys.path.insert(0, SCRIPTS)
 os.chdir(ROOT)
 
-from scripts import compare_merchant_resource_paths as cm
-from scripts import merchant_finalscore_audit as audit
+from scripts.audit import compare_merchant_resource_paths as cm
+from scripts.audit import merchant_finalscore_audit as audit
 from src.solver import gen_walkthrough as gw
 
 

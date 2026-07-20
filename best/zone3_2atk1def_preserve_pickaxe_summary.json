@@ -1,0 +1,30 @@
+{
+  "variant": "zone3_2atk1def_preserve_pickaxe",
+  "objective": "2026复刻版 纯净版-TE 生命；保留15F镐供48F圣剑",
+  "status": "offline-and-web-verified",
+  "start_checkpoint": "outputs/results/zone3_current_2atk1def_mt31_checkpoint.json",
+  "start_browser_slot": 59,
+  "end_checkpoint": "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json",
+  "end_browser_slot": 150,
+  "auto": {"battle": true, "item": "nopotion", "wall": true},
+  "steps": 238,
+  "errors": 0,
+  "final": {
+    "floor": "MT41", "x": 6, "y": 2,
+    "hp": 45, "atk": 166, "def": 166,
+    "yk": 7, "bk": 0, "rk": 0, "gold": 2423,
+    "dmg": 10066, "door": "37/2/1", "pickaxe": 1
+  },
+  "artifacts": {
+    "walk_json": "best/zone3_2atk1def_preserve_pickaxe_walk.json",
+    "walk_md": "best/zone3_2atk1def_preserve_pickaxe_walk.md",
+    "live_verify": "outputs/results/zone3_preserve_pickaxe_live_verify.json"
+  },
+  "notes": [
+    "MT31右下四钥匙组花1YK取4YK，净+3YK。",
+    "MT34中心保留redKnight为最后显式战斗；最后怪由auto清理不会触发4黄1红事件。",
+    "39F后以38F三钥匙组支付31F +800与16F +100血瓶，替代过大的晚期HP商店；41F压到45HP。",
+    "35F暗墙为小偷后一次移动触发wall=true清墙，再一次点击楼梯；不再逐格移动。",
+    "网页从槽59全量target-click-only复验238步0 mismatch；终点保存槽150。"
+  ]
+}

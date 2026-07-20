@@ -22,7 +22,7 @@
     },
     "errors": [],
     "strict_errors": [],
-    "composite_score": 3281.0,
+    "composite_score": 3281,
     "options": {
       "take_15_upper_blue_gem": true,
       "take_12_lower_left_keys": true,
@@ -45,32 +45,33 @@
         "atk",
         "def"
       ]
-    }
+    },
+    "note": "gold 未更新（guide_after 变体，非 current_best 分支；需单独跑 Game 类才得 auto_sweep 后金币）。"
   },
   {
     "label": "best_after_mt10_boss_supply:2?1?_best",
     "final": {
-      "hp": 577,
+      "hp": 11,
       "atk": 70,
       "def": 66,
       "yk": 1,
       "bk": 0,
       "rk": 0,
-      "gold": 930,
+      "gold": 1116,
       "floor": "MT20",
       "x": 6,
       "y": 6,
-      "dmg": 6859,
+      "dmg": 6415,
       "yd": 89,
       "bd": 9,
       "rd": 2,
       "cross": true,
-      "pickaxe": false,
+      "pickaxe": true,
       "superPotion": false
     },
     "errors": [],
     "strict_errors": [],
-    "composite_score": 3274.0,
+    "composite_score": null,
     "options": {
       "take_15_upper_blue_gem": true,
       "take_12_lower_left_keys": true,
@@ -85,14 +86,15 @@
       "take_pre_cross_mt18_red_gem": true,
       "take_pre_cross_mt11_blue_potion": true,
       "take_mt16_right_blue_key": true,
-      "take_super_potion16": true,
-      "use_super_potion": true,
+      "take_super_potion16": false,
+      "use_super_potion": false,
       "delay_mt11_shield": false,
       "shop12": [
         "atk",
         "atk",
         "def"
       ]
-    }
+    },
+    "note": "web-verified 2026-07-10: skip 16F superPotion detour before 20F; HP=676 is enough for vampire and ends HP=11. Save113 clean idle. Immediate score is not comparable with old consumed-superPotion row because the superPotion/stat-scaling value is intentionally preserved for later."
   }
 ]

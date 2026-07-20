@@ -1,0 +1,435 @@
+{
+  "ok": true,
+  "bounded": true,
+  "method": "A* h=0 over completed strict-Game macro nodes with exact incumbent leaf pruning",
+  "incumbent_hp": 20137,
+  "best_config": {
+    "groups": [
+      "mt31_red"
+    ],
+    "target": 261,
+    "final_kind": "hp"
+  },
+  "best": {
+    "path": "outputs\\results\\zone4_31red_atktarget261_finalhp_candidate.json",
+    "final_hp": 20137,
+    "final": {
+      "hp": 20137,
+      "atk": 423,
+      "def": 426,
+      "yk": 3,
+      "bk": 0,
+      "rk": 0,
+      "gold": 1801,
+      "floor": "MT50",
+      "x": 6,
+      "y": 5,
+      "dmg": 18498,
+      "yd": 48,
+      "bd": 11,
+      "rd": 7,
+      "times1": 15,
+      "centerFly": 0,
+      "upFly": 0,
+      "downFly": 0,
+      "earthquake": 0,
+      "bomb": 0,
+      "bigKey": 0,
+      "pickaxe": 0,
+      "superPotion": 0,
+      "snow": 1,
+      "knife": true,
+      "earthquakeBought": 1,
+      "coin": false,
+      "magicImmune": true,
+      "won49": true,
+      "won50": true
+    },
+    "shop_sequence": [
+      "atk",
+      "atk",
+      "def",
+      "hp",
+      "hp"
+    ]
+  },
+  "evaluated_nodes": 11,
+  "popped": [
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 79863,
+      "final_hp": 20137,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget261_finalhp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "skip"
+      },
+      "cost": 79863,
+      "final_hp": 20137,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_skip.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 271,
+        "final_kind": "hp"
+      },
+      "cost": 79881,
+      "final_hp": 20119,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget271_v2_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 80330,
+      "final_hp": 19670,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_all_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "def"
+      },
+      "cost": 80363,
+      "final_hp": 19637,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "def",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_def.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "atk"
+      },
+      "cost": 80651,
+      "final_hp": 19349,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_atk.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 281,
+        "final_kind": "hp"
+      },
+      "cost": 80908,
+      "final_hp": 19092,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "atk",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget281_finalhp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 81242,
+      "final_hp": 18758,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_31red32_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 251,
+        "final_kind": "hp"
+      },
+      "cost": 82142,
+      "final_hp": 17858,
+      "shop_sequence": [
+        "atk",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget251_finalhp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 82211,
+      "final_hp": 17789,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_31both_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 82421,
+      "final_hp": 17579,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_no31red.json"
+    }
+  ],
+  "better_than_incumbent": [],
+  "incumbent_exact_neighbors": [
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "final_hp": 17789,
+      "delta_vs_incumbent": -2348,
+      "exact_pruned": true,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_31both_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "final_hp": 18758,
+      "delta_vs_incumbent": -1379,
+      "exact_pruned": true,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_31red32_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 251,
+        "final_kind": "hp"
+      },
+      "final_hp": 17858,
+      "delta_vs_incumbent": -2279,
+      "exact_pruned": true,
+      "shop_sequence": [
+        "atk",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget251_finalhp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "atk"
+      },
+      "final_hp": 19349,
+      "delta_vs_incumbent": -788,
+      "exact_pruned": true,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_atk.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "def"
+      },
+      "final_hp": 19637,
+      "delta_vs_incumbent": -500,
+      "exact_pruned": true,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "def",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_def.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "skip"
+      },
+      "final_hp": 20137,
+      "delta_vs_incumbent": 0,
+      "exact_pruned": true,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_skip.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 271,
+        "final_kind": "hp"
+      },
+      "final_hp": 20119,
+      "delta_vs_incumbent": -18,
+      "exact_pruned": true,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget271_v2_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "final_hp": 17579,
+      "delta_vs_incumbent": -2558,
+      "exact_pruned": true,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_no31red.json"
+    }
+  ],
+  "missing_incumbent_neighbors": [],
+  "claim": "completed catalog / one-edit neighborhood only; not global optimum proof"
+}

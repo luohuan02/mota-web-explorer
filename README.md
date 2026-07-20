@@ -57,9 +57,12 @@ zone1.guide_baseline -> zone2.guide_canonical -> save36 bridge
 
 non_guide_current_best_branch:
 zone1.current_best -> zone2.current_best_2atk1def_branch
--> slot26 bridge -> zone3.slot26_clean_boss8def -> zone4.slot26_tail_pending
+-> current 2ATK1DEF bridge -> zone3.current_2atk1def_preserve_pickaxe
+-> zone4.current_2atk1def_te_hp23076
 related sibling: zone2.current_best_canonical
 ```
+
+当前 non-guide 4 区胜者由共享 `Game` 从槽150生成并完成451步 target-click-only 网页复验：`MT50 HP=23076 ATK=417 DEF=475 YK=5 BK=1 G=906`。路线提前取31F红蓝与32F红蓝宝石，商店序列为防/防/防/攻/生命；同target261逐伤害组审计净省2365纯伤。规范产物见 `best/zone4_2atk1def_te_hp23076_{summary,walk,live_verify,resource_audit,gem_damage_audit,macro_astar,terminal_astar}.*`。
 
 注意：`guide_chain_to_22264` 的 4 区尾段已网页验证并保存到 42 号存档，但 20F->31F 仍是 checkpoint/save 桥接；完整 1F->50F 单条 stitched web replay 还未完成。`slot26` 非攻略分支不能直接套用 save37 的 22264 尾段。
 
@@ -95,7 +98,7 @@ HP=25 ATK=27 DEF=27 YK=0 BK=0 RK=0 G=304 dmg=2601 door=40/2/1 final-score=1327.5
 - `best/current_best_boss_summary.json`
 - `best/guide_boss_walk.md`
 
-旧 `1482.5` 结果无效，不要作为当前最优引用。它允许了 MT10 特殊动作在 MT9 上楼实际可达之前发生；现在 `scripts/post9_resource_group_search.py` 已加入合法性保护。
+旧 `1482.5` 结果无效，不要作为当前最优引用。它允许了 MT10 特殊动作在 MT9 上楼实际可达之前发生；现在 `scripts/search/post9_resource_group_search.py` 已加入合法性保护。
 
 ## 评分模型
 
@@ -151,36 +154,36 @@ HP=361 ATK=23 DEF=23 YK=2 BK=1 RK=0 G=93 dmg=915 door=28/0/0
 重新生成当前 best artifact：
 
 ```powershell
-python scripts\gen_local_refined_best_walk.py
+python scripts\build\gen_local_refined_best_walk.py
 ```
 
 验证当前 MT7 红宝石优先分支：
 
 ```powershell
-python scripts\probe_mt7_red_first_swap_sequence.py --variant user-def-before-key --beam 160 --out-json outputs\results\user_def_before_key_probe_after_mt10_guard.json --out-md outputs\reports\user_def_before_key_probe_after_mt10_guard.md
+python scripts\search\probe_mt7_red_first_swap_sequence.py --variant user-def-before-key --beam 160 --out-json outputs\results\user_def_before_key_probe_after_mt10_guard.json --out-md outputs\reports\user_def_before_key_probe_after_mt10_guard.md
 ```
 
 重新生成并复现 37 号存档后续生命榜单路线：
 
 ```powershell
-python scripts\search_post40_guide_route.py
-node scripts\prepend_40f_prefix_walk.js
-node scripts\live_zone3_mouse_replayer_cdp.js --walk best\post40_hp_leaderboard_walk.json --load-slot 37 --target-click-only
+python src\solver\game_route.py
+node scripts\build\prepend_40f_prefix_walk.js
+node scripts\live\live_zone3_mouse_replayer_cdp.js --walk best\post40_hp_leaderboard_walk.json --load-slot 37 --target-click-only
 ```
 
 二区重放、宏搜索、审计和剩余资源差异：
 
 ```powershell
-python scripts\replay_zone2_guide_route.py
-python scripts\search_zone2_macro_routes.py
-python scripts\audit_zone2_path_legality.py
-python scripts\report_zone2_remaining_diff.py
+python scripts\baseline\replay_zone2_guide_route.py
+python scripts\search\search_zone2_macro_routes.py
+python scripts\audit\audit_zone2_path_legality.py
+python scripts\audit\report_zone2_remaining_diff.py
 ```
 
 基础检查：
 
 ```powershell
-python -m py_compile scripts\post9_resource_group_search.py scripts\compare_merchant_resource_paths.py scripts\merchant_finalscore_audit.py scripts\probe_mt7_red_first_swap_sequence.py scripts\local_order_refine_current_best.py scripts\gen_local_refined_best_walk.py scripts\replay_zone2_guide_route.py scripts\search_zone2_macro_routes.py scripts\audit_zone2_path_legality.py scripts\report_zone2_remaining_diff.py scripts\live_zone2_runner.py
+python -m py_compile scripts\search\post9_resource_group_search.py scripts\audit\compare_merchant_resource_paths.py scripts\audit\merchant_finalscore_audit.py scripts\search\probe_mt7_red_first_swap_sequence.py scripts\build\local_order_refine_current_best.py scripts\build\gen_local_refined_best_walk.py scripts\baseline\replay_zone2_guide_route.py scripts\search\search_zone2_macro_routes.py scripts\audit\audit_zone2_path_legality.py scripts\audit\report_zone2_remaining_diff.py
 python tests\run_merchant_fullmap_score_test.py
 python tests\run_pareto_test.py
 python tests\run_floorsearch_test.py
@@ -190,18 +193,18 @@ python tests\run_floorsearch_test.py
 
 网页自动化使用 `agent-browser` 和本地 `browser-profile/`。
 
-读取或控制已经打开的 h5mota 游戏页时，chrome 必须在真实端口 9222 上外部启动并带 `--user-data-dir=browser-profile`（运行 `scripts/launch_h5mota_chrome.ps1`），然后 `agent-browser connect 9222` 并用裸 `agent-browser eval`/`get`。**不要用 `--cdp 9222` flag**（启动 agent-browser 自管 chrome，用 temp profile，browser-profile 存档丢失），**不要用 `--auto-connect`**（粘到错误 tab）。状态读取优先用 `node scripts/live_read_state.js`（楼层感知，避免 cmd.exe 破坏 JS `||`/`&&`）。
+读取或控制已经打开的 h5mota 游戏页时，chrome 必须在真实端口 9222 上外部启动并带 `--user-data-dir=browser-profile`（运行 `scripts/live/launch_h5mota_chrome.ps1`），然后 `agent-browser connect 9222` 并用裸 `agent-browser eval`/`get`。**不要用 `--cdp 9222` flag**（启动 agent-browser 自管 chrome，用 temp profile，browser-profile 存档丢失），**不要用 `--auto-connect`**（粘到错误 tab）。状态读取优先用 `node scripts/live/live_read_state.js`（楼层感知，避免 cmd.exe 破坏 JS `||`/`&&`）。
 
 读取当前英雄状态：
 
 ```powershell
-node scripts/live_read_state.js
+node scripts/live/live_read_state.js
 ```
 
-实机执行二区路线：
+实机执行路线（1-4 区统一点击 verifier，禁用已归档的 `live_zone2_runner.py`）：
 
 ```powershell
-python scripts\live_zone2_runner.py --load-slot 101 --checkpoint-slot 102
+node scripts\live\live_zone3_mouse_replayer_cdp.js --walk outputs\results\zone2_2atk1def_game_route.json --load-slot 100 --set-auto battle=true,item=true,wall=true --target-click-only --out-json outputs\results\zone2_live_verify_latest.json
 ```
 
 注意：
@@ -209,7 +212,7 @@ python scripts\live_zone2_runner.py --load-slot 101 --checkpoint-slot 102
 - 不要直接用 `core.changeFloor(...)` 当作合法移动。
 - 到过的楼层可用飞行器行为，脚本封装为 `core.flyTo(...)`。
 - 相邻触发、暗墙、商店菜单需要状态校验，不要只靠固定延时。
-- 31F-50F 实机复现优先用 `scripts/live_zone3_mouse_replayer_cdp.js`；详细边界见 `skills/mota-live-verify/SKILL.md` 的「三区实机复现笔记」。
+- 31F-50F 实机复现优先用 `scripts/live/live_zone3_mouse_replayer_cdp.js`；详细边界见 `skills/mota-live-verify/SKILL.md` 的「三区实机复现笔记」。
 - 最终 50F Boss 相邻触发要走真实方向键/游戏键盘事件入口；不要用 `core.moveHero` 或直接改坐标。
 - `browser-profile/` 保存网页存档，本地忽略，不要删除。
 

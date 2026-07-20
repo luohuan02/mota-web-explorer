@@ -14,8 +14,8 @@ description: 用于在实机浏览器执行生成的魔塔/h5mota walk、对照�
 1. 确认本地 route JSON 已生成：
 
 ```powershell
-python scripts\replay_zone2_guide_route.py
-python scripts\search_zone2_macro_routes.py
+python scripts\baseline\replay_zone2_guide_route.py
+python scripts\search\search_zone2_macro_routes.py
 ```
 
 2. 读取当前网页状态，确认是否与 route checkpoint 匹配：
@@ -32,25 +32,43 @@ agent-browser.cmd --cdp 9222 eval "(function(){
 })()"
 ```
 
-## 执行二区路线
+## 执行路线（统一点击 verifier，1-4 区 / 4-50 层通用）
 
-从当前状态自动匹配 checkpoint 并继续：
+**禁止**使用已归档的 `live_zone2_runner.py` / `live_zone3_guide_runner.py`
+（方向键逐步走 + `core.doAction`，见 `history/zone_specific_live_runners/`）。
+1-4 区全部用统一 CDP 点击 verifier `scripts/live/live_zone3_mouse_replayer_cdp.js`
++ 通用 `Game` 类生成的 walk JSON。它用游戏地图点击 handler（`_sys_ondown` /
+`_sys_onup`）由游戏自身寻路一次到位，不逐步走、不强制移动英雄。
 
-```powershell
-python scripts\live_zone2_runner.py --checkpoint-slot 101
-```
-
-从指定存档位恢复后继续：
-
-```powershell
-python scripts\live_zone2_runner.py --load-slot 101 --checkpoint-slot 102
-```
-
-只跑到某一步用于试探：
+从指定存档位加载后，从头（或从某步）验证整条 walk：
 
 ```powershell
-python scripts\live_zone2_runner.py --load-slot 101 --max-step 30 --checkpoint-slot 102
+node scripts\live\live_zone3_mouse_replayer_cdp.js `
+  --walk outputs\results\zone2_2atk1def_game_route.json `
+  --load-slot 100 `
+  --set-auto battle=true,item=true,wall=true `
+  --target-click-only `
+  --out-json outputs\results\zone2_live_verify_latest.json
 ```
+
+只跑到某一步用于试探（`--start-step` / `--stop-step` 均为 1-based）：
+
+```powershell
+node scripts\live\live_zone3_mouse_replayer_cdp.js `
+  --walk outputs\results\zone2_2atk1def_game_route.json `
+  --load-slot 100 --start-step 141 --stop-step 160 `
+  --set-auto battle=true,item=true,wall=true --target-click-only
+```
+
+要点：
+
+- walk JSON 必须是通用 `Game` 类输出（`before/after` 直接对照实机），不是旧
+  Replay 的楼梯合并格式。
+- 3 区起按需 `--set-auto battle=true,item=nopotion,wall=true`（4 区半血陷阱控血）。
+- verifier 每步对照 `steps[startStep-1].before` 与实机状态；传送/换层/开门允许
+  忽略最终坐标但不忽略数值。出错停下报告，不要继续猜。
+- 存档/checkpoint 用 `scripts/live/export_save_slot_cdp.js` 导出到
+  `best/checkpoints/`，只写 100+ 槽。
 
 ## 合法移动约束
 
@@ -68,12 +86,16 @@ python scripts\live_zone2_runner.py --load-slot 101 --max-step 30 --checkpoint-s
 - 自动清零伤怪：`core.status.hero.flags.__auto__.battle = true`。TE 真结局流程或拿到双倍金币后可开启；后续金币/怪物数量仍要按实机结果核对。
 - 自动拾取非血瓶物品：`core.status.hero.flags.__auto__.item = "nopotion"`。这是“自动拾取物品 on / 拾取血瓶 off”的真实状态，可在需要保留血瓶时使用。
 - 自动拾取含血瓶：`core.status.hero.flags.__auto__.item = true`。1区/2区缺血复现可开启；3区以后若为了保留血瓶已切到 `"nopotion"`，则只在拿到圣盾后，或确认后续不会再经过半血/固定扣血检查时再切回 `true`。
+- 纯净版-TE 的 44F 神圣盾路线在 `magicImmune=true` 后应立即执行机器 walk 中的 `设置自动` step，把 `item` 切为 `true`，并回读 `__auto__` 校验。不要把它简化成整条路线启动时就开 true，也不要继续全程 `nopotion`。
 - 自动开暗墙岩浆：`core.status.hero.flags.__auto__.wall = true`。原则上可全程开启；岩浆仍应遵守拿到雪花后的真实清理规则。
 - 当前 1区/2区缺血复现优先组合：`{ battle: true, item: true, wall: true }`，让血瓶也自动拾取；进入 3区或需要保留血瓶时再切到 `{ battle: true, item: "nopotion", wall: true }`。
+- 若目标是给 4区半血陷阱控血，不要先在实机里边跑边猜该删哪瓶血。正确顺序是：先在离线 strict walk 上做“固定动作序列下的最低存活 HP 压缩”，得到 minhp 版 walk；再拿这个新 walk 做一次正式 replay。`record-only` 只适合重录/适配 live，不适合作为最低血版是否成立的最终证明。
 - 自动 BFS 不会在开门这一刻立即重新结算；开门后要再移动、战斗、拾取或触发事件一次，门后新增可达资源才会被自动处理。walk 里这类目标应标为“自动处理跳过”，同时用 live 状态核对 HP/钥匙/金币变化。
 - 生成实机 walk 时不要照本地逐资源顺序远点一个组内最后目标。应点击真实的自动资源组入口，并把同组资源写进备注。例如 9F 中部资源组从 `MT9 x9y4` 开门后，应点 `MT9 x7y4` 触发自动拾取/清怪，备注 `x5y4 黄钥匙`、`x6y5 红宝石`、`x7y6 红头怪`，再继续点 `x4y5` 黄门。
 
 写 live 脚本时显式设置这些 flag，不要靠菜单焦点；切换后读取 `core.status.hero.flags.__auto__` 确认。不要把自动清理造成的额外拾取/杀怪当成模型误差忽略，必须在 route JSON 或 verifier 容忍逻辑中记录和比对。
+
+动态 auto 只证明后续点击触发时会拾取当前同层可达血瓶，不证明所有楼层已清空。最终真魔王前仍必须对照离线残余审计，核对 49F 事件奖励、各层药瓶/宝石、黄钥匙售卖与生命商店闭环；web 复验逐步核对这些真实点击及资源变化。
 
 ## 校验策略
 
@@ -98,6 +120,7 @@ python scripts\live_zone2_runner.py --load-slot 101 --max-step 30 --checkpoint-s
 
 - 10F Boss 事件后，清完生成怪并打开 `MT10 x6y3` 后，`MT10 x6y2` 是骷髅队长剧情事件格。必须先真实点击/走到 `MT10 x6y2` 触发并处理事件，再点击 `MT10 x6y1` 打骷髅队长。
 - 不要从远处直接点击 `MT10 x6y1`。真实寻路会经过 `x6y2` 并触发事件，容易让 verifier 以为目标是队长战斗，实际却停在剧情事件中。
+- `clearMt10BossDyn`（`live_zone3_mouse_replayer_cdp.js` 内）已实现此顺序：阶段1 只清 spawned（x4-8/y4-7，**不含 captain 6,1**），阶段2 等 `x6y3` 事件墙开后先点 `x6y2` 处理骷髅队长剧情文本，再点 `x6y1` 打 captain。不要把 captain 纳入动态清怪循环，否则寻路经过 `x6y2` 会卡在 `lock=true event=action:text`。boss trigger 后若 `x6y5→x6y1` 路径上还存在其它事件格，同样要先点事件位置再点战斗目标，不要远距直点。
 - Boss 后生成怪位置以 live 地图为准动态读取；不要只按本地静态地图坐标清怪。
 
 ## 结束报告
@@ -114,7 +137,7 @@ python scripts\live_zone2_runner.py --load-slot 101 --max-step 30 --checkpoint-s
 
 ## 三区实机复现笔记
 
-- 当前 31F-50F 网页复现用 `scripts/live_zone3_mouse_replayer_cdp.js`。它连接 CDP 端口 9222,用游戏的地图点击 handler（`_sys_ondown` / `_sys_onup`）做目标点击。
+- 当前 31F-50F 网页复现用 `scripts/live/live_zone3_mouse_replayer_cdp.js`。它连接 CDP 端口 9222,用游戏的地图点击 handler（`_sys_ondown` / `_sys_onup`）做目标点击。
 - 当前已验证的 save37/post-40 生命榜单路线:`best/post40_hp_leaderboard_walk.json`,最终 `HP=22264 ATK=418 DEF=517 YK=4 BK=0 RK=0 G=1235`,最终红魔王战后存到 42 号槽。把它当作 save37 的延续,不是从 1F 连续的完整证明。
 - 不要用 `core.moveHero`、`core.setHeroLoc`、`core.changeFloor`、`core.doAction` 强推路线进度。即使是空的 `waitAsync` 状态也要靠真实 canvas/地图点击推进;若点击和等待都无法推进事件,停下报告。
 - 地图点击可能停在 NPC、门、假墙、怪、楼梯目标的相邻格。若第一次点击只是走到相邻格、目标仍可交互/noPass,再点一次同一目标,然后再判断是否不匹配。
@@ -132,3 +155,5 @@ python scripts\live_zone2_runner.py --load-slot 101 --max-step 30 --checkpoint-s
 - `confirmBox` 支持键盘选择。先读 `core.status.event.selection`（`0`=左/是,`1`=右/否）;`ArrowLeft`/`ArrowRight` 切换选项,`Space`/`Enter`/`C` 确认。本项目用 `agent-browser connect 9222` 附加后,裸 `agent-browser press ArrowLeft` / `press ArrowRight` / `press Space`（**不要用 `--cdp 9222` flag**）。最终通关确认框要先设/核对 `selection=1` 再按 `Space` 选右/否,回到起始页。
 - 实机小错时,优先用游戏回退键(`a`)退一两步,或重载 100+ 检查点存档槽。不要依赖脚本侧的 window/global 备份。
 - 若某步留下半应用状态(比如道具被消耗或地图块变了,但 `event.id` 仍卡在 `action:waitAsync` 之类)且回退恢复不了,就停。刷新浏览器页、重载最近干净存档/检查点后再试。不要从那个脏实机状态继续复现。
+- 2区 2ATK1DEF 的 2026-07-10 验证经验：可以从 `save57` 的 10F boss 后状态用 `--start-step 132` 验证 2区 JSON；若中途修复了局部步（例如 19F 十字架前 fakeWall 不能被 auto_sweep 折叠），优先重载最近的 100+ 干净检查点（本次为 save112）并从对应 step 续跑 tail，验证通过后清掉 Boss 文本并另存新终点槽（本次为 save113）。
+- 20F boss 后到 31F 桥接的 29F 小偷事件：不要把 MT23 撞字/whiteWall2 文本触发作为前置条件。实机从 MT29 入口到 `x6y2` 小偷处连续交互两次即可打开 `MT29 x6y3` 暗道；随后直接点 `x6y11` 上楼。2026-07-10 已从 `save113` 验证到 `MT31 x6y2 HP=1211 ATK=76 DEF=72 YK=4 BK=0 RK=0 G=1138`，验证输出见 `outputs/results/zone2_2atk1def_current_20_to31_bridge_verified.json`。

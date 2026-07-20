@@ -1,6 +1,6 @@
 {
   "schema": "mota.best.route_chains.v1",
-  "updated": "2026-06-27",
+  "updated": "2026-07-15",
   "game": {
     "name": "h5mota 51",
     "game_url": "https://h5mota.com/games/51/",
@@ -20,7 +20,7 @@
   },
   "continuity_status": {
     "guide_chain_to_22264": "linked by stable artifacts and matching checkpoints; post-40 tail is web-verified from save37 and saved to slot42; a single stitched 1F-to-50F web replay is still pending.",
-    "non_guide_chain": "stable through current-best Zone 1/2 and slot26 Zone 3 branch; slot26-to-post40 HP tail is not yet searched or web-verified.",
+    "non_guide_chain": "stable through current-best Zone 1/2, the web-verified 2ATK1DEF preserve-pickaxe Zone 3 Game route, and an independently generated, residual-audited, and web-verified pure-TE Zone 4 tail ending at HP=23076.",
     "known_gap": "20F-to-31F bridge currently comes from browser save checkpoints, not a tracked machine-readable walk in best/."
   },
   "chains": [
@@ -55,26 +55,29 @@
       "segments": [
         "zone1.current_best",
         "zone2.current_best_2atk1def_branch",
-        "bridge.slot26_mt20_to_mt31",
-        "zone3.slot26_clean_boss8def",
-        "zone4.slot26_tail_pending"
+        "bridge.current_2atk1def_mt20_to_mt31",
+        "zone3.current_2atk1def_preserve_pickaxe",
+        "zone4.current_2atk1def_te_hp23076"
       ],
       "related_alternatives": [
-        "zone2.current_best_canonical"
+        "zone2.current_best_canonical",
+        "bridge.slot26_mt20_to_mt31",
+        "zone3.slot26_clean_boss8def"
       ],
-      "status": "not a single continuous clear yet; keep as branch lineage and search target",
+      "status": "checkpoint-linked pure TE clear through Zone 4; each available zone artifact is independently verified, while the 20F-31F bridge remains checkpoint-only",
       "best_known_zone3_hp_state": {
-        "floor": "MT40",
+        "floor": "MT41",
         "x": 6,
-        "y": 1,
-        "hp": 556,
-        "atk": 170,
-        "def": 198,
-        "yk": 3,
+        "y": 2,
+        "hp": 45,
+        "atk": 166,
+        "def": 166,
+        "yk": 7,
         "bk": 0,
         "rk": 0,
-        "gold": 926,
-        "dmg": 7293
+        "gold": 2423,
+        "dmg": 10066,
+        "pickaxe": 1
       }
     }
   ],
@@ -137,10 +140,10 @@
         "yk": 0,
         "bk": 0,
         "rk": 0,
-        "gold": 305,
+        "gold": 313,
         "dmg": 2454,
         "door": "41/2/1",
-        "final_score": 1376.5
+        "final_score": 1380.5
       },
       "post_boss_supply_state": {
         "floor": "MT10",
@@ -152,11 +155,12 @@
         "yk": 3,
         "bk": 0,
         "rk": 0,
-        "gold": 305,
+        "gold": 313,
         "dmg": 2454,
         "door": "41/2/1"
       },
-      "connects_to": "zone2.current_best_canonical"
+      "connects_to": "zone2.current_best_canonical",
+      "note": " gold=313 由 Game 类 auto_sweep 离线推导（MT9 末 G=67 实机已对齐）；旧 G=305 不含 auto_sweep 隐式击杀，已废弃。"
     },
     "zone2.guide_canonical": {
       "zone": 2,
@@ -217,7 +221,7 @@
         "yk": 3,
         "bk": 0,
         "rk": 0,
-        "gold": 305,
+        "gold": 313,
         "dmg": 2454
       },
       "end_state": {
@@ -230,13 +234,14 @@
         "yk": 3,
         "bk": 0,
         "rk": 0,
-        "gold": 838,
+        "gold": 989,
         "dmg": 6123,
         "door": "86/8/2"
       },
       "steps": 246,
       "errors": 0,
-      "connects_to": "future best 20F-to-31F bridge; sibling of zone2.current_best_2atk1def_branch, not a sequential predecessor"
+      "connects_to": "future best 20F-to-31F bridge; sibling of zone2.current_best_2atk1def_branch, not a sequential predecessor",
+      "note": " gold=989 由 Game 类 auto_sweep 离线推导（predicted，未实机验证）；旧 G=838 不含 auto_sweep 隐式击杀。"
     },
     "zone2.current_best_2atk1def_branch": {
       "zone": 2,
@@ -245,25 +250,31 @@
       "objective": "branch used for later non-guide/slot26 exploration",
       "artifacts": [
         "best/zone2_2atk1def_branch_summary.json",
-        "best/zone2_2atk1def_branch_walk.md"
+        "best/zone2_2atk1def_branch_walk.md",
+        "best/zone2_2atk1def_branch_walk.json",
+        "best/checkpoints/zone2_2atk1def_end_save.json"
       ],
       "end_state": {
         "floor": "MT20",
         "x": 6,
         "y": 6,
-        "hp": 577,
+        "hp": 11,
         "atk": 70,
         "def": 66,
         "yk": 1,
         "bk": 0,
         "rk": 0,
-        "gold": 930,
-        "dmg": 6859,
-        "door": "89/9/2"
+        "gold": 1116,
+        "dmg": 6415,
+        "door": "89/9/2",
+        "superPotion": 0
       },
       "errors": 0,
       "strict_errors": 0,
-      "connects_to": "bridge.slot26_mt20_to_mt31"
+      "connects_to": "bridge.current_2atk1def_mt20_to_mt31",
+      "note": "gold=1116 / HP=11 web-verified on 2026-07-10 from save57 step132 plus save112 step251 tail. 16F superPotion detour is intentionally skipped before 20F because HP=676 is enough to survive vampire (ends HP=11); preserve superPotion/stat scaling for later. MT15 blue-key trader is scheduled before the MT11 lower-left+shield batch to avoid an extra MT11 round trip. MT19 cross fakeWalls are explicit live steps; post-rock auto takes nearby key but must not fold the fakeWalls into auto_sweep. Clean idle saved to browser save113 and exported to best/checkpoints/zone2_2atk1def_end_save.json.",
+      "status": "web-verified from save57/step132 continuation; tail resumed from save112/step251; boss text event completed and clean idle save exported from browser slot 113 on 2026-07-10",
+      "steps": 304
     },
     "bridge.save36_mt20_to_mt31": {
       "zone": "2_to_3",
@@ -302,6 +313,74 @@
         "gold": 176
       },
       "connects_to": "zone3.slot26_clean_boss8def"
+    },
+    "bridge.current_2atk1def_mt20_to_mt31": {
+      "zone": "2_to_3",
+      "variant": "current_2atk1def_verified_checkpoint",
+      "status": "web-verified checkpoint-derived bridge; tracked best walk is still pending",
+      "artifacts": [
+        "outputs/results/zone2_2atk1def_current_20_to31_bridge_verified.json",
+        "outputs/results/zone3_current_2atk1def_mt31_checkpoint.json"
+      ],
+      "checkpoint": {
+        "save_slot": 59, "floor": "MT31", "x": 6, "y": 2,
+        "hp": 1211, "atk": 76, "def": 72, "yk": 4, "bk": 0, "rk": 0, "gold": 1138
+      },
+      "connects_to": "zone3.current_2atk1def_preserve_pickaxe"
+    },
+    "zone3.current_2atk1def_preserve_pickaxe": {
+      "zone": 3,
+      "floor_range": "31F-40F, ending at MT41 entrance",
+      "variant": "current_2atk1def_preserve_pickaxe",
+      "objective": "pure TE HP branch; preserve pickaxe for MT48 sword4; auto battle=true,item=nopotion,wall=true",
+      "status": "offline Game replay and full target-click-only web verification exact on 2026-07-13",
+      "artifacts": [
+        "best/zone3_2atk1def_preserve_pickaxe_summary.json",
+        "best/zone3_2atk1def_preserve_pickaxe_walk.json",
+        "best/zone3_2atk1def_preserve_pickaxe_walk.md",
+        "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json"
+      ],
+      "start_state": {
+        "floor": "MT31", "x": 6, "y": 2, "hp": 1211, "atk": 76, "def": 72,
+        "yk": 4, "bk": 0, "rk": 0, "gold": 1138, "dmg": 0
+      },
+      "end_state": {
+        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
+        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "dmg": 10066, "door": "37/2/1", "pickaxe": 1
+      },
+      "steps": 238,
+      "errors": 0,
+      "web_verify": "outputs/results/zone3_preserve_pickaxe_live_verify.json",
+      "verified_browser_slot": 59,
+      "checkpoint_browser_slot": 150,
+      "connects_to": "zone4.current_2atk1def_te_hp23076"
+    },
+    "zone3.current_2atk1def_game_route": {
+      "zone": 3,
+      "floor_range": "31F-40F, ending at MT41 entrance",
+      "variant": "current_2atk1def_game_route",
+      "objective": "pure TE HP branch with auto battle=true,item=nopotion,wall=true",
+      "status": "offline Game replay and full target-click-only web verification exact on 2026-07-12",
+      "artifacts": [
+        "best/zone3_2atk1def_game_route_summary.json",
+        "best/zone3_2atk1def_game_route_walk.json",
+        "best/zone3_2atk1def_game_route_walk.md",
+        "best/checkpoints/zone3_2atk1def_end_save.json"
+      ],
+      "start_state": {
+        "floor": "MT31", "x": 6, "y": 2, "hp": 1211, "atk": 76, "def": 72,
+        "yk": 4, "bk": 0, "rk": 0, "gold": 1138, "dmg": 0
+      },
+      "end_state": {
+        "floor": "MT41", "x": 6, "y": 2, "hp": 125, "atk": 174, "def": 166,
+        "yk": 4, "bk": 0, "rk": 0, "gold": 1828, "dmg": 8086, "door": "27/2/1"
+      },
+      "steps": 213,
+      "errors": 0,
+      "web_verify": "outputs/results/zone3_game_route_webverify_v2.json",
+      "verified_browser_slot": 59,
+      "checkpoint_browser_slot": 123,
+      "connects_to": "zone4.current_2atk1def_tail_pending"
     },
     "zone3.guide_slot36_to40": {
       "zone": 3,
@@ -367,7 +446,7 @@
         "gold": 1846,
         "dmg": 7625,
         "door": "42/4/1",
-        "simple_stock_score": 1297.0
+        "simple_stock_score": 1297
       },
       "errors": 0
     },
@@ -406,7 +485,7 @@
         "gold": 926,
         "dmg": 7293,
         "door": "42/4/1",
-        "simple_stock_score": 1169.0
+        "simple_stock_score": 1169
       },
       "steps": 307,
       "errors": 0,
@@ -456,6 +535,184 @@
       "errors": 0,
       "web_verified": true,
       "live_replay_command": "node scripts\\live_zone3_mouse_replayer_cdp.js --walk best\\post40_hp_leaderboard_walk.json --load-slot 37 --target-click-only"
+    },
+    "zone4.current_2atk1def_tail_pending": {
+      "zone": 4,
+      "floor_range": "41F-50F",
+      "variant": "current_2atk1def_from_preserve_pickaxe_slot150",
+      "status": "pending independent Game search and web verification; do not reuse save37 tail",
+      "source_checkpoint": "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json"
+    },
+    "zone4.current_2atk1def_te_hp17659": {
+      "zone": 4,
+      "floor_range": "41F-50F",
+      "variant": "current_2atk1def_from_preserve_pickaxe_slot150_pure_te_hp17659",
+      "objective": "pure TE final HP; shared Game; auto battle=true,item=nopotion,wall=true",
+      "status": "offline Game route errors=0 and full 514-step target-click-only web verification passed on 2026-07-14; exact floor/resources/final state with documented coordinate-only auto adaptations",
+      "source_checkpoint": "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json",
+      "source_browser_slot": 150,
+      "artifacts": [
+        "best/zone4_2atk1def_te_hp17659_summary.json",
+        "best/zone4_2atk1def_te_hp17659_walk.json",
+        "best/zone4_2atk1def_te_hp17659_walk.md",
+        "best/zone4_2atk1def_te_hp17659_live_verify.json"
+      ],
+      "start_state": {
+        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
+        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+      },
+      "end_state": {
+        "floor": "MT50", "x": 6, "y": 5, "hp": 17659, "atk": 429, "def": 441,
+        "yk": 1, "bk": 0, "rk": 0, "gold": 520, "dmg": 17886,
+        "door": "50/9/7", "times1": 16, "magicImmune": true, "won49": true, "won50": true
+      },
+      "steps": 514,
+      "errors": 0,
+      "web_value_mismatches": 0,
+      "web_coordinate_adaptations": 51
+    },
+    "zone4.current_2atk1def_te_hp18187": {
+      "zone": 4,
+      "floor_range": "41F-50F",
+      "variant": "current_2atk1def_from_preserve_pickaxe_slot150_pure_te_hp18187",
+      "objective": "pure TE final HP; shared Game; auto battle=true,item=nopotion,wall=true",
+      "status": "offline Game route errors=0 and full 490-step target-click-only web verification passed on 2026-07-14; exact floor/resources/final state with coordinate-only auto adaptations",
+      "source_checkpoint": "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json",
+      "source_browser_slot": 150,
+      "artifacts": [
+        "best/zone4_2atk1def_te_hp18187_summary.json",
+        "best/zone4_2atk1def_te_hp18187_walk.json",
+        "best/zone4_2atk1def_te_hp18187_walk.md",
+        "best/zone4_2atk1def_te_hp18187_live_verify.json"
+      ],
+      "start_state": {
+        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
+        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+      },
+      "end_state": {
+        "floor": "MT50", "x": 6, "y": 5, "hp": 18187, "atk": 429, "def": 441,
+        "yk": 0, "bk": 1, "rk": 0, "gold": 520, "dmg": 16968,
+        "door": "44/9/7", "times1": 16, "magicImmune": true, "won49": true, "won50": true
+      },
+      "steps": 490,
+      "errors": 0,
+      "web_value_mismatches": 0,
+      "web_coordinate_adaptations": 41,
+      "improves": "zone4.current_2atk1def_te_hp17659"
+    },
+    "zone4.current_2atk1def_te_hp18277": {
+      "zone": 4,
+      "floor_range": "41F-50F",
+      "variant": "current_2atk1def_from_preserve_pickaxe_slot150_pure_te_hp18277",
+      "objective": "pure TE final HP; shared Game; item=nopotion until shield5 then dynamic item=true; terminal HP resource fixed point",
+      "status": "offline Game route errors=0, terminal residual audit passed, and full 472-step target-click-only web verification passed on 2026-07-14; zero value mismatches",
+      "source_checkpoint": "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json",
+      "source_browser_slot": 150,
+      "artifacts": [
+        "best/zone4_2atk1def_te_hp18277_summary.json",
+        "best/zone4_2atk1def_te_hp18277_walk.json",
+        "best/zone4_2atk1def_te_hp18277_walk.md",
+        "best/zone4_2atk1def_te_hp18277_live_verify.json",
+        "best/zone4_2atk1def_te_hp18277_resource_audit.json",
+        "best/zone4_2atk1def_te_hp18277_resource_audit.md"
+      ],
+      "start_state": {
+        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
+        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+      },
+      "end_state": {
+        "floor": "MT50", "x": 6, "y": 5, "hp": 18277, "atk": 439, "def": 425,
+        "yk": 3, "bk": 1, "rk": 0, "gold": 2346, "pre_boss_gold": 1846, "dmg": 17418,
+        "door": "49/10/7", "times1": 15, "magicImmune": true, "won49": true, "won50": true
+      },
+      "steps": 472,
+      "errors": 0,
+      "web_value_mismatches": 0,
+      "web_coordinate_adaptations": 41,
+      "terminal_resource_audit_ok": true,
+      "improves": "zone4.current_2atk1def_te_hp18187"
+    },
+    "zone4.current_2atk1def_te_hp20137": {
+      "zone": 4,
+      "floor_range": "41F-50F",
+      "variant": "current_2atk1def_from_preserve_pickaxe_slot150_pure_te_hp20137",
+      "objective": "pure TE final HP; shared Game; early MT31 red gems; joint attack/defence/HP shop optimization; terminal resource fixed point",
+      "status": "offline Game route errors=0, terminal residual audit passed, macro A* closed all 8 cached one-edit neighbors, and full 458-step target-click-only web verification passed on 2026-07-15; zero value mismatches",
+      "source_checkpoint": "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json",
+      "source_browser_slot": 150,
+      "artifacts": [
+        "best/zone4_2atk1def_te_hp20137_summary.json",
+        "best/zone4_2atk1def_te_hp20137_walk.json",
+        "best/zone4_2atk1def_te_hp20137_walk.md",
+        "best/zone4_2atk1def_te_hp20137_live_verify.json",
+        "best/zone4_2atk1def_te_hp20137_resource_audit.json",
+        "best/zone4_2atk1def_te_hp20137_resource_audit.md",
+        "best/zone4_2atk1def_te_hp20137_macro_astar.json"
+      ],
+      "start_state": {
+        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
+        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+      },
+      "end_state": {
+        "floor": "MT50", "x": 6, "y": 5, "hp": 20137, "atk": 423, "def": 426,
+        "yk": 3, "bk": 0, "rk": 0, "gold": 1801, "pre_boss_gold": 1301, "dmg": 18498,
+        "door": "48/11/7", "times1": 15, "magicImmune": true, "won49": true, "won50": true
+      },
+      "steps": 458,
+      "errors": 0,
+      "web_value_mismatches": 0,
+      "terminal_resource_audit_ok": true,
+      "macro_astar": {
+        "evaluated": 11,
+        "exact_neighbors": 8,
+        "missing_neighbors": 0,
+        "better_neighbors": 0,
+        "scope": "cached macro neighborhood, not global proof"
+      },
+      "improves": "zone4.current_2atk1def_te_hp18277"
+    },
+    "zone4.current_2atk1def_te_hp23076": {
+      "zone": 4,
+      "floor_range": "41F-50F",
+      "variant": "current_2atk1def_from_preserve_pickaxe_slot150_pure_te_hp23076",
+      "objective": "pure TE final HP; shared Game; early MT31 red/blue and MT32 red/blue gems; joint attack/defence/HP shop optimization; terminal resource upper bound and fixed point",
+      "status": "offline Game route errors=0, terminal residual audit passed, all 8 cached one-edit macro neighbors resolved, and full 451-step target-click-only web verification passed on 2026-07-15; zero value mismatches",
+      "source_checkpoint": "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json",
+      "source_browser_slot": 150,
+      "artifacts": [
+        "best/zone4_2atk1def_te_hp23076_summary.json",
+        "best/zone4_2atk1def_te_hp23076_walk.json",
+        "best/zone4_2atk1def_te_hp23076_walk.md",
+        "best/zone4_2atk1def_te_hp23076_live_verify.json",
+        "best/zone4_2atk1def_te_hp23076_resource_audit.json",
+        "best/zone4_2atk1def_te_hp23076_resource_audit.md",
+        "best/zone4_2atk1def_te_hp23076_gem_damage_audit.json",
+        "best/zone4_2atk1def_te_hp23076_gem_damage_audit.md",
+        "best/zone4_2atk1def_te_hp23076_macro_astar.json",
+        "best/zone4_2atk1def_te_hp23076_terminal_astar.json"
+      ],
+      "start_state": {
+        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
+        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+      },
+      "end_state": {
+        "floor": "MT50", "x": 6, "y": 5, "hp": 23076, "atk": 417, "def": 475,
+        "yk": 5, "bk": 1, "rk": 0, "gold": 906, "pre_boss_gold": 406, "dmg": 14479,
+        "door": "51/11/7", "times1": 15, "magicImmune": true, "won49": true, "won50": true
+      },
+      "steps": 451,
+      "errors": 0,
+      "web_value_mismatches": 0,
+      "terminal_resource_audit_ok": true,
+      "macro_astar": {
+        "evaluated": 26,
+        "exact_neighbors": 6,
+        "invalid_neighbors": 2,
+        "missing_neighbors": 0,
+        "better_neighbors": 0,
+        "scope": "cached macro neighborhood, not global proof"
+      },
+      "improves": "zone4.current_2atk1def_te_hp20137"
     },
     "zone4.slot26_tail_pending": {
       "zone": 4,

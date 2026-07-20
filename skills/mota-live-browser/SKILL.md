@@ -23,7 +23,7 @@ description: 用于读取或操作实机 h5mota 浏览器状态、检查 core.st
 一键启动（杀僵尸 chrome + 外部启动 9222 + connect）：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/launch_h5mota_chrome.ps1
+powershell -ExecutionPolicy Bypass -File scripts/live/launch_h5mota_chrome.ps1
 ```
 
 等价的手工步骤（脚本里就是这么做的）：
@@ -54,7 +54,7 @@ powershell -ExecutionPolicy Bypass -File scripts/launch_h5mota_chrome.ps1
 加载存档槽 N（从标题页冷启动也行）：
 
 ```powershell
-node scripts/live_load_save.js --slot 1
+node scripts/live/live_load_save.js --slot 1
 ```
 
 原理：走游戏自带「载入游戏」UI 路径——`core.control._doSL_load(slot, core.control._doSL_load_afterGet)`：
@@ -67,12 +67,12 @@ node scripts/live_load_save.js --slot 1
 
 ## 读取当前状态
 
-优先用 `scripts/live_read_state.js`（楼层感知、exe+shell:false 避免 cmd.exe 破坏 JS 操作符）：
+优先用 `scripts/live/live_read_state.js`（楼层感知、exe+shell:false 避免 cmd.exe 破坏 JS 操作符）：
 
 ```powershell
-node scripts/live_read_state.js
-node scripts/live_read_state.js --floor MT8
-node scripts/live_read_state.js --block MT8,10,2
+node scripts/live/live_read_state.js
+node scripts/live/live_read_state.js --floor MT8
+node scripts/live/live_read_state.js --block MT8,10,2
 ```
 
 裸 `agent-browser eval` 也能用（前提：已 `connect 9222`），但 **JS 里不要写 `||` / `&&`**（cmd.exe 会当 shell 语法破坏），用 `?:` 和 try/catch 代替：
@@ -89,7 +89,7 @@ agent-browser eval "(function(){var fid=core.status.floorId,m=core.status.maps[f
 
 ## 保存和读取
 
-优先让 `scripts/live_zone2_runner.py` 管理保存位。手工探查时可以通过 `core.control.saveData(null)` 读取内存存档，通过 `core.utils.setLocalForage('save101', data, cb)` 保存。
+保存位用 `scripts/live/export_save_slot_cdp.js` 导出 / `import_save_slot_cdp.js` 导入（只写 100+ 槽，localforage 键 `51_save<N>`），不要再用已归档的 `scripts/live/live_zone2_runner.py`（见 `history/zone_specific_live_runners/`）。手工探查时可以通过 `core.control.saveData(null)` 读取内存存档，通过 `core.utils.setLocalForage('save101', data, cb)` 保存。
 
 注意：
 
@@ -99,7 +99,7 @@ agent-browser eval "(function(){var fid=core.status.floorId,m=core.status.maps[f
 
 ## 小范围移动
 
-- 相邻一格时，`tryMoveDirectly` 有时不会触发事件或暗墙；用方向键/`core.moveHero(direction)` 更可靠。
+- 相邻一格时，`tryMoveDirectly` 有时不会触发事件或暗墙；改用真实键盘方向事件（如 verifier 的 `dispatchKeyDown`）或再点一次目标，不要用 `core.moveHero(direction)` 强制移动（与统一点击策略矛盾，见 `mota-live-verify/SKILL.md`）。
 - 远距离直达可先试 `core.control.tryMoveDirectly(x, y)`，失败后读取状态判断是否需要相邻触发。
 - 商店菜单不要盲按方向键；读取 `core.status.event.ui.choices` 后插入对应 action 更稳定。
 

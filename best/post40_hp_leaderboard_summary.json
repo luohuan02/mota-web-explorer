@@ -13,7 +13,7 @@
   "walk_json": "best/post40_hp_leaderboard_walk.json",
   "walk_md": "best/post40_hp_leaderboard_walk.md",
   "local_generation_commands": [
-    "python scripts\\search_post40_guide_route.py",
+    "python src\\solver\\game_route.py",
     "node scripts\\prepend_40f_prefix_walk.js"
   ],
   "live_replay_command": "node scripts\\live_zone3_mouse_replayer_cdp.js --walk best\\post40_hp_leaderboard_walk.json --load-slot 37 --target-click-only",

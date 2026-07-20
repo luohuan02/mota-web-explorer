@@ -1,0 +1,1341 @@
+{
+  "ok": true,
+  "scope": "same postShieldAtkTarget=261; no early gem groups vs MT31 red/blue plus MT32 pair",
+  "baseline_path": "D:\\claude\\mota-web-explorer\\outputs\\results\\zone4_atk261_none_farmfix_candidate.json",
+  "candidate_path": "D:\\claude\\mota-web-explorer\\outputs\\results\\zone4_atk261_all_farmfix_candidate.json",
+  "baseline_variant": {
+    "lateFinalShopKind": "hp",
+    "postShieldLastShopKind": "atk",
+    "postShieldAtkTarget": 261,
+    "earlyGroups": []
+  },
+  "candidate_variant": {
+    "lateFinalShopKind": "hp",
+    "postShieldLastShopKind": "atk",
+    "postShieldAtkTarget": 261,
+    "earlyGroups": [
+      "mt31_red",
+      "mt31_blue",
+      "mt32_pair"
+    ]
+  },
+  "baseline_shop_sequence": [
+    "atk",
+    "atk",
+    "def",
+    "hp",
+    "hp"
+  ],
+  "candidate_shop_sequence": [
+    "atk",
+    "atk",
+    "def",
+    "hp",
+    "hp"
+  ],
+  "same_shop_sequence": true,
+  "baseline_final": {
+    "hp": 19133,
+    "atk": 419,
+    "def": 426,
+    "yk": 8,
+    "bk": 1,
+    "rk": 0,
+    "gold": 801,
+    "dmg": 19472,
+    "yd": 47,
+    "bd": 11,
+    "rd": 7,
+    "times1": 15,
+    "won49": true,
+    "won50": true
+  },
+  "candidate_final": {
+    "hp": 21618,
+    "atk": 427,
+    "def": 434,
+    "yk": 6,
+    "bk": 0,
+    "rk": 0,
+    "gold": 1036,
+    "dmg": 17107,
+    "yd": 51,
+    "bd": 12,
+    "rd": 7,
+    "times1": 15,
+    "won49": true,
+    "won50": true
+  },
+  "total_damage_saved": 2365,
+  "final_hp_improvement": 2485,
+  "matched_damage_groups": 69,
+  "matched_group_damage_saved": 2568,
+  "baseline_only_groups": 3,
+  "baseline_only_damage": 44,
+  "candidate_only_groups": 5,
+  "candidate_only_damage": 247,
+  "accounting_identity": {
+    "formula": "matched_saved + baseline_only_damage - candidate_only_damage",
+    "value": 2365,
+    "equals_total_damage_saved": true
+  },
+  "changed_common_groups": [
+    {
+      "floor": "MT25",
+      "pos": [
+        6,
+        6
+      ],
+      "action": "击杀",
+      "eid": "blackMagician",
+      "occurrence": 1,
+      "baseline_step": 343,
+      "candidate_step": 375,
+      "baseline_damage": 7191,
+      "candidate_damage": 6380,
+      "damage_saved": 811,
+      "baseline_before": {
+        "hp": 12624,
+        "atk": 404,
+        "def": 407,
+        "dmg": 12281
+      },
+      "candidate_before": {
+        "hp": 19698,
+        "atk": 412,
+        "def": 415,
+        "dmg": 10727
+      }
+    },
+    {
+      "floor": "MT35",
+      "pos": [
+        6,
+        7
+      ],
+      "action": "击杀",
+      "eid": "magicDragon",
+      "occurrence": 1,
+      "baseline_step": 329,
+      "candidate_step": 361,
+      "baseline_damage": 5211,
+      "candidate_damage": 4440,
+      "damage_saved": 771,
+      "baseline_before": {
+        "hp": 14035,
+        "atk": 304,
+        "def": 407,
+        "dmg": 7070
+      },
+      "candidate_before": {
+        "hp": 20338,
+        "atk": 312,
+        "def": 415,
+        "dmg": 6287
+      }
+    },
+    {
+      "floor": "MT43",
+      "pos": [
+        6,
+        3
+      ],
+      "action": "击杀",
+      "eid": "darkKnight",
+      "occurrence": 1,
+      "baseline_step": 233,
+      "candidate_step": 254,
+      "baseline_damage": 352,
+      "candidate_damage": 160,
+      "damage_saved": 192,
+      "baseline_before": {
+        "hp": 2023,
+        "atk": 252,
+        "def": 342,
+        "dmg": 5122
+      },
+      "candidate_before": {
+        "hp": 4467,
+        "atk": 270,
+        "def": 350,
+        "dmg": 5078
+      }
+    },
+    {
+      "floor": "MT43",
+      "pos": [
+        7,
+        4
+      ],
+      "action": "击杀",
+      "eid": "darkKnight",
+      "occurrence": 1,
+      "baseline_step": 234,
+      "candidate_step": 255,
+      "baseline_damage": 352,
+      "candidate_damage": 160,
+      "damage_saved": 192,
+      "baseline_before": {
+        "hp": 1671,
+        "atk": 252,
+        "def": 342,
+        "dmg": 5474
+      },
+      "candidate_before": {
+        "hp": 4307,
+        "atk": 270,
+        "def": 350,
+        "dmg": 5238
+      }
+    },
+    {
+      "floor": "MT42",
+      "pos": [
+        6,
+        4
+      ],
+      "action": "击杀",
+      "eid": "darkKnight",
+      "occurrence": 1,
+      "baseline_step": 216,
+      "candidate_step": 228,
+      "baseline_damage": 440,
+      "candidate_damage": 320,
+      "damage_saved": 120,
+      "baseline_before": {
+        "hp": 2989,
+        "atk": 242,
+        "def": 342,
+        "dmg": 4156
+      },
+      "candidate_before": {
+        "hp": 3437,
+        "atk": 250,
+        "def": 350,
+        "dmg": 4108
+      }
+    },
+    {
+      "floor": "MT45",
+      "pos": [
+        3,
+        6
+      ],
+      "action": "击杀",
+      "eid": "darkKnight",
+      "occurrence": 1,
+      "baseline_step": 250,
+      "candidate_step": 261,
+      "baseline_damage": 264,
+      "candidate_damage": 160,
+      "damage_saved": 104,
+      "baseline_before": {
+        "hp": 2937,
+        "atk": 262,
+        "def": 342,
+        "dmg": 6208
+      },
+      "candidate_before": {
+        "hp": 4017,
+        "atk": 270,
+        "def": 350,
+        "dmg": 5528
+      }
+    },
+    {
+      "floor": "MT45",
+      "pos": [
+        3,
+        4
+      ],
+      "action": "击杀",
+      "eid": "darkKnight",
+      "occurrence": 1,
+      "baseline_step": 251,
+      "candidate_step": 262,
+      "baseline_damage": 234,
+      "candidate_damage": 140,
+      "damage_saved": 94,
+      "baseline_before": {
+        "hp": 2673,
+        "atk": 262,
+        "def": 352,
+        "dmg": 6472
+      },
+      "candidate_before": {
+        "hp": 3857,
+        "atk": 270,
+        "def": 360,
+        "dmg": 5688
+      }
+    },
+    {
+      "floor": "MT46",
+      "pos": [
+        9,
+        4
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 260,
+      "candidate_step": 291,
+      "baseline_damage": 38,
+      "candidate_damage": 10,
+      "damage_saved": 28,
+      "baseline_before": {
+        "hp": 2263,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6882
+      },
+      "candidate_before": {
+        "hp": 3607,
+        "atk": 280,
+        "def": 380,
+        "dmg": 5938
+      }
+    },
+    {
+      "floor": "MT48",
+      "pos": [
+        4,
+        10
+      ],
+      "action": "击杀",
+      "eid": "darkKnight",
+      "occurrence": 1,
+      "baseline_step": 304,
+      "candidate_step": 326,
+      "baseline_damage": 88,
+      "candidate_damage": 72,
+      "damage_saved": 16,
+      "baseline_before": {
+        "hp": 6613,
+        "atk": 286,
+        "def": 386,
+        "dmg": 6982
+      },
+      "candidate_before": {
+        "hp": 9807,
+        "atk": 294,
+        "def": 394,
+        "dmg": 6188
+      }
+    },
+    {
+      "floor": "MT43",
+      "pos": [
+        9,
+        1
+      ],
+      "action": "击杀",
+      "eid": "whiteKing",
+      "occurrence": 1,
+      "baseline_step": 193,
+      "candidate_step": 205,
+      "baseline_damage": 163,
+      "candidate_damage": 155,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2294,
+        "atk": 237,
+        "def": 287,
+        "dmg": 3851
+      },
+      "candidate_before": {
+        "hp": 2702,
+        "atk": 245,
+        "def": 295,
+        "dmg": 3843
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        7,
+        4
+      ],
+      "action": "击杀",
+      "eid": "whiteKing",
+      "occurrence": 1,
+      "baseline_step": 225,
+      "candidate_step": 237,
+      "baseline_damage": 108,
+      "candidate_damage": 100,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2441,
+        "atk": 252,
+        "def": 342,
+        "dmg": 4704
+      },
+      "candidate_before": {
+        "hp": 3017,
+        "atk": 260,
+        "def": 350,
+        "dmg": 4528
+      }
+    },
+    {
+      "floor": "MT42",
+      "pos": [
+        9,
+        8
+      ],
+      "action": "击杀",
+      "eid": "whiteKing",
+      "occurrence": 1,
+      "baseline_step": 227,
+      "candidate_step": 239,
+      "baseline_damage": 108,
+      "candidate_damage": 100,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2333,
+        "atk": 252,
+        "def": 342,
+        "dmg": 4812
+      },
+      "candidate_before": {
+        "hp": 2917,
+        "atk": 260,
+        "def": 350,
+        "dmg": 4628
+      }
+    },
+    {
+      "floor": "MT42",
+      "pos": [
+        11,
+        8
+      ],
+      "action": "击杀",
+      "eid": "whiteKing",
+      "occurrence": 1,
+      "baseline_step": 228,
+      "candidate_step": 240,
+      "baseline_damage": 108,
+      "candidate_damage": 100,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2225,
+        "atk": 252,
+        "def": 342,
+        "dmg": 4920
+      },
+      "candidate_before": {
+        "hp": 2817,
+        "atk": 260,
+        "def": 350,
+        "dmg": 4728
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        5,
+        4
+      ],
+      "action": "击杀",
+      "eid": "whiteKing",
+      "occurrence": 1,
+      "baseline_step": 224,
+      "candidate_step": 236,
+      "baseline_damage": 108,
+      "candidate_damage": 100,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2549,
+        "atk": 252,
+        "def": 342,
+        "dmg": 4596
+      },
+      "candidate_before": {
+        "hp": 3117,
+        "atk": 260,
+        "def": 350,
+        "dmg": 4428
+      }
+    },
+    {
+      "floor": "MT43",
+      "pos": [
+        2,
+        9
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 247,
+      "candidate_step": 258,
+      "baseline_damage": 48,
+      "candidate_damage": 40,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 3033,
+        "atk": 262,
+        "def": 342,
+        "dmg": 6112
+      },
+      "candidate_before": {
+        "hp": 4097,
+        "atk": 270,
+        "def": 350,
+        "dmg": 5448
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        10,
+        7
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 243,
+      "candidate_step": 252,
+      "baseline_damage": 48,
+      "candidate_damage": 40,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 3147,
+        "atk": 262,
+        "def": 342,
+        "dmg": 5998
+      },
+      "candidate_before": {
+        "hp": 4507,
+        "atk": 270,
+        "def": 350,
+        "dmg": 5038
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        11,
+        6
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 240,
+      "candidate_step": 249,
+      "baseline_damage": 48,
+      "candidate_damage": 40,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2271,
+        "atk": 262,
+        "def": 342,
+        "dmg": 5874
+      },
+      "candidate_before": {
+        "hp": 3607,
+        "atk": 270,
+        "def": 350,
+        "dmg": 4938
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        1,
+        6
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 239,
+      "candidate_step": 248,
+      "baseline_damage": 48,
+      "candidate_damage": 40,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 1319,
+        "atk": 262,
+        "def": 342,
+        "dmg": 5826
+      },
+      "candidate_before": {
+        "hp": 2647,
+        "atk": 270,
+        "def": 350,
+        "dmg": 4898
+      }
+    },
+    {
+      "floor": "MT43",
+      "pos": [
+        10,
+        10
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 248,
+      "candidate_step": 259,
+      "baseline_damage": 48,
+      "candidate_damage": 40,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2985,
+        "atk": 262,
+        "def": 342,
+        "dmg": 6160
+      },
+      "candidate_before": {
+        "hp": 4057,
+        "atk": 270,
+        "def": 350,
+        "dmg": 5488
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        2,
+        7
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 242,
+      "candidate_step": 251,
+      "baseline_damage": 48,
+      "candidate_damage": 40,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 3195,
+        "atk": 262,
+        "def": 342,
+        "dmg": 5950
+      },
+      "candidate_before": {
+        "hp": 4547,
+        "atk": 270,
+        "def": 350,
+        "dmg": 4998
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        2,
+        2
+      ],
+      "action": "击杀",
+      "eid": "redWizard",
+      "occurrence": 1,
+      "baseline_step": 205,
+      "candidate_step": 217,
+      "baseline_damage": 43,
+      "candidate_damage": 35,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2098,
+        "atk": 237,
+        "def": 337,
+        "dmg": 4047
+      },
+      "candidate_before": {
+        "hp": 2522,
+        "atk": 245,
+        "def": 345,
+        "dmg": 4023
+      }
+    },
+    {
+      "floor": "MT42",
+      "pos": [
+        11,
+        4
+      ],
+      "action": "击杀",
+      "eid": "redWizard",
+      "occurrence": 1,
+      "baseline_step": 229,
+      "candidate_step": 241,
+      "baseline_damage": 38,
+      "candidate_damage": 30,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2117,
+        "atk": 252,
+        "def": 342,
+        "dmg": 5028
+      },
+      "candidate_before": {
+        "hp": 2717,
+        "atk": 260,
+        "def": 350,
+        "dmg": 4828
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        10,
+        2
+      ],
+      "action": "击杀",
+      "eid": "redWizard",
+      "occurrence": 1,
+      "baseline_step": 211,
+      "candidate_step": 223,
+      "baseline_damage": 38,
+      "candidate_damage": 30,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 3027,
+        "atk": 242,
+        "def": 342,
+        "dmg": 4118
+      },
+      "candidate_before": {
+        "hp": 3467,
+        "atk": 250,
+        "def": 350,
+        "dmg": 4078
+      }
+    },
+    {
+      "floor": "MT43",
+      "pos": [
+        4,
+        4
+      ],
+      "action": "击杀",
+      "eid": "redWizard",
+      "occurrence": 1,
+      "baseline_step": 245,
+      "candidate_step": 256,
+      "baseline_damage": 38,
+      "candidate_damage": 30,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 3099,
+        "atk": 262,
+        "def": 342,
+        "dmg": 6046
+      },
+      "candidate_before": {
+        "hp": 4147,
+        "atk": 270,
+        "def": 350,
+        "dmg": 5398
+      }
+    },
+    {
+      "floor": "MT45",
+      "pos": [
+        7,
+        7
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 256,
+      "candidate_step": 267,
+      "baseline_damage": 38,
+      "candidate_damage": 30,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2347,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6798
+      },
+      "candidate_before": {
+        "hp": 3657,
+        "atk": 280,
+        "def": 360,
+        "dmg": 5888
+      }
+    },
+    {
+      "floor": "MT46",
+      "pos": [
+        4,
+        9
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "baseline_step": 201,
+      "candidate_step": 213,
+      "baseline_damage": 33,
+      "candidate_damage": 25,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2131,
+        "atk": 237,
+        "def": 337,
+        "dmg": 4014
+      },
+      "candidate_before": {
+        "hp": 2547,
+        "atk": 245,
+        "def": 345,
+        "dmg": 3998
+      }
+    },
+    {
+      "floor": "MT42",
+      "pos": [
+        9,
+        4
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "baseline_step": 230,
+      "candidate_step": 242,
+      "baseline_damage": 28,
+      "candidate_damage": 20,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2079,
+        "atk": 252,
+        "def": 342,
+        "dmg": 5066
+      },
+      "candidate_before": {
+        "hp": 2687,
+        "atk": 260,
+        "def": 350,
+        "dmg": 4858
+      }
+    },
+    {
+      "floor": "MT45",
+      "pos": [
+        10,
+        8
+      ],
+      "action": "击杀",
+      "eid": "redWizard",
+      "occurrence": 1,
+      "baseline_step": 257,
+      "candidate_step": 268,
+      "baseline_damage": 28,
+      "candidate_damage": 20,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2309,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6836
+      },
+      "candidate_before": {
+        "hp": 3627,
+        "atk": 280,
+        "def": 360,
+        "dmg": 5918
+      }
+    },
+    {
+      "floor": "MT45",
+      "pos": [
+        7,
+        3
+      ],
+      "action": "击杀",
+      "eid": "redWizard",
+      "occurrence": 1,
+      "baseline_step": 252,
+      "candidate_step": 263,
+      "baseline_damage": 28,
+      "candidate_damage": 20,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2439,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6706
+      },
+      "candidate_before": {
+        "hp": 3717,
+        "atk": 280,
+        "def": 360,
+        "dmg": 5828
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        9,
+        5
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "baseline_step": 208,
+      "candidate_step": 220,
+      "baseline_damage": 28,
+      "candidate_damage": 20,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2555,
+        "atk": 242,
+        "def": 337,
+        "dmg": 4090
+      },
+      "candidate_before": {
+        "hp": 2987,
+        "atk": 250,
+        "def": 345,
+        "dmg": 4058
+      }
+    },
+    {
+      "floor": "MT45",
+      "pos": [
+        5,
+        5
+      ],
+      "action": "击杀",
+      "eid": "redWizard",
+      "occurrence": 1,
+      "baseline_step": 253,
+      "candidate_step": 264,
+      "baseline_damage": 28,
+      "candidate_damage": 20,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2411,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6734
+      },
+      "candidate_before": {
+        "hp": 3697,
+        "atk": 280,
+        "def": 360,
+        "dmg": 5848
+      }
+    },
+    {
+      "floor": "MT42",
+      "pos": [
+        11,
+        6
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "baseline_step": 231,
+      "candidate_step": 243,
+      "baseline_damage": 28,
+      "candidate_damage": 20,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2051,
+        "atk": 252,
+        "def": 342,
+        "dmg": 5094
+      },
+      "candidate_before": {
+        "hp": 2667,
+        "atk": 260,
+        "def": 350,
+        "dmg": 4878
+      }
+    },
+    {
+      "floor": "MT43",
+      "pos": [
+        9,
+        7
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "baseline_step": 246,
+      "candidate_step": 257,
+      "baseline_damage": 28,
+      "candidate_damage": 20,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 3061,
+        "atk": 262,
+        "def": 342,
+        "dmg": 6084
+      },
+      "candidate_before": {
+        "hp": 4117,
+        "atk": 270,
+        "def": 350,
+        "dmg": 5428
+      }
+    },
+    {
+      "floor": "MT41",
+      "pos": [
+        3,
+        5
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "baseline_step": 241,
+      "candidate_step": 250,
+      "baseline_damage": 28,
+      "candidate_damage": 20,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 3223,
+        "atk": 262,
+        "def": 342,
+        "dmg": 5922
+      },
+      "candidate_before": {
+        "hp": 4567,
+        "atk": 270,
+        "def": 350,
+        "dmg": 4978
+      }
+    },
+    {
+      "floor": "MT43",
+      "pos": [
+        5,
+        7
+      ],
+      "action": "击杀",
+      "eid": "slimelord",
+      "occurrence": 1,
+      "baseline_step": 190,
+      "candidate_step": 202,
+      "baseline_damage": 23,
+      "candidate_damage": 15,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 1067,
+        "atk": 237,
+        "def": 287,
+        "dmg": 3828
+      },
+      "candidate_before": {
+        "hp": 1467,
+        "atk": 245,
+        "def": 295,
+        "dmg": 3828
+      }
+    },
+    {
+      "floor": "MT45",
+      "pos": [
+        5,
+        3
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "baseline_step": 254,
+      "candidate_step": 265,
+      "baseline_damage": 18,
+      "candidate_damage": 10,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2383,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6762
+      },
+      "candidate_before": {
+        "hp": 3677,
+        "atk": 280,
+        "def": 360,
+        "dmg": 5868
+      }
+    },
+    {
+      "floor": "MT42",
+      "pos": [
+        3,
+        8
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 286,
+      "candidate_step": 308,
+      "baseline_damage": 18,
+      "candidate_damage": 10,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 4999,
+        "atk": 272,
+        "def": 372,
+        "dmg": 6946
+      },
+      "candidate_before": {
+        "hp": 8177,
+        "atk": 280,
+        "def": 380,
+        "dmg": 6168
+      }
+    },
+    {
+      "floor": "MT45",
+      "pos": [
+        7,
+        5
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "baseline_step": 255,
+      "candidate_step": 266,
+      "baseline_damage": 18,
+      "candidate_damage": 10,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 2365,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6780
+      },
+      "candidate_before": {
+        "hp": 3667,
+        "atk": 280,
+        "def": 360,
+        "dmg": 5878
+      }
+    },
+    {
+      "floor": "MT42",
+      "pos": [
+        1,
+        10
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "baseline_step": 287,
+      "candidate_step": 309,
+      "baseline_damage": 18,
+      "candidate_damage": 10,
+      "damage_saved": 8,
+      "baseline_before": {
+        "hp": 5981,
+        "atk": 272,
+        "def": 372,
+        "dmg": 6964
+      },
+      "candidate_before": {
+        "hp": 9167,
+        "atk": 280,
+        "def": 380,
+        "dmg": 6178
+      }
+    }
+  ],
+  "baseline_only": [
+    {
+      "step": 259,
+      "floor": "MT46",
+      "pos": [
+        10,
+        9
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "damage": 18,
+      "before_stats": {
+        "hp": 2281,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6864
+      },
+      "after_stats": {
+        "hp": 2263,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6882
+      },
+      "note": "幸运金币后清怪 brownWizard"
+    },
+    {
+      "step": 262,
+      "floor": "MT47",
+      "pos": [
+        5,
+        11
+      ],
+      "action": "击杀",
+      "eid": "brownWizard",
+      "occurrence": 1,
+      "damage": 18,
+      "before_stats": {
+        "hp": 2225,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6920
+      },
+      "after_stats": {
+        "hp": 2207,
+        "atk": 272,
+        "def": 352,
+        "dmg": 6938
+      },
+      "note": "幸运金币后清怪 brownWizard; auto: x8y9 slimelord"
+    },
+    {
+      "step": 275,
+      "floor": "MT47",
+      "pos": [
+        1,
+        11
+      ],
+      "action": "击杀",
+      "eid": "redWizard",
+      "occurrence": 1,
+      "damage": 8,
+      "before_stats": {
+        "hp": 2207,
+        "atk": 272,
+        "def": 372,
+        "dmg": 6938
+      },
+      "after_stats": {
+        "hp": 2199,
+        "atk": 272,
+        "def": 372,
+        "dmg": 6946
+      },
+      "note": "47F x1y9法师包围-击杀x1y11"
+    }
+  ],
+  "candidate_only": [
+    {
+      "step": 294,
+      "floor": "MT48",
+      "pos": [
+        7,
+        3
+      ],
+      "action": "击杀",
+      "eid": "whiteKing",
+      "occurrence": 1,
+      "damage": 70,
+      "before_stats": {
+        "hp": 3587,
+        "atk": 280,
+        "def": 380,
+        "dmg": 5958
+      },
+      "after_stats": {
+        "hp": 3517,
+        "atk": 280,
+        "def": 380,
+        "dmg": 6028
+      },
+      "note": "幸运金币后清怪 whiteKing"
+    },
+    {
+      "step": 296,
+      "floor": "MT48",
+      "pos": [
+        7,
+        5
+      ],
+      "action": "击杀",
+      "eid": "whiteKing",
+      "occurrence": 1,
+      "damage": 70,
+      "before_stats": {
+        "hp": 3447,
+        "atk": 280,
+        "def": 380,
+        "dmg": 6098
+      },
+      "after_stats": {
+        "hp": 3377,
+        "atk": 280,
+        "def": 380,
+        "dmg": 6168
+      },
+      "note": "幸运金币后清怪 whiteKing"
+    },
+    {
+      "step": 295,
+      "floor": "MT48",
+      "pos": [
+        9,
+        3
+      ],
+      "action": "击杀",
+      "eid": "whiteKing",
+      "occurrence": 1,
+      "damage": 70,
+      "before_stats": {
+        "hp": 3517,
+        "atk": 280,
+        "def": 380,
+        "dmg": 6028
+      },
+      "after_stats": {
+        "hp": 3447,
+        "atk": 280,
+        "def": 380,
+        "dmg": 6098
+      },
+      "note": "幸运金币后清怪 whiteKing"
+    },
+    {
+      "step": 352,
+      "floor": "MT43",
+      "pos": [
+        6,
+        9
+      ],
+      "action": "击杀",
+      "eid": "darkKnight",
+      "occurrence": 1,
+      "damage": 27,
+      "before_stats": {
+        "hp": 11985,
+        "atk": 303,
+        "def": 403,
+        "dmg": 6260
+      },
+      "after_stats": {
+        "hp": 14958,
+        "atk": 303,
+        "def": 403,
+        "dmg": 6287
+      },
+      "note": "终局钥匙投资金币 darkKnight; auto: x4y9 bluePotion, x4y10 bluePotion, x4y11 bluePotion"
+    },
+    {
+      "step": 293,
+      "floor": "MT48",
+      "pos": [
+        1,
+        7
+      ],
+      "action": "击杀",
+      "eid": "redBat",
+      "occurrence": 1,
+      "damage": 10,
+      "before_stats": {
+        "hp": 3597,
+        "atk": 280,
+        "def": 380,
+        "dmg": 5948
+      },
+      "after_stats": {
+        "hp": 3587,
+        "atk": 280,
+        "def": 380,
+        "dmg": 5958
+      },
+      "note": "幸运金币后清怪 redBat; auto: x1y9 brownWizard"
+    }
+  ]
+}

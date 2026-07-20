@@ -1,0 +1,86 @@
+{
+  "schema": "mota.best.checkpoints.v1",
+  "updated": "2026-07-13",
+  "description": "阶段性存档注册表。每区 web 验证全过后导出，供后续会话 --from-checkpoint / --load-slot 恢复。save JSON 与 save1_current_snapshot.json 同格式。",
+  "slots_in_use": {
+    "save36": "zone2 end (MT20 vampire 后, 拾取 MT20 后奖励前) — 2区→3区桥起点",
+    "save37": "zone3 end (MT40) — 3区→4区桥，post-40 HP 榜单起点",
+    "save38": "zone3 bridge (MT31 入口) — MT21-30 实机打通后, MT31-40 离线 Game 类起点",
+    "save100": "zone1 end (MT10 boss 后, 补给前) - 1区->2区桥起点, 2026-07-11 web 验证后存档"
+    ,"save123": "zone3 2ATK1DEF end (MT41 entrance) - SUPERSEDED (HP=65 route); 不作 4 区起点"
+    ,"save124": "zone3 2ATK1DEF minhp25 end (MT41 x6y2 HP=25) - 不留镐旧分支"
+    ,"save150": "zone3 2ATK1DEF preserve-pickaxe end (MT41 x6y2 HP=45, YK=7, pickaxe=1) - 当前 zone3-to-zone4 TE 起点"
+  },
+  "checkpoints": [
+    {
+      "id": "zone1_end",
+      "status": "verified",
+      "boundary": "MT10 boss 后、补给前；hero MT10 [6,1] HP=122 ATK=27 DEF=27 G=313 dmg=2454 door=41/2/1",
+      "save_json": "best/checkpoints/zone1_end_save.json",
+      "browser_slot": 100,
+      "verified_date": "2026-07-11",
+      "source_walk": "best/current_best_boss_walk.md (zone1 web-verified 125 步 0 mismatch 2026-07-11, strict 修复后路径穿敌拆显式击杀 + 补 x1y10 greenSlime/x7y9 redSlime 显式 step + bossEvent checkpoint 改清怪后校验)",
+      "resume_cmd": "python scripts/search/zone2_game_route.py --from-checkpoint best/checkpoints/zone1_end_save.json"
+    },
+    {
+      "id": "zone2_end",
+      "status": "verified",
+      "boundary": "MT20 vampire 后；hero MT20 [6,6] HP=203 ATK=72 DEF=58 YK=3 BK=0 RK=0 G=989 dmg=6123 door=86/8/2（未拾 MT20 后奖励，奖励在 zone3 桥第一步收）",
+      "save_json": "best/checkpoints/zone2_end_save.json",
+      "browser_slot": 36,
+      "verified_date": "2026-07-05",
+      "source_walk": "outputs/results/zone2_live_walk.json (zone1+补给+zone2 连续 299 步 web 验证 0 mismatch 含金币 2026-07-05)",
+      "resume_cmd": "python scripts/search/zone3_game_route.py --from-checkpoint best/checkpoints/zone2_end_save.json"
+    },
+    {
+      "id": "zone3_bridge_mt31",
+      "status": "verified-live",
+      "boundary": "MT31 入口；hero MT31 [6,2] HP=1403 ATK=78 DEF=64 YK=6 BK=0 RK=0 G=1011（MT20 后奖励 +1200HP/+6ATK/+6DEF/+3YK 已收, MT21-30 实机打通: MT29 小偷暗道 + MT30 杀6史莱姆开机关门）",
+      "save_json": "best/checkpoints/zone3_bridge_mt31_save.json",
+      "browser_slot": 38,
+      "verified_date": "2026-07-05",
+      "source_walk": "outputs/results/zone3_bridge_mt21_30_walk.json (实机探路, 待录成结构化 walk；清理 outputs 前必须保留)",
+      "resume_cmd": "python scripts/search/zone3_game_route.py --from-checkpoint best/checkpoints/zone3_bridge_mt31_save.json"
+    },
+    {
+      "id": "zone2_2atk1def_end",
+      "status": "verified-live-clean-idle",
+      "boundary": "MT20 vampire after, boss text event completed; hero MT20 [6,6] HP=11 ATK=70 DEF=66 YK=1 BK=0 RK=0 G=1116 dmg=6415 door=89/9/2; lock=false event=null; 16F superPotion detour skipped/preserved for later",
+      "save_json": "best/checkpoints/zone2_2atk1def_end_save.json",
+      "browser_slot": 113,
+      "verified_date": "2026-07-10",
+      "source_walk": "best/zone2_2atk1def_branch_walk.json (live verified from save57/step132 to step276, resumed from save112/step251 after MT19 fakeWall fix; final boss text advanced with Enter and clean idle state saved to slot113)",
+      "resume_cmd": "python scripts/search/zone3_game_route.py --from-checkpoint best/checkpoints/zone2_2atk1def_end_save.json"
+    },
+    {
+      "id": "zone3_2atk1def_preserve_pickaxe_end",
+      "status": "verified",
+      "boundary": "MT41 entrance; hero MT41 [6,2] HP=45 ATK=166 DEF=166 YK=7 BK=0 RK=0 G=2423 dmg=10066 door=37/2/1; pickaxe=1 preserved for MT48 sword4",
+      "save_json": "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json",
+      "browser_slot": 150,
+      "verified_date": "2026-07-13",
+      "source_walk": "best/zone3_2atk1def_preserve_pickaxe_walk.json (238 canonical Game steps; auto battle=true,item=nopotion,wall=true; full target-click-only web verification from slot59 exact; MT35 one move clears all fake walls)",
+      "resume_cmd": "python scripts/search/zone4_game_route.py --from-checkpoint best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json"
+    },
+    {
+      "id": "zone3_2atk1def_minhp25_end",
+      "status": "verified-old-no-pickaxe",
+      "boundary": "MT41 entrance (3区 minhp25 终点 / 4区 TE 起点); hero MT41 [6,2] HP=25 ATK=174 DEF=166 YK=4 BK=0 RK=0 G=1828 dmg=8086 door=27/2/1 (minhp25: 删 MT19 x4y1 redPotion +100 控 4 区半血陷阱)",
+      "save_json": "best/checkpoints/zone3_2atk1def_minhp25_end_save.json",
+      "browser_slot": 124,
+      "verified_date": "2026-07-12",
+      "source_walk": "best/zone3_2atk1def_minhp_walk.json (212 target-click-only steps; auto battle=true,item=nopotion,wall=true; web 201 entry 0 mismatch from slot59, final HP=25 exact match)",
+      "resume_cmd": "python scripts/search/zone4_game_route.py --from-checkpoint best/checkpoints/zone3_2atk1def_minhp25_end_save.json"
+    },
+    {
+      "id": "zone3_2atk1def_end",
+      "status": "superseded-by-minhp25",
+      "boundary": "MT41 entrance HP=65 ATK=174 DEF=166 YK=8 (旧 HP=65 路线; HP=125 walk 已删, minhp25 HP=25 取代)",
+      "save_json": "best/checkpoints/zone3_2atk1def_end_save.json",
+      "browser_slot": 123,
+      "verified_date": "2026-07-12",
+      "source_walk": "superseded (HP=65 旧路线; HP=125 版 walk 已删; 用 zone3_2atk1def_minhp25_end)",
+      "resume_cmd": "(deprecated) use zone3_2atk1def_minhp25_end"
+    }
+  ]
+}

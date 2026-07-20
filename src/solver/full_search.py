@@ -6,6 +6,17 @@
 import json, math, heapq, time, os
 from collections import deque
 
+# Canonical generic search API.  Historical helpers below remain available for
+# reproducibility, but new route/search code must expand the shared Game model
+# through this engine instead of copying combat/map rules into another Replay.
+from src.solver.game_astar import (
+    GameAction,
+    GameAStar,
+    GameAStarResult,
+    click_action,
+    exact_game_key,
+)
+
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(ROOT_DIR, 'data', 'maps')
 os.chdir(ROOT_DIR)

@@ -1,0 +1,9073 @@
+{
+  "meta": {
+    "source": "data/maps/enemy_stats.json",
+    "formula": "damage = init + (turns-1)*per + turns*counter; turns=ceil(hp/(atk-def)), per=max(0,enemy.atk-hero.def)",
+    "note": "atk 阈值=使 turns 突降的 atk; def>=enemy.atk 免伤; 宝石减伤在给定 hero atk/def 下算"
+  },
+  "enemies": {
+    "greenSlime": {
+      "name": "绿色史来姆",
+      "hp": 35,
+      "atk": 18,
+      "def": 1,
+      "money": 1,
+      "special": 0,
+      "def_immune": 18,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 36,
+          "hero_hit": 35
+        },
+        {
+          "turns": 2,
+          "atk_needed": 19,
+          "hero_hit": 18
+        },
+        {
+          "turns": 3,
+          "atk_needed": 13,
+          "hero_hit": 12
+        },
+        {
+          "turns": 4,
+          "atk_needed": 10,
+          "hero_hit": 9
+        },
+        {
+          "turns": 5,
+          "atk_needed": 8,
+          "hero_hit": 7
+        },
+        {
+          "turns": 6,
+          "atk_needed": 7,
+          "hero_hit": 6
+        },
+        {
+          "turns": 7,
+          "atk_needed": 6,
+          "hero_hit": 5
+        },
+        {
+          "turns": 9,
+          "atk_needed": 5,
+          "hero_hit": 4
+        },
+        {
+          "turns": 12,
+          "atk_needed": 4,
+          "hero_hit": 3
+        },
+        {
+          "turns": 18,
+          "atk_needed": 3,
+          "hero_hit": 2
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 36,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 19,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 7,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 6,
+          "turns_after": 7,
+          "turns_before": 9,
+          "saves_turns": 2
+        },
+        {
+          "atk": 5,
+          "turns_after": 9,
+          "turns_before": 12,
+          "saves_turns": 3
+        },
+        {
+          "atk": 4,
+          "turns_after": 12,
+          "turns_before": 18,
+          "saves_turns": 6
+        }
+      ]
+    },
+    "redSlime": {
+      "name": "红色史来姆",
+      "hp": 45,
+      "atk": 20,
+      "def": 2,
+      "money": 2,
+      "special": 0,
+      "def_immune": 20,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 47,
+          "hero_hit": 45
+        },
+        {
+          "turns": 2,
+          "atk_needed": 25,
+          "hero_hit": 23
+        },
+        {
+          "turns": 3,
+          "atk_needed": 17,
+          "hero_hit": 15
+        },
+        {
+          "turns": 4,
+          "atk_needed": 14,
+          "hero_hit": 12
+        },
+        {
+          "turns": 5,
+          "atk_needed": 11,
+          "hero_hit": 9
+        },
+        {
+          "turns": 6,
+          "atk_needed": 10,
+          "hero_hit": 8
+        },
+        {
+          "turns": 7,
+          "atk_needed": 9,
+          "hero_hit": 7
+        },
+        {
+          "turns": 8,
+          "atk_needed": 8,
+          "hero_hit": 6
+        },
+        {
+          "turns": 9,
+          "atk_needed": 7,
+          "hero_hit": 5
+        },
+        {
+          "turns": 12,
+          "atk_needed": 6,
+          "hero_hit": 4
+        },
+        {
+          "turns": 15,
+          "atk_needed": 5,
+          "hero_hit": 3
+        },
+        {
+          "turns": 23,
+          "atk_needed": 4,
+          "hero_hit": 2
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 47,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 14,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 11,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 9,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 7,
+          "turns_after": 9,
+          "turns_before": 12,
+          "saves_turns": 3
+        },
+        {
+          "atk": 6,
+          "turns_after": 12,
+          "turns_before": 15,
+          "saves_turns": 3
+        },
+        {
+          "atk": 5,
+          "turns_after": 15,
+          "turns_before": 23,
+          "saves_turns": 8
+        }
+      ]
+    },
+    "blackSlime": {
+      "name": "大史来姆",
+      "hp": 130,
+      "atk": 60,
+      "def": 3,
+      "money": 8,
+      "special": 0,
+      "def_immune": 60,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 133,
+          "hero_hit": 130
+        },
+        {
+          "turns": 2,
+          "atk_needed": 68,
+          "hero_hit": 65
+        },
+        {
+          "turns": 3,
+          "atk_needed": 47,
+          "hero_hit": 44
+        },
+        {
+          "turns": 4,
+          "atk_needed": 36,
+          "hero_hit": 33
+        },
+        {
+          "turns": 5,
+          "atk_needed": 29,
+          "hero_hit": 26
+        },
+        {
+          "turns": 6,
+          "atk_needed": 25,
+          "hero_hit": 22
+        },
+        {
+          "turns": 7,
+          "atk_needed": 22,
+          "hero_hit": 19
+        },
+        {
+          "turns": 8,
+          "atk_needed": 20,
+          "hero_hit": 17
+        },
+        {
+          "turns": 9,
+          "atk_needed": 18,
+          "hero_hit": 15
+        },
+        {
+          "turns": 10,
+          "atk_needed": 16,
+          "hero_hit": 13
+        },
+        {
+          "turns": 11,
+          "atk_needed": 15,
+          "hero_hit": 12
+        },
+        {
+          "turns": 12,
+          "atk_needed": 14,
+          "hero_hit": 11
+        },
+        {
+          "turns": 13,
+          "atk_needed": 13,
+          "hero_hit": 10
+        },
+        {
+          "turns": 15,
+          "atk_needed": 12,
+          "hero_hit": 9
+        },
+        {
+          "turns": 17,
+          "atk_needed": 11,
+          "hero_hit": 8
+        },
+        {
+          "turns": 19,
+          "atk_needed": 10,
+          "hero_hit": 7
+        },
+        {
+          "turns": 22,
+          "atk_needed": 9,
+          "hero_hit": 6
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 133,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 68,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 47,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 36,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 29,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 22,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 18,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 16,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 14,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 12,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 11,
+          "turns_after": 17,
+          "turns_before": 19,
+          "saves_turns": 2
+        },
+        {
+          "atk": 10,
+          "turns_after": 19,
+          "turns_before": 22,
+          "saves_turns": 3
+        }
+      ]
+    },
+    "slimelord": {
+      "name": "史来姆王",
+      "hp": 360,
+      "atk": 310,
+      "def": 20,
+      "money": 40,
+      "special": 0,
+      "def_immune": 310,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 380,
+          "hero_hit": 360
+        },
+        {
+          "turns": 2,
+          "atk_needed": 200,
+          "hero_hit": 180
+        },
+        {
+          "turns": 3,
+          "atk_needed": 140,
+          "hero_hit": 120
+        },
+        {
+          "turns": 4,
+          "atk_needed": 110,
+          "hero_hit": 90
+        },
+        {
+          "turns": 5,
+          "atk_needed": 92,
+          "hero_hit": 72
+        },
+        {
+          "turns": 6,
+          "atk_needed": 80,
+          "hero_hit": 60
+        },
+        {
+          "turns": 7,
+          "atk_needed": 72,
+          "hero_hit": 52
+        },
+        {
+          "turns": 8,
+          "atk_needed": 65,
+          "hero_hit": 45
+        },
+        {
+          "turns": 9,
+          "atk_needed": 60,
+          "hero_hit": 40
+        },
+        {
+          "turns": 10,
+          "atk_needed": 56,
+          "hero_hit": 36
+        },
+        {
+          "turns": 11,
+          "atk_needed": 53,
+          "hero_hit": 33
+        },
+        {
+          "turns": 12,
+          "atk_needed": 50,
+          "hero_hit": 30
+        },
+        {
+          "turns": 13,
+          "atk_needed": 48,
+          "hero_hit": 28
+        },
+        {
+          "turns": 14,
+          "atk_needed": 46,
+          "hero_hit": 26
+        },
+        {
+          "turns": 15,
+          "atk_needed": 44,
+          "hero_hit": 24
+        },
+        {
+          "turns": 16,
+          "atk_needed": 43,
+          "hero_hit": 23
+        },
+        {
+          "turns": 17,
+          "atk_needed": 42,
+          "hero_hit": 22
+        },
+        {
+          "turns": 18,
+          "atk_needed": 40,
+          "hero_hit": 20
+        },
+        {
+          "turns": 19,
+          "atk_needed": 39,
+          "hero_hit": 19
+        },
+        {
+          "turns": 20,
+          "atk_needed": 38,
+          "hero_hit": 18
+        },
+        {
+          "turns": 22,
+          "atk_needed": 37,
+          "hero_hit": 17
+        },
+        {
+          "turns": 23,
+          "atk_needed": 36,
+          "hero_hit": 16
+        },
+        {
+          "turns": 24,
+          "atk_needed": 35,
+          "hero_hit": 15
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 380,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 200,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 140,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 110,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 92,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 80,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 72,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 65,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 60,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 56,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 53,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 48,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 46,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 44,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 43,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 42,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 40,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 39,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 38,
+          "turns_after": 20,
+          "turns_before": 22,
+          "saves_turns": 2
+        },
+        {
+          "atk": 37,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 36,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "bat": {
+      "name": "小蝙蝠",
+      "hp": 35,
+      "atk": 38,
+      "def": 3,
+      "money": 3,
+      "special": 0,
+      "def_immune": 38,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 38,
+          "hero_hit": 35
+        },
+        {
+          "turns": 2,
+          "atk_needed": 21,
+          "hero_hit": 18
+        },
+        {
+          "turns": 3,
+          "atk_needed": 15,
+          "hero_hit": 12
+        },
+        {
+          "turns": 4,
+          "atk_needed": 12,
+          "hero_hit": 9
+        },
+        {
+          "turns": 5,
+          "atk_needed": 10,
+          "hero_hit": 7
+        },
+        {
+          "turns": 6,
+          "atk_needed": 9,
+          "hero_hit": 6
+        },
+        {
+          "turns": 7,
+          "atk_needed": 8,
+          "hero_hit": 5
+        },
+        {
+          "turns": 9,
+          "atk_needed": 7,
+          "hero_hit": 4
+        },
+        {
+          "turns": 12,
+          "atk_needed": 6,
+          "hero_hit": 3
+        },
+        {
+          "turns": 18,
+          "atk_needed": 5,
+          "hero_hit": 2
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 38,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 21,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 12,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 9,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 7,
+          "turns_before": 9,
+          "saves_turns": 2
+        },
+        {
+          "atk": 7,
+          "turns_after": 9,
+          "turns_before": 12,
+          "saves_turns": 3
+        },
+        {
+          "atk": 6,
+          "turns_after": 12,
+          "turns_before": 18,
+          "saves_turns": 6
+        }
+      ]
+    },
+    "bigBat": {
+      "name": "大蝙蝠",
+      "hp": 60,
+      "atk": 100,
+      "def": 8,
+      "money": 12,
+      "special": 0,
+      "def_immune": 100,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 68,
+          "hero_hit": 60
+        },
+        {
+          "turns": 2,
+          "atk_needed": 38,
+          "hero_hit": 30
+        },
+        {
+          "turns": 3,
+          "atk_needed": 28,
+          "hero_hit": 20
+        },
+        {
+          "turns": 4,
+          "atk_needed": 23,
+          "hero_hit": 15
+        },
+        {
+          "turns": 5,
+          "atk_needed": 20,
+          "hero_hit": 12
+        },
+        {
+          "turns": 6,
+          "atk_needed": 18,
+          "hero_hit": 10
+        },
+        {
+          "turns": 7,
+          "atk_needed": 17,
+          "hero_hit": 9
+        },
+        {
+          "turns": 8,
+          "atk_needed": 16,
+          "hero_hit": 8
+        },
+        {
+          "turns": 9,
+          "atk_needed": 15,
+          "hero_hit": 7
+        },
+        {
+          "turns": 10,
+          "atk_needed": 14,
+          "hero_hit": 6
+        },
+        {
+          "turns": 12,
+          "atk_needed": 13,
+          "hero_hit": 5
+        },
+        {
+          "turns": 15,
+          "atk_needed": 12,
+          "hero_hit": 4
+        },
+        {
+          "turns": 20,
+          "atk_needed": 11,
+          "hero_hit": 3
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 68,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 38,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 28,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 23,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 18,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 16,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 14,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 13,
+          "turns_after": 12,
+          "turns_before": 15,
+          "saves_turns": 3
+        },
+        {
+          "atk": 12,
+          "turns_after": 15,
+          "turns_before": 20,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "redBat": {
+      "name": "吸血蝙蝠",
+      "hp": 200,
+      "atk": 390,
+      "def": 90,
+      "money": 50,
+      "special": 0,
+      "def_immune": 390,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 290,
+          "hero_hit": 200
+        },
+        {
+          "turns": 2,
+          "atk_needed": 190,
+          "hero_hit": 100
+        },
+        {
+          "turns": 3,
+          "atk_needed": 157,
+          "hero_hit": 67
+        },
+        {
+          "turns": 4,
+          "atk_needed": 140,
+          "hero_hit": 50
+        },
+        {
+          "turns": 5,
+          "atk_needed": 130,
+          "hero_hit": 40
+        },
+        {
+          "turns": 6,
+          "atk_needed": 124,
+          "hero_hit": 34
+        },
+        {
+          "turns": 7,
+          "atk_needed": 119,
+          "hero_hit": 29
+        },
+        {
+          "turns": 8,
+          "atk_needed": 115,
+          "hero_hit": 25
+        },
+        {
+          "turns": 9,
+          "atk_needed": 113,
+          "hero_hit": 23
+        },
+        {
+          "turns": 10,
+          "atk_needed": 110,
+          "hero_hit": 20
+        },
+        {
+          "turns": 11,
+          "atk_needed": 109,
+          "hero_hit": 19
+        },
+        {
+          "turns": 12,
+          "atk_needed": 107,
+          "hero_hit": 17
+        },
+        {
+          "turns": 13,
+          "atk_needed": 106,
+          "hero_hit": 16
+        },
+        {
+          "turns": 14,
+          "atk_needed": 105,
+          "hero_hit": 15
+        },
+        {
+          "turns": 15,
+          "atk_needed": 104,
+          "hero_hit": 14
+        },
+        {
+          "turns": 16,
+          "atk_needed": 103,
+          "hero_hit": 13
+        },
+        {
+          "turns": 17,
+          "atk_needed": 102,
+          "hero_hit": 12
+        },
+        {
+          "turns": 19,
+          "atk_needed": 101,
+          "hero_hit": 11
+        },
+        {
+          "turns": 20,
+          "atk_needed": 100,
+          "hero_hit": 10
+        },
+        {
+          "turns": 23,
+          "atk_needed": 99,
+          "hero_hit": 9
+        },
+        {
+          "turns": 25,
+          "atk_needed": 98,
+          "hero_hit": 8
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 290,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 190,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 157,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 140,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 130,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 124,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 119,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 115,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 113,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 110,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 109,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 107,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 106,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 105,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 104,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 103,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 102,
+          "turns_after": 17,
+          "turns_before": 19,
+          "saves_turns": 2
+        },
+        {
+          "atk": 101,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 100,
+          "turns_after": 20,
+          "turns_before": 23,
+          "saves_turns": 3
+        },
+        {
+          "atk": 99,
+          "turns_after": 23,
+          "turns_before": 25,
+          "saves_turns": 2
+        }
+      ]
+    },
+    "vampire": {
+      "name": "吸血鬼",
+      "hp": 444,
+      "atk": 199,
+      "def": 66,
+      "money": 144,
+      "special": 0,
+      "def_immune": 199,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 510,
+          "hero_hit": 444
+        },
+        {
+          "turns": 2,
+          "atk_needed": 288,
+          "hero_hit": 222
+        },
+        {
+          "turns": 3,
+          "atk_needed": 214,
+          "hero_hit": 148
+        },
+        {
+          "turns": 4,
+          "atk_needed": 177,
+          "hero_hit": 111
+        },
+        {
+          "turns": 5,
+          "atk_needed": 155,
+          "hero_hit": 89
+        },
+        {
+          "turns": 6,
+          "atk_needed": 140,
+          "hero_hit": 74
+        },
+        {
+          "turns": 7,
+          "atk_needed": 130,
+          "hero_hit": 64
+        },
+        {
+          "turns": 8,
+          "atk_needed": 122,
+          "hero_hit": 56
+        },
+        {
+          "turns": 9,
+          "atk_needed": 116,
+          "hero_hit": 50
+        },
+        {
+          "turns": 10,
+          "atk_needed": 111,
+          "hero_hit": 45
+        },
+        {
+          "turns": 11,
+          "atk_needed": 107,
+          "hero_hit": 41
+        },
+        {
+          "turns": 12,
+          "atk_needed": 103,
+          "hero_hit": 37
+        },
+        {
+          "turns": 13,
+          "atk_needed": 101,
+          "hero_hit": 35
+        },
+        {
+          "turns": 14,
+          "atk_needed": 98,
+          "hero_hit": 32
+        },
+        {
+          "turns": 15,
+          "atk_needed": 96,
+          "hero_hit": 30
+        },
+        {
+          "turns": 16,
+          "atk_needed": 94,
+          "hero_hit": 28
+        },
+        {
+          "turns": 17,
+          "atk_needed": 93,
+          "hero_hit": 27
+        },
+        {
+          "turns": 18,
+          "atk_needed": 91,
+          "hero_hit": 25
+        },
+        {
+          "turns": 19,
+          "atk_needed": 90,
+          "hero_hit": 24
+        },
+        {
+          "turns": 20,
+          "atk_needed": 89,
+          "hero_hit": 23
+        },
+        {
+          "turns": 21,
+          "atk_needed": 88,
+          "hero_hit": 22
+        },
+        {
+          "turns": 22,
+          "atk_needed": 87,
+          "hero_hit": 21
+        },
+        {
+          "turns": 23,
+          "atk_needed": 86,
+          "hero_hit": 20
+        },
+        {
+          "turns": 24,
+          "atk_needed": 85,
+          "hero_hit": 19
+        },
+        {
+          "turns": 25,
+          "atk_needed": 84,
+          "hero_hit": 18
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 510,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 288,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 214,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 177,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 155,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 140,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 130,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 122,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 116,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 111,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 107,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 103,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 101,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 98,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 96,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 94,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 93,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 91,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 90,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 89,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 88,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 87,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 86,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 85,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "skeleton": {
+      "name": "骷髅人",
+      "hp": 50,
+      "atk": 42,
+      "def": 6,
+      "money": 6,
+      "special": 0,
+      "def_immune": 42,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 56,
+          "hero_hit": 50
+        },
+        {
+          "turns": 2,
+          "atk_needed": 31,
+          "hero_hit": 25
+        },
+        {
+          "turns": 3,
+          "atk_needed": 23,
+          "hero_hit": 17
+        },
+        {
+          "turns": 4,
+          "atk_needed": 19,
+          "hero_hit": 13
+        },
+        {
+          "turns": 5,
+          "atk_needed": 16,
+          "hero_hit": 10
+        },
+        {
+          "turns": 6,
+          "atk_needed": 15,
+          "hero_hit": 9
+        },
+        {
+          "turns": 7,
+          "atk_needed": 14,
+          "hero_hit": 8
+        },
+        {
+          "turns": 8,
+          "atk_needed": 13,
+          "hero_hit": 7
+        },
+        {
+          "turns": 9,
+          "atk_needed": 12,
+          "hero_hit": 6
+        },
+        {
+          "turns": 10,
+          "atk_needed": 11,
+          "hero_hit": 5
+        },
+        {
+          "turns": 13,
+          "atk_needed": 10,
+          "hero_hit": 4
+        },
+        {
+          "turns": 17,
+          "atk_needed": 9,
+          "hero_hit": 3
+        },
+        {
+          "turns": 25,
+          "atk_needed": 8,
+          "hero_hit": 2
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 56,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 31,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 23,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 19,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 16,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 14,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 12,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 11,
+          "turns_after": 10,
+          "turns_before": 13,
+          "saves_turns": 3
+        },
+        {
+          "atk": 10,
+          "turns_after": 13,
+          "turns_before": 17,
+          "saves_turns": 4
+        },
+        {
+          "atk": 9,
+          "turns_after": 17,
+          "turns_before": 25,
+          "saves_turns": 8
+        }
+      ]
+    },
+    "skeletonSoldier": {
+      "name": "骷髅士兵",
+      "hp": 55,
+      "atk": 52,
+      "def": 12,
+      "money": 8,
+      "special": 0,
+      "def_immune": 52,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 67,
+          "hero_hit": 55
+        },
+        {
+          "turns": 2,
+          "atk_needed": 40,
+          "hero_hit": 28
+        },
+        {
+          "turns": 3,
+          "atk_needed": 31,
+          "hero_hit": 19
+        },
+        {
+          "turns": 4,
+          "atk_needed": 26,
+          "hero_hit": 14
+        },
+        {
+          "turns": 5,
+          "atk_needed": 23,
+          "hero_hit": 11
+        },
+        {
+          "turns": 6,
+          "atk_needed": 22,
+          "hero_hit": 10
+        },
+        {
+          "turns": 7,
+          "atk_needed": 20,
+          "hero_hit": 8
+        },
+        {
+          "turns": 8,
+          "atk_needed": 19,
+          "hero_hit": 7
+        },
+        {
+          "turns": 10,
+          "atk_needed": 18,
+          "hero_hit": 6
+        },
+        {
+          "turns": 11,
+          "atk_needed": 17,
+          "hero_hit": 5
+        },
+        {
+          "turns": 14,
+          "atk_needed": 16,
+          "hero_hit": 4
+        },
+        {
+          "turns": 19,
+          "atk_needed": 15,
+          "hero_hit": 3
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 67,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 40,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 31,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 26,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 23,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 22,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 19,
+          "turns_after": 8,
+          "turns_before": 10,
+          "saves_turns": 2
+        },
+        {
+          "atk": 18,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 11,
+          "turns_before": 14,
+          "saves_turns": 3
+        },
+        {
+          "atk": 16,
+          "turns_after": 14,
+          "turns_before": 19,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "skeletonCaptain": {
+      "name": "骷髅队长",
+      "hp": 100,
+      "atk": 65,
+      "def": 15,
+      "money": 30,
+      "special": 0,
+      "def_immune": 65,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 115,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 65,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 49,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 40,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 35,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 32,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 30,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 28,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 27,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 25,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 24,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 23,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 22,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 21,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 20,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 19,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 115,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 65,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 49,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 40,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 35,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 32,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 30,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 28,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 27,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 24,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 23,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 22,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 21,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 20,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "ghostSkeleton": {
+      "name": "鬼战士",
+      "hp": 220,
+      "atk": 180,
+      "def": 30,
+      "money": 35,
+      "special": 0,
+      "def_immune": 180,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 250,
+          "hero_hit": 220
+        },
+        {
+          "turns": 2,
+          "atk_needed": 140,
+          "hero_hit": 110
+        },
+        {
+          "turns": 3,
+          "atk_needed": 104,
+          "hero_hit": 74
+        },
+        {
+          "turns": 4,
+          "atk_needed": 85,
+          "hero_hit": 55
+        },
+        {
+          "turns": 5,
+          "atk_needed": 74,
+          "hero_hit": 44
+        },
+        {
+          "turns": 6,
+          "atk_needed": 67,
+          "hero_hit": 37
+        },
+        {
+          "turns": 7,
+          "atk_needed": 62,
+          "hero_hit": 32
+        },
+        {
+          "turns": 8,
+          "atk_needed": 58,
+          "hero_hit": 28
+        },
+        {
+          "turns": 9,
+          "atk_needed": 55,
+          "hero_hit": 25
+        },
+        {
+          "turns": 10,
+          "atk_needed": 52,
+          "hero_hit": 22
+        },
+        {
+          "turns": 11,
+          "atk_needed": 50,
+          "hero_hit": 20
+        },
+        {
+          "turns": 12,
+          "atk_needed": 49,
+          "hero_hit": 19
+        },
+        {
+          "turns": 13,
+          "atk_needed": 47,
+          "hero_hit": 17
+        },
+        {
+          "turns": 14,
+          "atk_needed": 46,
+          "hero_hit": 16
+        },
+        {
+          "turns": 15,
+          "atk_needed": 45,
+          "hero_hit": 15
+        },
+        {
+          "turns": 16,
+          "atk_needed": 44,
+          "hero_hit": 14
+        },
+        {
+          "turns": 17,
+          "atk_needed": 43,
+          "hero_hit": 13
+        },
+        {
+          "turns": 19,
+          "atk_needed": 42,
+          "hero_hit": 12
+        },
+        {
+          "turns": 20,
+          "atk_needed": 41,
+          "hero_hit": 11
+        },
+        {
+          "turns": 22,
+          "atk_needed": 40,
+          "hero_hit": 10
+        },
+        {
+          "turns": 25,
+          "atk_needed": 39,
+          "hero_hit": 9
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 250,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 140,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 104,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 85,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 74,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 67,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 62,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 58,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 55,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 52,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 49,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 47,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 46,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 45,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 44,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 43,
+          "turns_after": 17,
+          "turns_before": 19,
+          "saves_turns": 2
+        },
+        {
+          "atk": 42,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 41,
+          "turns_after": 20,
+          "turns_before": 22,
+          "saves_turns": 2
+        },
+        {
+          "atk": 40,
+          "turns_after": 22,
+          "turns_before": 25,
+          "saves_turns": 3
+        }
+      ]
+    },
+    "zombie": {
+      "name": "兽人",
+      "hp": 260,
+      "atk": 85,
+      "def": 5,
+      "money": 18,
+      "special": 0,
+      "def_immune": 85,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 265,
+          "hero_hit": 260
+        },
+        {
+          "turns": 2,
+          "atk_needed": 135,
+          "hero_hit": 130
+        },
+        {
+          "turns": 3,
+          "atk_needed": 92,
+          "hero_hit": 87
+        },
+        {
+          "turns": 4,
+          "atk_needed": 70,
+          "hero_hit": 65
+        },
+        {
+          "turns": 5,
+          "atk_needed": 57,
+          "hero_hit": 52
+        },
+        {
+          "turns": 6,
+          "atk_needed": 49,
+          "hero_hit": 44
+        },
+        {
+          "turns": 7,
+          "atk_needed": 43,
+          "hero_hit": 38
+        },
+        {
+          "turns": 8,
+          "atk_needed": 38,
+          "hero_hit": 33
+        },
+        {
+          "turns": 9,
+          "atk_needed": 34,
+          "hero_hit": 29
+        },
+        {
+          "turns": 10,
+          "atk_needed": 31,
+          "hero_hit": 26
+        },
+        {
+          "turns": 11,
+          "atk_needed": 29,
+          "hero_hit": 24
+        },
+        {
+          "turns": 12,
+          "atk_needed": 27,
+          "hero_hit": 22
+        },
+        {
+          "turns": 13,
+          "atk_needed": 25,
+          "hero_hit": 20
+        },
+        {
+          "turns": 14,
+          "atk_needed": 24,
+          "hero_hit": 19
+        },
+        {
+          "turns": 15,
+          "atk_needed": 23,
+          "hero_hit": 18
+        },
+        {
+          "turns": 16,
+          "atk_needed": 22,
+          "hero_hit": 17
+        },
+        {
+          "turns": 17,
+          "atk_needed": 21,
+          "hero_hit": 16
+        },
+        {
+          "turns": 18,
+          "atk_needed": 20,
+          "hero_hit": 15
+        },
+        {
+          "turns": 19,
+          "atk_needed": 19,
+          "hero_hit": 14
+        },
+        {
+          "turns": 20,
+          "atk_needed": 18,
+          "hero_hit": 13
+        },
+        {
+          "turns": 22,
+          "atk_needed": 17,
+          "hero_hit": 12
+        },
+        {
+          "turns": 24,
+          "atk_needed": 16,
+          "hero_hit": 11
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 265,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 135,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 92,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 70,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 57,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 49,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 43,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 38,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 31,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 29,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 27,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 24,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 23,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 22,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 21,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 19,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 18,
+          "turns_after": 20,
+          "turns_before": 22,
+          "saves_turns": 2
+        },
+        {
+          "atk": 17,
+          "turns_after": 22,
+          "turns_before": 24,
+          "saves_turns": 2
+        }
+      ]
+    },
+    "zombieKnight": {
+      "name": "兽人武士",
+      "hp": 320,
+      "atk": 120,
+      "def": 15,
+      "money": 30,
+      "special": 0,
+      "def_immune": 120,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 335,
+          "hero_hit": 320
+        },
+        {
+          "turns": 2,
+          "atk_needed": 175,
+          "hero_hit": 160
+        },
+        {
+          "turns": 3,
+          "atk_needed": 122,
+          "hero_hit": 107
+        },
+        {
+          "turns": 4,
+          "atk_needed": 95,
+          "hero_hit": 80
+        },
+        {
+          "turns": 5,
+          "atk_needed": 79,
+          "hero_hit": 64
+        },
+        {
+          "turns": 6,
+          "atk_needed": 69,
+          "hero_hit": 54
+        },
+        {
+          "turns": 7,
+          "atk_needed": 61,
+          "hero_hit": 46
+        },
+        {
+          "turns": 8,
+          "atk_needed": 55,
+          "hero_hit": 40
+        },
+        {
+          "turns": 9,
+          "atk_needed": 51,
+          "hero_hit": 36
+        },
+        {
+          "turns": 10,
+          "atk_needed": 47,
+          "hero_hit": 32
+        },
+        {
+          "turns": 11,
+          "atk_needed": 45,
+          "hero_hit": 30
+        },
+        {
+          "turns": 12,
+          "atk_needed": 42,
+          "hero_hit": 27
+        },
+        {
+          "turns": 13,
+          "atk_needed": 40,
+          "hero_hit": 25
+        },
+        {
+          "turns": 14,
+          "atk_needed": 38,
+          "hero_hit": 23
+        },
+        {
+          "turns": 15,
+          "atk_needed": 37,
+          "hero_hit": 22
+        },
+        {
+          "turns": 16,
+          "atk_needed": 35,
+          "hero_hit": 20
+        },
+        {
+          "turns": 17,
+          "atk_needed": 34,
+          "hero_hit": 19
+        },
+        {
+          "turns": 18,
+          "atk_needed": 33,
+          "hero_hit": 18
+        },
+        {
+          "turns": 19,
+          "atk_needed": 32,
+          "hero_hit": 17
+        },
+        {
+          "turns": 20,
+          "atk_needed": 31,
+          "hero_hit": 16
+        },
+        {
+          "turns": 22,
+          "atk_needed": 30,
+          "hero_hit": 15
+        },
+        {
+          "turns": 23,
+          "atk_needed": 29,
+          "hero_hit": 14
+        },
+        {
+          "turns": 25,
+          "atk_needed": 28,
+          "hero_hit": 13
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 335,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 175,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 122,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 95,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 79,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 69,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 61,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 55,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 51,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 47,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 45,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 42,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 40,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 38,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 37,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 35,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 33,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 32,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 31,
+          "turns_after": 20,
+          "turns_before": 22,
+          "saves_turns": 2
+        },
+        {
+          "atk": 30,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 29,
+          "turns_after": 23,
+          "turns_before": 25,
+          "saves_turns": 2
+        }
+      ]
+    },
+    "rock": {
+      "name": "石头人",
+      "hp": 20,
+      "atk": 100,
+      "def": 68,
+      "money": 28,
+      "special": 0,
+      "def_immune": 100,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 88,
+          "hero_hit": 20
+        },
+        {
+          "turns": 2,
+          "atk_needed": 78,
+          "hero_hit": 10
+        },
+        {
+          "turns": 3,
+          "atk_needed": 75,
+          "hero_hit": 7
+        },
+        {
+          "turns": 4,
+          "atk_needed": 73,
+          "hero_hit": 5
+        },
+        {
+          "turns": 5,
+          "atk_needed": 72,
+          "hero_hit": 4
+        },
+        {
+          "turns": 7,
+          "atk_needed": 71,
+          "hero_hit": 3
+        },
+        {
+          "turns": 10,
+          "atk_needed": 70,
+          "hero_hit": 2
+        },
+        {
+          "turns": 20,
+          "atk_needed": 69,
+          "hero_hit": 1
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 88,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 78,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 75,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 73,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 72,
+          "turns_after": 5,
+          "turns_before": 7,
+          "saves_turns": 2
+        },
+        {
+          "atk": 71,
+          "turns_after": 7,
+          "turns_before": 10,
+          "saves_turns": 3
+        },
+        {
+          "atk": 70,
+          "turns_after": 10,
+          "turns_before": 20,
+          "saves_turns": 10
+        }
+      ]
+    },
+    "slimeMan": {
+      "name": "幽灵",
+      "hp": 320,
+      "atk": 140,
+      "def": 20,
+      "money": 30,
+      "special": 0,
+      "def_immune": 140,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 340,
+          "hero_hit": 320
+        },
+        {
+          "turns": 2,
+          "atk_needed": 180,
+          "hero_hit": 160
+        },
+        {
+          "turns": 3,
+          "atk_needed": 127,
+          "hero_hit": 107
+        },
+        {
+          "turns": 4,
+          "atk_needed": 100,
+          "hero_hit": 80
+        },
+        {
+          "turns": 5,
+          "atk_needed": 84,
+          "hero_hit": 64
+        },
+        {
+          "turns": 6,
+          "atk_needed": 74,
+          "hero_hit": 54
+        },
+        {
+          "turns": 7,
+          "atk_needed": 66,
+          "hero_hit": 46
+        },
+        {
+          "turns": 8,
+          "atk_needed": 60,
+          "hero_hit": 40
+        },
+        {
+          "turns": 9,
+          "atk_needed": 56,
+          "hero_hit": 36
+        },
+        {
+          "turns": 10,
+          "atk_needed": 52,
+          "hero_hit": 32
+        },
+        {
+          "turns": 11,
+          "atk_needed": 50,
+          "hero_hit": 30
+        },
+        {
+          "turns": 12,
+          "atk_needed": 47,
+          "hero_hit": 27
+        },
+        {
+          "turns": 13,
+          "atk_needed": 45,
+          "hero_hit": 25
+        },
+        {
+          "turns": 14,
+          "atk_needed": 43,
+          "hero_hit": 23
+        },
+        {
+          "turns": 15,
+          "atk_needed": 42,
+          "hero_hit": 22
+        },
+        {
+          "turns": 16,
+          "atk_needed": 40,
+          "hero_hit": 20
+        },
+        {
+          "turns": 17,
+          "atk_needed": 39,
+          "hero_hit": 19
+        },
+        {
+          "turns": 18,
+          "atk_needed": 38,
+          "hero_hit": 18
+        },
+        {
+          "turns": 19,
+          "atk_needed": 37,
+          "hero_hit": 17
+        },
+        {
+          "turns": 20,
+          "atk_needed": 36,
+          "hero_hit": 16
+        },
+        {
+          "turns": 22,
+          "atk_needed": 35,
+          "hero_hit": 15
+        },
+        {
+          "turns": 23,
+          "atk_needed": 34,
+          "hero_hit": 14
+        },
+        {
+          "turns": 25,
+          "atk_needed": 33,
+          "hero_hit": 13
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 340,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 180,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 127,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 100,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 84,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 74,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 66,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 60,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 56,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 52,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 47,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 45,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 43,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 42,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 40,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 39,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 38,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 37,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 36,
+          "turns_after": 20,
+          "turns_before": 22,
+          "saves_turns": 2
+        },
+        {
+          "atk": 35,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 23,
+          "turns_before": 25,
+          "saves_turns": 2
+        }
+      ]
+    },
+    "bluePriest": {
+      "name": "初级法师",
+      "hp": 60,
+      "atk": 32,
+      "def": 8,
+      "money": 5,
+      "special": 0,
+      "def_immune": 32,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 68,
+          "hero_hit": 60
+        },
+        {
+          "turns": 2,
+          "atk_needed": 38,
+          "hero_hit": 30
+        },
+        {
+          "turns": 3,
+          "atk_needed": 28,
+          "hero_hit": 20
+        },
+        {
+          "turns": 4,
+          "atk_needed": 23,
+          "hero_hit": 15
+        },
+        {
+          "turns": 5,
+          "atk_needed": 20,
+          "hero_hit": 12
+        },
+        {
+          "turns": 6,
+          "atk_needed": 18,
+          "hero_hit": 10
+        },
+        {
+          "turns": 7,
+          "atk_needed": 17,
+          "hero_hit": 9
+        },
+        {
+          "turns": 8,
+          "atk_needed": 16,
+          "hero_hit": 8
+        },
+        {
+          "turns": 9,
+          "atk_needed": 15,
+          "hero_hit": 7
+        },
+        {
+          "turns": 10,
+          "atk_needed": 14,
+          "hero_hit": 6
+        },
+        {
+          "turns": 12,
+          "atk_needed": 13,
+          "hero_hit": 5
+        },
+        {
+          "turns": 15,
+          "atk_needed": 12,
+          "hero_hit": 4
+        },
+        {
+          "turns": 20,
+          "atk_needed": 11,
+          "hero_hit": 3
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 68,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 38,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 28,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 23,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 18,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 16,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 14,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 13,
+          "turns_after": 12,
+          "turns_before": 15,
+          "saves_turns": 3
+        },
+        {
+          "atk": 12,
+          "turns_after": 15,
+          "turns_before": 20,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "redPriest": {
+      "name": "高级法师",
+      "hp": 100,
+      "atk": 95,
+      "def": 30,
+      "money": 22,
+      "special": 0,
+      "def_immune": 95,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 130,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 80,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 64,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 55,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 50,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 47,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 45,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 43,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 42,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 40,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 39,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 38,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 37,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 36,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 35,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 34,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 130,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 80,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 64,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 55,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 47,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 45,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 43,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 42,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 40,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 39,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 38,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 37,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 36,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 35,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "brownWizard": {
+      "name": "初级巫师",
+      "non_battle": true,
+      "special": 15,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "redWizard": {
+      "name": "高级巫师",
+      "non_battle": true,
+      "special": 15,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "yellowGuard": {
+      "name": "初级卫兵",
+      "hp": 50,
+      "atk": 48,
+      "def": 22,
+      "money": 12,
+      "special": 0,
+      "def_immune": 48,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 72,
+          "hero_hit": 50
+        },
+        {
+          "turns": 2,
+          "atk_needed": 47,
+          "hero_hit": 25
+        },
+        {
+          "turns": 3,
+          "atk_needed": 39,
+          "hero_hit": 17
+        },
+        {
+          "turns": 4,
+          "atk_needed": 35,
+          "hero_hit": 13
+        },
+        {
+          "turns": 5,
+          "atk_needed": 32,
+          "hero_hit": 10
+        },
+        {
+          "turns": 6,
+          "atk_needed": 31,
+          "hero_hit": 9
+        },
+        {
+          "turns": 7,
+          "atk_needed": 30,
+          "hero_hit": 8
+        },
+        {
+          "turns": 8,
+          "atk_needed": 29,
+          "hero_hit": 7
+        },
+        {
+          "turns": 9,
+          "atk_needed": 28,
+          "hero_hit": 6
+        },
+        {
+          "turns": 10,
+          "atk_needed": 27,
+          "hero_hit": 5
+        },
+        {
+          "turns": 13,
+          "atk_needed": 26,
+          "hero_hit": 4
+        },
+        {
+          "turns": 17,
+          "atk_needed": 25,
+          "hero_hit": 3
+        },
+        {
+          "turns": 25,
+          "atk_needed": 24,
+          "hero_hit": 2
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 72,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 47,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 39,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 35,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 32,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 31,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 30,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 29,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 28,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 27,
+          "turns_after": 10,
+          "turns_before": 13,
+          "saves_turns": 3
+        },
+        {
+          "atk": 26,
+          "turns_after": 13,
+          "turns_before": 17,
+          "saves_turns": 4
+        },
+        {
+          "atk": 25,
+          "turns_after": 17,
+          "turns_before": 25,
+          "saves_turns": 8
+        }
+      ]
+    },
+    "blueGuard": {
+      "name": "中级卫兵",
+      "hp": 100,
+      "atk": 180,
+      "def": 110,
+      "money": 50,
+      "special": 0,
+      "def_immune": 180,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 210,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 160,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 144,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 135,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 130,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 127,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 125,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 123,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 122,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 120,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 119,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 118,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 117,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 116,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 115,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 114,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 210,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 160,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 144,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 135,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 130,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 127,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 125,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 123,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 122,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 120,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 119,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 118,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 117,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 116,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 115,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "redGuard": {
+      "name": "高级卫兵",
+      "hp": 180,
+      "atk": 460,
+      "def": 360,
+      "money": 200,
+      "special": 0,
+      "def_immune": 460,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 540,
+          "hero_hit": 180
+        },
+        {
+          "turns": 2,
+          "atk_needed": 450,
+          "hero_hit": 90
+        },
+        {
+          "turns": 3,
+          "atk_needed": 420,
+          "hero_hit": 60
+        },
+        {
+          "turns": 4,
+          "atk_needed": 405,
+          "hero_hit": 45
+        },
+        {
+          "turns": 5,
+          "atk_needed": 396,
+          "hero_hit": 36
+        },
+        {
+          "turns": 6,
+          "atk_needed": 390,
+          "hero_hit": 30
+        },
+        {
+          "turns": 7,
+          "atk_needed": 386,
+          "hero_hit": 26
+        },
+        {
+          "turns": 8,
+          "atk_needed": 383,
+          "hero_hit": 23
+        },
+        {
+          "turns": 9,
+          "atk_needed": 380,
+          "hero_hit": 20
+        },
+        {
+          "turns": 10,
+          "atk_needed": 378,
+          "hero_hit": 18
+        },
+        {
+          "turns": 11,
+          "atk_needed": 377,
+          "hero_hit": 17
+        },
+        {
+          "turns": 12,
+          "atk_needed": 375,
+          "hero_hit": 15
+        },
+        {
+          "turns": 13,
+          "atk_needed": 374,
+          "hero_hit": 14
+        },
+        {
+          "turns": 14,
+          "atk_needed": 373,
+          "hero_hit": 13
+        },
+        {
+          "turns": 15,
+          "atk_needed": 372,
+          "hero_hit": 12
+        },
+        {
+          "turns": 17,
+          "atk_needed": 371,
+          "hero_hit": 11
+        },
+        {
+          "turns": 18,
+          "atk_needed": 370,
+          "hero_hit": 10
+        },
+        {
+          "turns": 20,
+          "atk_needed": 369,
+          "hero_hit": 9
+        },
+        {
+          "turns": 23,
+          "atk_needed": 368,
+          "hero_hit": 8
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 540,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 450,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 420,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 405,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 396,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 390,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 386,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 383,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 380,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 378,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 377,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 375,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 374,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 373,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 372,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 371,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 370,
+          "turns_after": 18,
+          "turns_before": 20,
+          "saves_turns": 2
+        },
+        {
+          "atk": 369,
+          "turns_after": 20,
+          "turns_before": 23,
+          "saves_turns": 3
+        }
+      ]
+    },
+    "swordsman": {
+      "name": "双手剑士",
+      "hp": 100,
+      "atk": 680,
+      "def": 50,
+      "money": 55,
+      "special": 0,
+      "def_immune": 680,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 150,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 100,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 84,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 75,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 70,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 67,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 65,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 63,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 62,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 60,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 59,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 58,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 57,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 56,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 55,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 54,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 150,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 100,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 84,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 75,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 70,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 67,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 65,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 63,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 62,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 60,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 59,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 58,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 57,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 56,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 55,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "soldier": {
+      "name": "战士",
+      "hp": 210,
+      "atk": 200,
+      "def": 65,
+      "money": 45,
+      "special": 0,
+      "def_immune": 200,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 275,
+          "hero_hit": 210
+        },
+        {
+          "turns": 2,
+          "atk_needed": 170,
+          "hero_hit": 105
+        },
+        {
+          "turns": 3,
+          "atk_needed": 135,
+          "hero_hit": 70
+        },
+        {
+          "turns": 4,
+          "atk_needed": 118,
+          "hero_hit": 53
+        },
+        {
+          "turns": 5,
+          "atk_needed": 107,
+          "hero_hit": 42
+        },
+        {
+          "turns": 6,
+          "atk_needed": 100,
+          "hero_hit": 35
+        },
+        {
+          "turns": 7,
+          "atk_needed": 95,
+          "hero_hit": 30
+        },
+        {
+          "turns": 8,
+          "atk_needed": 92,
+          "hero_hit": 27
+        },
+        {
+          "turns": 9,
+          "atk_needed": 89,
+          "hero_hit": 24
+        },
+        {
+          "turns": 10,
+          "atk_needed": 86,
+          "hero_hit": 21
+        },
+        {
+          "turns": 11,
+          "atk_needed": 85,
+          "hero_hit": 20
+        },
+        {
+          "turns": 12,
+          "atk_needed": 83,
+          "hero_hit": 18
+        },
+        {
+          "turns": 13,
+          "atk_needed": 82,
+          "hero_hit": 17
+        },
+        {
+          "turns": 14,
+          "atk_needed": 80,
+          "hero_hit": 15
+        },
+        {
+          "turns": 15,
+          "atk_needed": 79,
+          "hero_hit": 14
+        },
+        {
+          "turns": 17,
+          "atk_needed": 78,
+          "hero_hit": 13
+        },
+        {
+          "turns": 18,
+          "atk_needed": 77,
+          "hero_hit": 12
+        },
+        {
+          "turns": 20,
+          "atk_needed": 76,
+          "hero_hit": 11
+        },
+        {
+          "turns": 21,
+          "atk_needed": 75,
+          "hero_hit": 10
+        },
+        {
+          "turns": 24,
+          "atk_needed": 74,
+          "hero_hit": 9
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 275,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 170,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 135,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 118,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 107,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 100,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 95,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 92,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 89,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 86,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 85,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 83,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 82,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 80,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 79,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 78,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 77,
+          "turns_after": 18,
+          "turns_before": 20,
+          "saves_turns": 2
+        },
+        {
+          "atk": 76,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 75,
+          "turns_after": 21,
+          "turns_before": 24,
+          "saves_turns": 3
+        }
+      ]
+    },
+    "yellowKnight": {
+      "name": "骑士队长",
+      "hp": 120,
+      "atk": 150,
+      "def": 50,
+      "money": 100,
+      "special": 0,
+      "def_immune": 150,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 170,
+          "hero_hit": 120
+        },
+        {
+          "turns": 2,
+          "atk_needed": 110,
+          "hero_hit": 60
+        },
+        {
+          "turns": 3,
+          "atk_needed": 90,
+          "hero_hit": 40
+        },
+        {
+          "turns": 4,
+          "atk_needed": 80,
+          "hero_hit": 30
+        },
+        {
+          "turns": 5,
+          "atk_needed": 74,
+          "hero_hit": 24
+        },
+        {
+          "turns": 6,
+          "atk_needed": 70,
+          "hero_hit": 20
+        },
+        {
+          "turns": 7,
+          "atk_needed": 68,
+          "hero_hit": 18
+        },
+        {
+          "turns": 8,
+          "atk_needed": 65,
+          "hero_hit": 15
+        },
+        {
+          "turns": 9,
+          "atk_needed": 64,
+          "hero_hit": 14
+        },
+        {
+          "turns": 10,
+          "atk_needed": 62,
+          "hero_hit": 12
+        },
+        {
+          "turns": 11,
+          "atk_needed": 61,
+          "hero_hit": 11
+        },
+        {
+          "turns": 12,
+          "atk_needed": 60,
+          "hero_hit": 10
+        },
+        {
+          "turns": 14,
+          "atk_needed": 59,
+          "hero_hit": 9
+        },
+        {
+          "turns": 15,
+          "atk_needed": 58,
+          "hero_hit": 8
+        },
+        {
+          "turns": 18,
+          "atk_needed": 57,
+          "hero_hit": 7
+        },
+        {
+          "turns": 20,
+          "atk_needed": 56,
+          "hero_hit": 6
+        },
+        {
+          "turns": 24,
+          "atk_needed": 55,
+          "hero_hit": 5
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 170,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 110,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 90,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 80,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 74,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 70,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 68,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 65,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 64,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 62,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 61,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 60,
+          "turns_after": 12,
+          "turns_before": 14,
+          "saves_turns": 2
+        },
+        {
+          "atk": 59,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 58,
+          "turns_after": 15,
+          "turns_before": 18,
+          "saves_turns": 3
+        },
+        {
+          "atk": 57,
+          "turns_after": 18,
+          "turns_before": 20,
+          "saves_turns": 2
+        },
+        {
+          "atk": 56,
+          "turns_after": 20,
+          "turns_before": 24,
+          "saves_turns": 4
+        }
+      ]
+    },
+    "redKnight": {
+      "name": "骑士",
+      "hp": 160,
+      "atk": 230,
+      "def": 105,
+      "money": 65,
+      "special": 0,
+      "def_immune": 230,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 265,
+          "hero_hit": 160
+        },
+        {
+          "turns": 2,
+          "atk_needed": 185,
+          "hero_hit": 80
+        },
+        {
+          "turns": 3,
+          "atk_needed": 159,
+          "hero_hit": 54
+        },
+        {
+          "turns": 4,
+          "atk_needed": 145,
+          "hero_hit": 40
+        },
+        {
+          "turns": 5,
+          "atk_needed": 137,
+          "hero_hit": 32
+        },
+        {
+          "turns": 6,
+          "atk_needed": 132,
+          "hero_hit": 27
+        },
+        {
+          "turns": 7,
+          "atk_needed": 128,
+          "hero_hit": 23
+        },
+        {
+          "turns": 8,
+          "atk_needed": 125,
+          "hero_hit": 20
+        },
+        {
+          "turns": 9,
+          "atk_needed": 123,
+          "hero_hit": 18
+        },
+        {
+          "turns": 10,
+          "atk_needed": 121,
+          "hero_hit": 16
+        },
+        {
+          "turns": 11,
+          "atk_needed": 120,
+          "hero_hit": 15
+        },
+        {
+          "turns": 12,
+          "atk_needed": 119,
+          "hero_hit": 14
+        },
+        {
+          "turns": 13,
+          "atk_needed": 118,
+          "hero_hit": 13
+        },
+        {
+          "turns": 14,
+          "atk_needed": 117,
+          "hero_hit": 12
+        },
+        {
+          "turns": 15,
+          "atk_needed": 116,
+          "hero_hit": 11
+        },
+        {
+          "turns": 16,
+          "atk_needed": 115,
+          "hero_hit": 10
+        },
+        {
+          "turns": 18,
+          "atk_needed": 114,
+          "hero_hit": 9
+        },
+        {
+          "turns": 20,
+          "atk_needed": 113,
+          "hero_hit": 8
+        },
+        {
+          "turns": 23,
+          "atk_needed": 112,
+          "hero_hit": 7
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 265,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 185,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 159,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 145,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 137,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 132,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 128,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 125,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 123,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 121,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 120,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 119,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 118,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 117,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 116,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 115,
+          "turns_after": 16,
+          "turns_before": 18,
+          "saves_turns": 2
+        },
+        {
+          "atk": 114,
+          "turns_after": 18,
+          "turns_before": 20,
+          "saves_turns": 2
+        },
+        {
+          "atk": 113,
+          "turns_after": 20,
+          "turns_before": 23,
+          "saves_turns": 3
+        }
+      ]
+    },
+    "darkKnight": {
+      "name": "黑暗骑士",
+      "hp": 180,
+      "atk": 430,
+      "def": 210,
+      "money": 120,
+      "special": 0,
+      "def_immune": 430,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 390,
+          "hero_hit": 180
+        },
+        {
+          "turns": 2,
+          "atk_needed": 300,
+          "hero_hit": 90
+        },
+        {
+          "turns": 3,
+          "atk_needed": 270,
+          "hero_hit": 60
+        },
+        {
+          "turns": 4,
+          "atk_needed": 255,
+          "hero_hit": 45
+        },
+        {
+          "turns": 5,
+          "atk_needed": 246,
+          "hero_hit": 36
+        },
+        {
+          "turns": 6,
+          "atk_needed": 240,
+          "hero_hit": 30
+        },
+        {
+          "turns": 7,
+          "atk_needed": 236,
+          "hero_hit": 26
+        },
+        {
+          "turns": 8,
+          "atk_needed": 233,
+          "hero_hit": 23
+        },
+        {
+          "turns": 9,
+          "atk_needed": 230,
+          "hero_hit": 20
+        },
+        {
+          "turns": 10,
+          "atk_needed": 228,
+          "hero_hit": 18
+        },
+        {
+          "turns": 11,
+          "atk_needed": 227,
+          "hero_hit": 17
+        },
+        {
+          "turns": 12,
+          "atk_needed": 225,
+          "hero_hit": 15
+        },
+        {
+          "turns": 13,
+          "atk_needed": 224,
+          "hero_hit": 14
+        },
+        {
+          "turns": 14,
+          "atk_needed": 223,
+          "hero_hit": 13
+        },
+        {
+          "turns": 15,
+          "atk_needed": 222,
+          "hero_hit": 12
+        },
+        {
+          "turns": 17,
+          "atk_needed": 221,
+          "hero_hit": 11
+        },
+        {
+          "turns": 18,
+          "atk_needed": 220,
+          "hero_hit": 10
+        },
+        {
+          "turns": 20,
+          "atk_needed": 219,
+          "hero_hit": 9
+        },
+        {
+          "turns": 23,
+          "atk_needed": 218,
+          "hero_hit": 8
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 390,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 300,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 270,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 255,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 246,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 240,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 236,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 233,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 230,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 228,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 227,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 225,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 224,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 223,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 222,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 221,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 220,
+          "turns_after": 18,
+          "turns_before": 20,
+          "saves_turns": 2
+        },
+        {
+          "atk": 219,
+          "turns_after": 20,
+          "turns_before": 23,
+          "saves_turns": 3
+        }
+      ]
+    },
+    "blackKing": {
+      "name": "黑衣魔王",
+      "hp": 1000,
+      "atk": 500,
+      "def": 0,
+      "money": 1000,
+      "special": [],
+      "def_immune": 500,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 1000,
+          "hero_hit": 1000
+        },
+        {
+          "turns": 2,
+          "atk_needed": 500,
+          "hero_hit": 500
+        },
+        {
+          "turns": 3,
+          "atk_needed": 334,
+          "hero_hit": 334
+        },
+        {
+          "turns": 4,
+          "atk_needed": 250,
+          "hero_hit": 250
+        },
+        {
+          "turns": 5,
+          "atk_needed": 200,
+          "hero_hit": 200
+        },
+        {
+          "turns": 6,
+          "atk_needed": 167,
+          "hero_hit": 167
+        },
+        {
+          "turns": 7,
+          "atk_needed": 143,
+          "hero_hit": 143
+        },
+        {
+          "turns": 8,
+          "atk_needed": 125,
+          "hero_hit": 125
+        },
+        {
+          "turns": 9,
+          "atk_needed": 112,
+          "hero_hit": 112
+        },
+        {
+          "turns": 10,
+          "atk_needed": 100,
+          "hero_hit": 100
+        },
+        {
+          "turns": 11,
+          "atk_needed": 91,
+          "hero_hit": 91
+        },
+        {
+          "turns": 12,
+          "atk_needed": 84,
+          "hero_hit": 84
+        },
+        {
+          "turns": 13,
+          "atk_needed": 77,
+          "hero_hit": 77
+        },
+        {
+          "turns": 14,
+          "atk_needed": 72,
+          "hero_hit": 72
+        },
+        {
+          "turns": 15,
+          "atk_needed": 67,
+          "hero_hit": 67
+        },
+        {
+          "turns": 16,
+          "atk_needed": 63,
+          "hero_hit": 63
+        },
+        {
+          "turns": 17,
+          "atk_needed": 59,
+          "hero_hit": 59
+        },
+        {
+          "turns": 18,
+          "atk_needed": 56,
+          "hero_hit": 56
+        },
+        {
+          "turns": 19,
+          "atk_needed": 53,
+          "hero_hit": 53
+        },
+        {
+          "turns": 20,
+          "atk_needed": 50,
+          "hero_hit": 50
+        },
+        {
+          "turns": 21,
+          "atk_needed": 48,
+          "hero_hit": 48
+        },
+        {
+          "turns": 22,
+          "atk_needed": 46,
+          "hero_hit": 46
+        },
+        {
+          "turns": 23,
+          "atk_needed": 44,
+          "hero_hit": 44
+        },
+        {
+          "turns": 24,
+          "atk_needed": 42,
+          "hero_hit": 42
+        },
+        {
+          "turns": 25,
+          "atk_needed": 40,
+          "hero_hit": 40
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 1000,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 500,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 334,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 250,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 200,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 167,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 143,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 125,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 112,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 100,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 91,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 84,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 77,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 72,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 67,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 63,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 59,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 56,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 53,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 48,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 46,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 44,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 42,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "yellowKing": {
+      "name": "黄衣魔王",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "greenKing": {
+      "name": "青衣武士",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "blueKnight": {
+      "name": "蓝骑士",
+      "hp": 100,
+      "atk": 120,
+      "def": 0,
+      "money": 9,
+      "special": 8,
+      "def_immune": 120,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 100,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 50,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 34,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 25,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 20,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 17,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 15,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 13,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 12,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 10,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 9,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 8,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 7,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 6,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 5,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 4,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 100,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 12,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 9,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 7,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 6,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 5,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "goldSlime": {
+      "name": "黄头怪",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "poisonSkeleton": {
+      "name": "紫骷髅",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "poisonBat": {
+      "name": "紫蝙蝠",
+      "hp": 100,
+      "atk": 120,
+      "def": 0,
+      "money": 14,
+      "special": 13,
+      "def_immune": 120,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 100,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 50,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 34,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 25,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 20,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 17,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 15,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 13,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 12,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 10,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 9,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 8,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 7,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 6,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 5,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 4,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 100,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 12,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 9,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 7,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 6,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 5,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "steelRock": {
+      "name": "高级石头人",
+      "hp": 40,
+      "atk": 400,
+      "def": 315,
+      "money": 0,
+      "special": 0,
+      "def_immune": 400,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 355,
+          "hero_hit": 40
+        },
+        {
+          "turns": 2,
+          "atk_needed": 335,
+          "hero_hit": 20
+        },
+        {
+          "turns": 3,
+          "atk_needed": 329,
+          "hero_hit": 14
+        },
+        {
+          "turns": 4,
+          "atk_needed": 325,
+          "hero_hit": 10
+        },
+        {
+          "turns": 5,
+          "atk_needed": 323,
+          "hero_hit": 8
+        },
+        {
+          "turns": 6,
+          "atk_needed": 322,
+          "hero_hit": 7
+        },
+        {
+          "turns": 7,
+          "atk_needed": 321,
+          "hero_hit": 6
+        },
+        {
+          "turns": 8,
+          "atk_needed": 320,
+          "hero_hit": 5
+        },
+        {
+          "turns": 10,
+          "atk_needed": 319,
+          "hero_hit": 4
+        },
+        {
+          "turns": 14,
+          "atk_needed": 318,
+          "hero_hit": 3
+        },
+        {
+          "turns": 20,
+          "atk_needed": 317,
+          "hero_hit": 2
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 355,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 335,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 329,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 325,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 323,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 322,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 321,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 320,
+          "turns_after": 8,
+          "turns_before": 10,
+          "saves_turns": 2
+        },
+        {
+          "atk": 319,
+          "turns_after": 10,
+          "turns_before": 14,
+          "saves_turns": 4
+        },
+        {
+          "atk": 318,
+          "turns_after": 14,
+          "turns_before": 20,
+          "saves_turns": 6
+        }
+      ]
+    },
+    "skeletonPriest": {
+      "name": "骷髅法师",
+      "hp": 100,
+      "atk": 100,
+      "def": 0,
+      "money": 0,
+      "special": 18,
+      "def_immune": 100,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 100,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 50,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 34,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 25,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 20,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 17,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 15,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 13,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 12,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 10,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 9,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 8,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 7,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 6,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 5,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 4,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 100,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 12,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 9,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 7,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 6,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 5,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "skeletonKing": {
+      "name": "骷髅王",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "skeletonWizard": {
+      "name": "骷髅巫师",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "redSkeletonCaption": {
+      "name": "骷髅武士",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "badHero": {
+      "name": "勇士",
+      "hp": 600,
+      "atk": 10,
+      "def": 10,
+      "money": 0,
+      "special": 0,
+      "def_immune": 10,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 610,
+          "hero_hit": 600
+        },
+        {
+          "turns": 2,
+          "atk_needed": 310,
+          "hero_hit": 300
+        },
+        {
+          "turns": 3,
+          "atk_needed": 210,
+          "hero_hit": 200
+        },
+        {
+          "turns": 4,
+          "atk_needed": 160,
+          "hero_hit": 150
+        },
+        {
+          "turns": 5,
+          "atk_needed": 130,
+          "hero_hit": 120
+        },
+        {
+          "turns": 6,
+          "atk_needed": 110,
+          "hero_hit": 100
+        },
+        {
+          "turns": 7,
+          "atk_needed": 96,
+          "hero_hit": 86
+        },
+        {
+          "turns": 8,
+          "atk_needed": 85,
+          "hero_hit": 75
+        },
+        {
+          "turns": 9,
+          "atk_needed": 77,
+          "hero_hit": 67
+        },
+        {
+          "turns": 10,
+          "atk_needed": 70,
+          "hero_hit": 60
+        },
+        {
+          "turns": 11,
+          "atk_needed": 65,
+          "hero_hit": 55
+        },
+        {
+          "turns": 12,
+          "atk_needed": 60,
+          "hero_hit": 50
+        },
+        {
+          "turns": 13,
+          "atk_needed": 57,
+          "hero_hit": 47
+        },
+        {
+          "turns": 14,
+          "atk_needed": 53,
+          "hero_hit": 43
+        },
+        {
+          "turns": 15,
+          "atk_needed": 50,
+          "hero_hit": 40
+        },
+        {
+          "turns": 16,
+          "atk_needed": 48,
+          "hero_hit": 38
+        },
+        {
+          "turns": 17,
+          "atk_needed": 46,
+          "hero_hit": 36
+        },
+        {
+          "turns": 18,
+          "atk_needed": 44,
+          "hero_hit": 34
+        },
+        {
+          "turns": 19,
+          "atk_needed": 42,
+          "hero_hit": 32
+        },
+        {
+          "turns": 20,
+          "atk_needed": 40,
+          "hero_hit": 30
+        },
+        {
+          "turns": 21,
+          "atk_needed": 39,
+          "hero_hit": 29
+        },
+        {
+          "turns": 22,
+          "atk_needed": 38,
+          "hero_hit": 28
+        },
+        {
+          "turns": 23,
+          "atk_needed": 37,
+          "hero_hit": 27
+        },
+        {
+          "turns": 24,
+          "atk_needed": 35,
+          "hero_hit": 25
+        },
+        {
+          "turns": 25,
+          "atk_needed": 34,
+          "hero_hit": 24
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 610,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 310,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 210,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 160,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 130,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 110,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 96,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 85,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 77,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 70,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 65,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 60,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 57,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 53,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 48,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 46,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 44,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 42,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 40,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 39,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 38,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 37,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 35,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "demon": {
+      "name": "魔神武士",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "demonPriest": {
+      "name": "魔神法师",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "goldHornSlime": {
+      "name": "金角怪",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "redKing": {
+      "name": "魔王",
+      "hp": 8000,
+      "atk": 5000,
+      "def": 1000,
+      "money": 500,
+      "special": 0,
+      "def_immune": 5000,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 9000,
+          "hero_hit": 8000
+        },
+        {
+          "turns": 2,
+          "atk_needed": 5000,
+          "hero_hit": 4000
+        },
+        {
+          "turns": 3,
+          "atk_needed": 3667,
+          "hero_hit": 2667
+        },
+        {
+          "turns": 4,
+          "atk_needed": 3000,
+          "hero_hit": 2000
+        },
+        {
+          "turns": 5,
+          "atk_needed": 2600,
+          "hero_hit": 1600
+        },
+        {
+          "turns": 6,
+          "atk_needed": 2334,
+          "hero_hit": 1334
+        },
+        {
+          "turns": 7,
+          "atk_needed": 2143,
+          "hero_hit": 1143
+        },
+        {
+          "turns": 8,
+          "atk_needed": 2000,
+          "hero_hit": 1000
+        },
+        {
+          "turns": 9,
+          "atk_needed": 1889,
+          "hero_hit": 889
+        },
+        {
+          "turns": 10,
+          "atk_needed": 1800,
+          "hero_hit": 800
+        },
+        {
+          "turns": 11,
+          "atk_needed": 1728,
+          "hero_hit": 728
+        },
+        {
+          "turns": 12,
+          "atk_needed": 1667,
+          "hero_hit": 667
+        },
+        {
+          "turns": 13,
+          "atk_needed": 1616,
+          "hero_hit": 616
+        },
+        {
+          "turns": 14,
+          "atk_needed": 1572,
+          "hero_hit": 572
+        },
+        {
+          "turns": 15,
+          "atk_needed": 1534,
+          "hero_hit": 534
+        },
+        {
+          "turns": 16,
+          "atk_needed": 1500,
+          "hero_hit": 500
+        },
+        {
+          "turns": 17,
+          "atk_needed": 1471,
+          "hero_hit": 471
+        },
+        {
+          "turns": 18,
+          "atk_needed": 1445,
+          "hero_hit": 445
+        },
+        {
+          "turns": 19,
+          "atk_needed": 1422,
+          "hero_hit": 422
+        },
+        {
+          "turns": 20,
+          "atk_needed": 1400,
+          "hero_hit": 400
+        },
+        {
+          "turns": 21,
+          "atk_needed": 1381,
+          "hero_hit": 381
+        },
+        {
+          "turns": 22,
+          "atk_needed": 1364,
+          "hero_hit": 364
+        },
+        {
+          "turns": 23,
+          "atk_needed": 1348,
+          "hero_hit": 348
+        },
+        {
+          "turns": 24,
+          "atk_needed": 1334,
+          "hero_hit": 334
+        },
+        {
+          "turns": 25,
+          "atk_needed": 1320,
+          "hero_hit": 320
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 9000,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 5000,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 3667,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 3000,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 2600,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 2334,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 2143,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 2000,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1889,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1800,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1728,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1667,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1616,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1572,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1534,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1500,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1471,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1445,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1422,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1400,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1381,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1364,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1348,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1334,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "whiteKing": {
+      "name": "魔法警卫",
+      "non_battle": true,
+      "special": 16,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "blackMagician": {
+      "name": "大法师",
+      "hp": 4500,
+      "atk": 560,
+      "def": 310,
+      "money": 1000,
+      "special": 0,
+      "def_immune": 560,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 4810,
+          "hero_hit": 4500
+        },
+        {
+          "turns": 2,
+          "atk_needed": 2560,
+          "hero_hit": 2250
+        },
+        {
+          "turns": 3,
+          "atk_needed": 1810,
+          "hero_hit": 1500
+        },
+        {
+          "turns": 4,
+          "atk_needed": 1435,
+          "hero_hit": 1125
+        },
+        {
+          "turns": 5,
+          "atk_needed": 1210,
+          "hero_hit": 900
+        },
+        {
+          "turns": 6,
+          "atk_needed": 1060,
+          "hero_hit": 750
+        },
+        {
+          "turns": 7,
+          "atk_needed": 953,
+          "hero_hit": 643
+        },
+        {
+          "turns": 8,
+          "atk_needed": 873,
+          "hero_hit": 563
+        },
+        {
+          "turns": 9,
+          "atk_needed": 810,
+          "hero_hit": 500
+        },
+        {
+          "turns": 10,
+          "atk_needed": 760,
+          "hero_hit": 450
+        },
+        {
+          "turns": 11,
+          "atk_needed": 720,
+          "hero_hit": 410
+        },
+        {
+          "turns": 12,
+          "atk_needed": 685,
+          "hero_hit": 375
+        },
+        {
+          "turns": 13,
+          "atk_needed": 657,
+          "hero_hit": 347
+        },
+        {
+          "turns": 14,
+          "atk_needed": 632,
+          "hero_hit": 322
+        },
+        {
+          "turns": 15,
+          "atk_needed": 610,
+          "hero_hit": 300
+        },
+        {
+          "turns": 16,
+          "atk_needed": 592,
+          "hero_hit": 282
+        },
+        {
+          "turns": 17,
+          "atk_needed": 575,
+          "hero_hit": 265
+        },
+        {
+          "turns": 18,
+          "atk_needed": 560,
+          "hero_hit": 250
+        },
+        {
+          "turns": 19,
+          "atk_needed": 547,
+          "hero_hit": 237
+        },
+        {
+          "turns": 20,
+          "atk_needed": 535,
+          "hero_hit": 225
+        },
+        {
+          "turns": 21,
+          "atk_needed": 525,
+          "hero_hit": 215
+        },
+        {
+          "turns": 22,
+          "atk_needed": 515,
+          "hero_hit": 205
+        },
+        {
+          "turns": 23,
+          "atk_needed": 506,
+          "hero_hit": 196
+        },
+        {
+          "turns": 24,
+          "atk_needed": 498,
+          "hero_hit": 188
+        },
+        {
+          "turns": 25,
+          "atk_needed": 490,
+          "hero_hit": 180
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 4810,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 2560,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1810,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1435,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1210,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1060,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 953,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 873,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 810,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 760,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 720,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 685,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 657,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 632,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 610,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 592,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 575,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 560,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 547,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 535,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 525,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 515,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 506,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 498,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "silverSlime": {
+      "name": "银头怪",
+      "hp": 100,
+      "atk": 120,
+      "def": 0,
+      "money": 15,
+      "special": 14,
+      "def_immune": 120,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 100,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 50,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 34,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 25,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 20,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 17,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 15,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 13,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 12,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 10,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 9,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 8,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 7,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 6,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 5,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 4,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 100,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 12,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 9,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 7,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 6,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 5,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "swordEmperor": {
+      "name": "剑圣",
+      "hp": 5000,
+      "atk": 1580,
+      "def": 190,
+      "money": 500,
+      "special": 0,
+      "def_immune": 1580,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 5190,
+          "hero_hit": 5000
+        },
+        {
+          "turns": 2,
+          "atk_needed": 2690,
+          "hero_hit": 2500
+        },
+        {
+          "turns": 3,
+          "atk_needed": 1857,
+          "hero_hit": 1667
+        },
+        {
+          "turns": 4,
+          "atk_needed": 1440,
+          "hero_hit": 1250
+        },
+        {
+          "turns": 5,
+          "atk_needed": 1190,
+          "hero_hit": 1000
+        },
+        {
+          "turns": 6,
+          "atk_needed": 1024,
+          "hero_hit": 834
+        },
+        {
+          "turns": 7,
+          "atk_needed": 905,
+          "hero_hit": 715
+        },
+        {
+          "turns": 8,
+          "atk_needed": 815,
+          "hero_hit": 625
+        },
+        {
+          "turns": 9,
+          "atk_needed": 746,
+          "hero_hit": 556
+        },
+        {
+          "turns": 10,
+          "atk_needed": 690,
+          "hero_hit": 500
+        },
+        {
+          "turns": 11,
+          "atk_needed": 645,
+          "hero_hit": 455
+        },
+        {
+          "turns": 12,
+          "atk_needed": 607,
+          "hero_hit": 417
+        },
+        {
+          "turns": 13,
+          "atk_needed": 575,
+          "hero_hit": 385
+        },
+        {
+          "turns": 14,
+          "atk_needed": 548,
+          "hero_hit": 358
+        },
+        {
+          "turns": 15,
+          "atk_needed": 524,
+          "hero_hit": 334
+        },
+        {
+          "turns": 16,
+          "atk_needed": 503,
+          "hero_hit": 313
+        },
+        {
+          "turns": 17,
+          "atk_needed": 485,
+          "hero_hit": 295
+        },
+        {
+          "turns": 18,
+          "atk_needed": 468,
+          "hero_hit": 278
+        },
+        {
+          "turns": 19,
+          "atk_needed": 454,
+          "hero_hit": 264
+        },
+        {
+          "turns": 20,
+          "atk_needed": 440,
+          "hero_hit": 250
+        },
+        {
+          "turns": 21,
+          "atk_needed": 429,
+          "hero_hit": 239
+        },
+        {
+          "turns": 22,
+          "atk_needed": 418,
+          "hero_hit": 228
+        },
+        {
+          "turns": 23,
+          "atk_needed": 408,
+          "hero_hit": 218
+        },
+        {
+          "turns": 24,
+          "atk_needed": 399,
+          "hero_hit": 209
+        },
+        {
+          "turns": 25,
+          "atk_needed": 390,
+          "hero_hit": 200
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 5190,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 2690,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1857,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1440,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1190,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1024,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 905,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 815,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 746,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 690,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 645,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 607,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 575,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 548,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 524,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 503,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 485,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 468,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 454,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 440,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 429,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 418,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 408,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 399,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "whiteHornSlime": {
+      "name": "尖角怪",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "badPrincess": {
+      "name": "痛苦魔女",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "badFairy": {
+      "name": "黑暗仙子",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "grayPriest": {
+      "name": "中级法师",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "redSwordsman": {
+      "name": "剑王",
+      "hp": 100,
+      "atk": 120,
+      "def": 0,
+      "money": 7,
+      "special": 6,
+      "def_immune": 120,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 100,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 50,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 34,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 25,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 20,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 17,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 15,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 13,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 12,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 10,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 9,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 8,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 7,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 6,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 5,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 4,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 100,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 12,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 9,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 7,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 6,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 5,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "whiteGhost": {
+      "name": "水银战士",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "poisonZombie": {
+      "name": "绿兽人",
+      "hp": 100,
+      "atk": 120,
+      "def": 0,
+      "money": 13,
+      "special": 12,
+      "def_immune": 120,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 100,
+          "hero_hit": 100
+        },
+        {
+          "turns": 2,
+          "atk_needed": 50,
+          "hero_hit": 50
+        },
+        {
+          "turns": 3,
+          "atk_needed": 34,
+          "hero_hit": 34
+        },
+        {
+          "turns": 4,
+          "atk_needed": 25,
+          "hero_hit": 25
+        },
+        {
+          "turns": 5,
+          "atk_needed": 20,
+          "hero_hit": 20
+        },
+        {
+          "turns": 6,
+          "atk_needed": 17,
+          "hero_hit": 17
+        },
+        {
+          "turns": 7,
+          "atk_needed": 15,
+          "hero_hit": 15
+        },
+        {
+          "turns": 8,
+          "atk_needed": 13,
+          "hero_hit": 13
+        },
+        {
+          "turns": 9,
+          "atk_needed": 12,
+          "hero_hit": 12
+        },
+        {
+          "turns": 10,
+          "atk_needed": 10,
+          "hero_hit": 10
+        },
+        {
+          "turns": 12,
+          "atk_needed": 9,
+          "hero_hit": 9
+        },
+        {
+          "turns": 13,
+          "atk_needed": 8,
+          "hero_hit": 8
+        },
+        {
+          "turns": 15,
+          "atk_needed": 7,
+          "hero_hit": 7
+        },
+        {
+          "turns": 17,
+          "atk_needed": 6,
+          "hero_hit": 6
+        },
+        {
+          "turns": 20,
+          "atk_needed": 5,
+          "hero_hit": 5
+        },
+        {
+          "turns": 25,
+          "atk_needed": 4,
+          "hero_hit": 4
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 100,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 34,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 25,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 20,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 17,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 15,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 13,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 12,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 10,
+          "turns_after": 10,
+          "turns_before": 12,
+          "saves_turns": 2
+        },
+        {
+          "atk": 9,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 8,
+          "turns_after": 13,
+          "turns_before": 15,
+          "saves_turns": 2
+        },
+        {
+          "atk": 7,
+          "turns_after": 15,
+          "turns_before": 17,
+          "saves_turns": 2
+        },
+        {
+          "atk": 6,
+          "turns_after": 17,
+          "turns_before": 20,
+          "saves_turns": 3
+        },
+        {
+          "atk": 5,
+          "turns_after": 20,
+          "turns_before": 25,
+          "saves_turns": 5
+        }
+      ]
+    },
+    "magicDragon": {
+      "name": "魔龙",
+      "hp": 1500,
+      "atk": 600,
+      "def": 250,
+      "money": 800,
+      "special": 0,
+      "def_immune": 600,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 1750,
+          "hero_hit": 1500
+        },
+        {
+          "turns": 2,
+          "atk_needed": 1000,
+          "hero_hit": 750
+        },
+        {
+          "turns": 3,
+          "atk_needed": 750,
+          "hero_hit": 500
+        },
+        {
+          "turns": 4,
+          "atk_needed": 625,
+          "hero_hit": 375
+        },
+        {
+          "turns": 5,
+          "atk_needed": 550,
+          "hero_hit": 300
+        },
+        {
+          "turns": 6,
+          "atk_needed": 500,
+          "hero_hit": 250
+        },
+        {
+          "turns": 7,
+          "atk_needed": 465,
+          "hero_hit": 215
+        },
+        {
+          "turns": 8,
+          "atk_needed": 438,
+          "hero_hit": 188
+        },
+        {
+          "turns": 9,
+          "atk_needed": 417,
+          "hero_hit": 167
+        },
+        {
+          "turns": 10,
+          "atk_needed": 400,
+          "hero_hit": 150
+        },
+        {
+          "turns": 11,
+          "atk_needed": 387,
+          "hero_hit": 137
+        },
+        {
+          "turns": 12,
+          "atk_needed": 375,
+          "hero_hit": 125
+        },
+        {
+          "turns": 13,
+          "atk_needed": 366,
+          "hero_hit": 116
+        },
+        {
+          "turns": 14,
+          "atk_needed": 358,
+          "hero_hit": 108
+        },
+        {
+          "turns": 15,
+          "atk_needed": 350,
+          "hero_hit": 100
+        },
+        {
+          "turns": 16,
+          "atk_needed": 344,
+          "hero_hit": 94
+        },
+        {
+          "turns": 17,
+          "atk_needed": 339,
+          "hero_hit": 89
+        },
+        {
+          "turns": 18,
+          "atk_needed": 334,
+          "hero_hit": 84
+        },
+        {
+          "turns": 19,
+          "atk_needed": 329,
+          "hero_hit": 79
+        },
+        {
+          "turns": 20,
+          "atk_needed": 325,
+          "hero_hit": 75
+        },
+        {
+          "turns": 21,
+          "atk_needed": 322,
+          "hero_hit": 72
+        },
+        {
+          "turns": 22,
+          "atk_needed": 319,
+          "hero_hit": 69
+        },
+        {
+          "turns": 23,
+          "atk_needed": 316,
+          "hero_hit": 66
+        },
+        {
+          "turns": 24,
+          "atk_needed": 313,
+          "hero_hit": 63
+        },
+        {
+          "turns": 25,
+          "atk_needed": 310,
+          "hero_hit": 60
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 1750,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 1000,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 750,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 625,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 550,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 500,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 465,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 438,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 417,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 400,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 387,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 375,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 366,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 358,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 350,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 344,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 339,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 334,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 329,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 325,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 322,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 319,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 316,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 313,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "octopus": {
+      "name": "大乌贼",
+      "hp": 1200,
+      "atk": 180,
+      "def": 20,
+      "money": 100,
+      "special": 0,
+      "def_immune": 180,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 1220,
+          "hero_hit": 1200
+        },
+        {
+          "turns": 2,
+          "atk_needed": 620,
+          "hero_hit": 600
+        },
+        {
+          "turns": 3,
+          "atk_needed": 420,
+          "hero_hit": 400
+        },
+        {
+          "turns": 4,
+          "atk_needed": 320,
+          "hero_hit": 300
+        },
+        {
+          "turns": 5,
+          "atk_needed": 260,
+          "hero_hit": 240
+        },
+        {
+          "turns": 6,
+          "atk_needed": 220,
+          "hero_hit": 200
+        },
+        {
+          "turns": 7,
+          "atk_needed": 192,
+          "hero_hit": 172
+        },
+        {
+          "turns": 8,
+          "atk_needed": 170,
+          "hero_hit": 150
+        },
+        {
+          "turns": 9,
+          "atk_needed": 154,
+          "hero_hit": 134
+        },
+        {
+          "turns": 10,
+          "atk_needed": 140,
+          "hero_hit": 120
+        },
+        {
+          "turns": 11,
+          "atk_needed": 130,
+          "hero_hit": 110
+        },
+        {
+          "turns": 12,
+          "atk_needed": 120,
+          "hero_hit": 100
+        },
+        {
+          "turns": 13,
+          "atk_needed": 113,
+          "hero_hit": 93
+        },
+        {
+          "turns": 14,
+          "atk_needed": 106,
+          "hero_hit": 86
+        },
+        {
+          "turns": 15,
+          "atk_needed": 100,
+          "hero_hit": 80
+        },
+        {
+          "turns": 16,
+          "atk_needed": 95,
+          "hero_hit": 75
+        },
+        {
+          "turns": 17,
+          "atk_needed": 91,
+          "hero_hit": 71
+        },
+        {
+          "turns": 18,
+          "atk_needed": 87,
+          "hero_hit": 67
+        },
+        {
+          "turns": 19,
+          "atk_needed": 84,
+          "hero_hit": 64
+        },
+        {
+          "turns": 20,
+          "atk_needed": 80,
+          "hero_hit": 60
+        },
+        {
+          "turns": 21,
+          "atk_needed": 78,
+          "hero_hit": 58
+        },
+        {
+          "turns": 22,
+          "atk_needed": 75,
+          "hero_hit": 55
+        },
+        {
+          "turns": 23,
+          "atk_needed": 73,
+          "hero_hit": 53
+        },
+        {
+          "turns": 24,
+          "atk_needed": 70,
+          "hero_hit": 50
+        },
+        {
+          "turns": 25,
+          "atk_needed": 68,
+          "hero_hit": 48
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 1220,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 620,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 420,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 320,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 260,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 220,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 192,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 170,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 154,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 140,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 130,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 120,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 113,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 106,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 100,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 95,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 91,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 87,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 84,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 80,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 78,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 75,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 73,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 70,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "darkFairy": {
+      "name": "仙子",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "greenKnight": {
+      "name": "强盾骑士",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "angel": {
+      "name": "天使",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "elemental": {
+      "name": "元素生物",
+      "non_battle": true,
+      "special": 0,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "steelGuard": {
+      "name": "铁守卫",
+      "non_battle": true,
+      "special": 18,
+      "note": "法术场/半血/空属性,非战斗怪"
+    },
+    "evilBat": {
+      "name": "邪恶蝙蝠",
+      "hp": 1000,
+      "atk": 1,
+      "def": 0,
+      "money": 0,
+      "special": [
+        2,
+        3
+      ],
+      "def_immune": 1,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 1000,
+          "hero_hit": 1000
+        },
+        {
+          "turns": 2,
+          "atk_needed": 500,
+          "hero_hit": 500
+        },
+        {
+          "turns": 3,
+          "atk_needed": 334,
+          "hero_hit": 334
+        },
+        {
+          "turns": 4,
+          "atk_needed": 250,
+          "hero_hit": 250
+        },
+        {
+          "turns": 5,
+          "atk_needed": 200,
+          "hero_hit": 200
+        },
+        {
+          "turns": 6,
+          "atk_needed": 167,
+          "hero_hit": 167
+        },
+        {
+          "turns": 7,
+          "atk_needed": 143,
+          "hero_hit": 143
+        },
+        {
+          "turns": 8,
+          "atk_needed": 125,
+          "hero_hit": 125
+        },
+        {
+          "turns": 9,
+          "atk_needed": 112,
+          "hero_hit": 112
+        },
+        {
+          "turns": 10,
+          "atk_needed": 100,
+          "hero_hit": 100
+        },
+        {
+          "turns": 11,
+          "atk_needed": 91,
+          "hero_hit": 91
+        },
+        {
+          "turns": 12,
+          "atk_needed": 84,
+          "hero_hit": 84
+        },
+        {
+          "turns": 13,
+          "atk_needed": 77,
+          "hero_hit": 77
+        },
+        {
+          "turns": 14,
+          "atk_needed": 72,
+          "hero_hit": 72
+        },
+        {
+          "turns": 15,
+          "atk_needed": 67,
+          "hero_hit": 67
+        },
+        {
+          "turns": 16,
+          "atk_needed": 63,
+          "hero_hit": 63
+        },
+        {
+          "turns": 17,
+          "atk_needed": 59,
+          "hero_hit": 59
+        },
+        {
+          "turns": 18,
+          "atk_needed": 56,
+          "hero_hit": 56
+        },
+        {
+          "turns": 19,
+          "atk_needed": 53,
+          "hero_hit": 53
+        },
+        {
+          "turns": 20,
+          "atk_needed": 50,
+          "hero_hit": 50
+        },
+        {
+          "turns": 21,
+          "atk_needed": 48,
+          "hero_hit": 48
+        },
+        {
+          "turns": 22,
+          "atk_needed": 46,
+          "hero_hit": 46
+        },
+        {
+          "turns": 23,
+          "atk_needed": 44,
+          "hero_hit": 44
+        },
+        {
+          "turns": 24,
+          "atk_needed": 42,
+          "hero_hit": 42
+        },
+        {
+          "turns": 25,
+          "atk_needed": 40,
+          "hero_hit": 40
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 1000,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 500,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 334,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 250,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 200,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 167,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 143,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 125,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 112,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 100,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 91,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 84,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 77,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 72,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 67,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 63,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 59,
+          "turns_after": 17,
+          "turns_before": 18,
+          "saves_turns": 1
+        },
+        {
+          "atk": 56,
+          "turns_after": 18,
+          "turns_before": 19,
+          "saves_turns": 1
+        },
+        {
+          "atk": 53,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 50,
+          "turns_after": 20,
+          "turns_before": 21,
+          "saves_turns": 1
+        },
+        {
+          "atk": 48,
+          "turns_after": 21,
+          "turns_before": 22,
+          "saves_turns": 1
+        },
+        {
+          "atk": 46,
+          "turns_after": 22,
+          "turns_before": 23,
+          "saves_turns": 1
+        },
+        {
+          "atk": 44,
+          "turns_after": 23,
+          "turns_before": 24,
+          "saves_turns": 1
+        },
+        {
+          "atk": 42,
+          "turns_after": 24,
+          "turns_before": 25,
+          "saves_turns": 1
+        }
+      ]
+    },
+    "redWizardRepulse": {
+      "name": "高级巫师（阻击）",
+      "hp": 200,
+      "atk": 380,
+      "def": 130,
+      "money": 90,
+      "special": [
+        18
+      ],
+      "def_immune": 380,
+      "atk_breakpoints": [
+        {
+          "turns": 1,
+          "atk_needed": 330,
+          "hero_hit": 200
+        },
+        {
+          "turns": 2,
+          "atk_needed": 230,
+          "hero_hit": 100
+        },
+        {
+          "turns": 3,
+          "atk_needed": 197,
+          "hero_hit": 67
+        },
+        {
+          "turns": 4,
+          "atk_needed": 180,
+          "hero_hit": 50
+        },
+        {
+          "turns": 5,
+          "atk_needed": 170,
+          "hero_hit": 40
+        },
+        {
+          "turns": 6,
+          "atk_needed": 164,
+          "hero_hit": 34
+        },
+        {
+          "turns": 7,
+          "atk_needed": 159,
+          "hero_hit": 29
+        },
+        {
+          "turns": 8,
+          "atk_needed": 155,
+          "hero_hit": 25
+        },
+        {
+          "turns": 9,
+          "atk_needed": 153,
+          "hero_hit": 23
+        },
+        {
+          "turns": 10,
+          "atk_needed": 150,
+          "hero_hit": 20
+        },
+        {
+          "turns": 11,
+          "atk_needed": 149,
+          "hero_hit": 19
+        },
+        {
+          "turns": 12,
+          "atk_needed": 147,
+          "hero_hit": 17
+        },
+        {
+          "turns": 13,
+          "atk_needed": 146,
+          "hero_hit": 16
+        },
+        {
+          "turns": 14,
+          "atk_needed": 145,
+          "hero_hit": 15
+        },
+        {
+          "turns": 15,
+          "atk_needed": 144,
+          "hero_hit": 14
+        },
+        {
+          "turns": 16,
+          "atk_needed": 143,
+          "hero_hit": 13
+        },
+        {
+          "turns": 17,
+          "atk_needed": 142,
+          "hero_hit": 12
+        },
+        {
+          "turns": 19,
+          "atk_needed": 141,
+          "hero_hit": 11
+        },
+        {
+          "turns": 20,
+          "atk_needed": 140,
+          "hero_hit": 10
+        },
+        {
+          "turns": 23,
+          "atk_needed": 139,
+          "hero_hit": 9
+        },
+        {
+          "turns": 25,
+          "atk_needed": 138,
+          "hero_hit": 8
+        }
+      ],
+      "atk_drops": [
+        {
+          "atk": 330,
+          "turns_after": 1,
+          "turns_before": 2,
+          "saves_turns": 1
+        },
+        {
+          "atk": 230,
+          "turns_after": 2,
+          "turns_before": 3,
+          "saves_turns": 1
+        },
+        {
+          "atk": 197,
+          "turns_after": 3,
+          "turns_before": 4,
+          "saves_turns": 1
+        },
+        {
+          "atk": 180,
+          "turns_after": 4,
+          "turns_before": 5,
+          "saves_turns": 1
+        },
+        {
+          "atk": 170,
+          "turns_after": 5,
+          "turns_before": 6,
+          "saves_turns": 1
+        },
+        {
+          "atk": 164,
+          "turns_after": 6,
+          "turns_before": 7,
+          "saves_turns": 1
+        },
+        {
+          "atk": 159,
+          "turns_after": 7,
+          "turns_before": 8,
+          "saves_turns": 1
+        },
+        {
+          "atk": 155,
+          "turns_after": 8,
+          "turns_before": 9,
+          "saves_turns": 1
+        },
+        {
+          "atk": 153,
+          "turns_after": 9,
+          "turns_before": 10,
+          "saves_turns": 1
+        },
+        {
+          "atk": 150,
+          "turns_after": 10,
+          "turns_before": 11,
+          "saves_turns": 1
+        },
+        {
+          "atk": 149,
+          "turns_after": 11,
+          "turns_before": 12,
+          "saves_turns": 1
+        },
+        {
+          "atk": 147,
+          "turns_after": 12,
+          "turns_before": 13,
+          "saves_turns": 1
+        },
+        {
+          "atk": 146,
+          "turns_after": 13,
+          "turns_before": 14,
+          "saves_turns": 1
+        },
+        {
+          "atk": 145,
+          "turns_after": 14,
+          "turns_before": 15,
+          "saves_turns": 1
+        },
+        {
+          "atk": 144,
+          "turns_after": 15,
+          "turns_before": 16,
+          "saves_turns": 1
+        },
+        {
+          "atk": 143,
+          "turns_after": 16,
+          "turns_before": 17,
+          "saves_turns": 1
+        },
+        {
+          "atk": 142,
+          "turns_after": 17,
+          "turns_before": 19,
+          "saves_turns": 2
+        },
+        {
+          "atk": 141,
+          "turns_after": 19,
+          "turns_before": 20,
+          "saves_turns": 1
+        },
+        {
+          "atk": 140,
+          "turns_after": 20,
+          "turns_before": 23,
+          "saves_turns": 3
+        },
+        {
+          "atk": 139,
+          "turns_after": 23,
+          "turns_before": 25,
+          "saves_turns": 2
+        }
+      ]
+    }
+  },
+  "gems": {
+    "redGem": {
+      "delta_atk": 1,
+      "delta_def": 0,
+      "ratio_per_zone": {
+        "1": 1,
+        "2": 2,
+        "3": 1,
+        "4": 4,
+        "5": 5
+      }
+    },
+    "blueGem": {
+      "delta_atk": 0,
+      "delta_def": 1,
+      "ratio_per_zone": {
+        "1": 1,
+        "2": 2,
+        "3": 1,
+        "4": 4,
+        "5": 5
+      }
+    },
+    "greenGem": {
+      "delta_atk": 0,
+      "delta_def": 0,
+      "note": "经验值宝石(zone1 +0? 需确认)"
+    }
+  },
+  "equipment": {
+    "sword1": {
+      "delta_atk": 10
+    },
+    "shield1": {
+      "delta_def": 10
+    },
+    "sword2": {
+      "delta_atk": 20
+    },
+    "shield2": {
+      "delta_def": 20
+    }
+  },
+  "experience_check": {
+    "atk22": [
+      "skeletonSoldier",
+      "skeletonCaptain"
+    ],
+    "atk23": [
+      "skeleton",
+      "skeletonSoldier",
+      "skeletonCaptain",
+      "bluePriest"
+    ],
+    "atk24": [
+      "skeletonCaptain"
+    ],
+    "atk25": [
+      "redSlime",
+      "skeletonCaptain"
+    ],
+    "atk26": [
+      "skeletonSoldier"
+    ],
+    "atk27": [
+      "skeletonCaptain"
+    ]
+  },
+  "mt10_boss": {
+    "composition": {
+      "skeleton": 6,
+      "skeletonSoldier": 2,
+      "skeletonCaptain": 1
+    },
+    "dmg_at_27_27": {
+      "skeleton": {
+        "per": 30.0,
+        "count": 6,
+        "total": 180.0
+      },
+      "skeletonSoldier": {
+        "per": 75.0,
+        "count": 2,
+        "total": 150.0
+      },
+      "skeletonCaptain": {
+        "per": 304.0,
+        "count": 1,
+        "total": 304.0
+      }
+    },
+    "dmg_total_27_27": 634.0
+  },
+  "gem_reduction_sample": {
+    "atk22_def22": {
+      "redGem": {
+        "skeleton": 20.0,
+        "skeletonSoldier": 30.0,
+        "skeletonCaptain": 86.0,
+        "bluePriest": 10.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 3.0,
+        "skeletonSoldier": 5.0,
+        "skeletonCaptain": 14.0,
+        "bluePriest": 4.0
+      }
+    },
+    "atk22_def24": {
+      "redGem": {
+        "skeleton": 18.0,
+        "skeletonSoldier": 28.0,
+        "skeletonCaptain": 82.0,
+        "bluePriest": 8.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 3.0,
+        "skeletonSoldier": 5.0,
+        "skeletonCaptain": 14.0,
+        "bluePriest": 4.0
+      }
+    },
+    "atk22_def26": {
+      "redGem": {
+        "skeleton": 16.0,
+        "skeletonSoldier": 26.0,
+        "skeletonCaptain": 78.0,
+        "bluePriest": 6.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 3.0,
+        "skeletonSoldier": 5.0,
+        "skeletonCaptain": 14.0,
+        "bluePriest": 4.0
+      }
+    },
+    "atk24_def22": {
+      "redGem": {
+        "skeletonCaptain": 86.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 2.0,
+        "skeletonSoldier": 4.0,
+        "skeletonCaptain": 11.0,
+        "bluePriest": 3.0
+      }
+    },
+    "atk24_def24": {
+      "redGem": {
+        "skeletonCaptain": 82.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 2.0,
+        "skeletonSoldier": 4.0,
+        "skeletonCaptain": 11.0,
+        "bluePriest": 3.0
+      }
+    },
+    "atk24_def26": {
+      "redGem": {
+        "skeletonCaptain": 78.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 2.0,
+        "skeletonSoldier": 4.0,
+        "skeletonCaptain": 11.0,
+        "bluePriest": 3.0
+      }
+    },
+    "atk26_def22": {
+      "redGem": {
+        "skeletonCaptain": 43.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 2.0,
+        "skeletonSoldier": 3.0,
+        "skeletonCaptain": 9.0,
+        "bluePriest": 3.0
+      }
+    },
+    "atk26_def24": {
+      "redGem": {
+        "skeletonCaptain": 41.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 2.0,
+        "skeletonSoldier": 3.0,
+        "skeletonCaptain": 9.0,
+        "bluePriest": 3.0
+      }
+    },
+    "atk26_def26": {
+      "redGem": {
+        "skeletonCaptain": 39.0
+      },
+      "blueGem": {
+        "bat": 1.0,
+        "skeleton": 2.0,
+        "skeletonSoldier": 3.0,
+        "skeletonCaptain": 9.0,
+        "bluePriest": 3.0
+      }
+    }
+  }
+}

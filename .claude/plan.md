@@ -1,60 +1,67 @@
-# 离线模型改 TE 真结尾 + 重搜方案
+# 任务16: boss 段全 A* Pareto + 任务17: BK=200HP 排序
 
-## 目标
-把 strict20 4F→50F 连续线从 NE（普通结局，HP=11441，拿双倍金币+50F 直杀强真魔王）改成 TE（真结尾），重搜后预期 HP 显著提升。对标 TE 榜 41477（NE 榜 26164）。
+## 背景(已验证)
 
-## 现状（已核实）
-- **TE endgame 建模已存在** `scripts/probe_post40_te_late49_route.py`：
-  - `post_shield_no49`：跳过 0F 双倍金币行程，保留 downFly（line 120-122 注释明确）
-  - `late49_endgame`：救公主(25F/26F) → 24F → 50F 小偷(`trigger_mt50_thief`) → downFly@50F→49F(`downfly_to_mt49_event`) → 49F 封印战(`trigger_mt49_event` 设 redKing@6,3+8 whiteKing；`clear_mt49_from_center` 杀 4 十字警卫→`49sealed`→属性 5000→500，再杀 4 角+假魔王) → 回 24F→50F(`trigger_mt24_to_mt50`) → 杀封印真魔王(500/158/19)
-  - 设 `TE=True`、`addhp=True`，符合你描述的完整 TE 流程
-- **strict20 4-50 stitch 用的是 NE endgame**：`scripts/run_post40_from_zone3_candidate.py::run_stages` 调 `post.post_shield_49` + `post.post_49_endgame`（来自 `search_post40_guide_route.py`）。这俩做 0F 双倍金币+49F 弱直杀+50F 强直杀(22407 伤)。`export_strict20_preserve_pickaxe` 的 note 写"pure-TE"是误导，实际是 NE。
-- **TE probe（6/29）结果差**：HP=500，dmg=46059。原因：(1) 用 slot26 变体起点(`post40_focused_slice5_mid_center`)，不是 strict20 4-50 起点；(2) `late49_endgame` 路由未优化（单阶段 31643 伤）；(3) 无双倍金币导致 def=422 < NE 513。
+任务13/14/15 + move_adjacent 修复完成:
+- talk_trader 补 MT6(50G->1BK)/MT7(50G->5YK)(game_route.py)
+- 可达矩阵 trader 源(reachability_matrix.py TRADER_KEY_MAP + _flood_floor 登记)
+- _fetch_keys_until 买 trader(trader fallback:transition + _flood_floor 查邻居 + talk_trader)
+- move_adjacent strict_click=True 修复(loose path 含门/怪时 go_to strict fail 的 bug)
 
-## 改动方案
+run_boss_subgoals 线性 sub-goal 自动买 trader 达 27/27(HP=213 > walk 122, dmg=1713 < walk 2454)。
+但 sub-goal 3-5(RK/HP/boss)fail:RK=0(需 MT8 yellowGuard 378dmg),HP=213<634(需锁区药水)。
 
-### 1. 把 TE endgame 接进 strict20 export
-- 文件：`scripts/run_post40_from_zone3_candidate.py`
-- `run_stages`（line 421-429）：stages 末两段从 `post_shield_49` + `post_49_endgame` 换成 `post_shield_no49` + `late49_endgame`（从 `probe_post40_te_late49_route` 导入，或把这两个函数+四个 helper 提升到 `search_post40_guide_route.py` 共享）
-- `export_strict20_preserve_pickaxe`（line 469）note 改成准确 TE 描述
-- 效果：`strict20_preserve_pickaxe_31to50_local_walk.json` 变 TE 流程
+walk 完整 boss 调度:27/27(HP=400) -> MT10 bluePotion(+200) -> MT6 bluePriest(+1YK) -> MT8 yellowGuard x2(378dmg)+bluePotion(+200,RK+1,auto redKey) -> MT1 kill bat + MT7 bluePriest+bluePotion(补 HP 到 756) -> boss(634dmg,HP 756->122)。
 
-### 2. 确认战斗数值建模
-- 50F 真魔王：封印前 5000/1580/190（NE 直杀 22407 伤），封印后 500/158/19（TE，hero def>158 → 0 伤）。`clear_mt49_from_center` 已建模封印触发，需确认 50F 杀封印真魔王时用 500/158/19（不是 5000）
-- 49F 假魔王：TE 先和 50F 小偷对话→假魔王变 5000/1580/190，封印后 500/158/19。`trigger_mt49_event`+`clear_mt49_from_center` 已处理，确认封印后杀用 500/158/19
-- **won50 flag**：TE 杀封印真魔王后设 `won50=true`（当前 walk 是 false，要修）
+## 任务16: 全 A* Pareto(从 gem done,用户选定)
 
-### 3. 49F 禁 upFly 约束
-- `late49_endgame` 已用 `trigger_mt24_to_mt50` 回 50F（没用 upFly），符合"49F 禁上楼器"。确认 Game 层不调用 upFly 离开 49F
+### 改动
 
-### 4. 重搜 zone 4 路由（TE 约束，核心工作）
-- 无双倍金币 → 怪金币 1x → 少金币 → 少买属性 → 需重调 shop/gem/怪选择路由
-- **起点换回 strict20 4-50**（zone1 current_best → zone2 strict20 → 20-31 bridge → zone3），不用 slot26 变体
-- `late49_endgame` 当前是手写路由（非搜索），31643 伤未优化。优化方向：
-  - shop 顺序/数量（atk/def/hp shop 重新平衡，def 优先保证 >158 封印 0 伤）
-  - gem 拾取顺序
-  - 非 0 伤怪打/跳选择（magicDragon/blackMagician/redKnight/soldier）
-  - 药水保留/使用时机
-- 先跑一版看 HP baseline，再用 beam/Pareto 迭代优化
+1. **run_boss_subgoals** 重写成单 GameAStar(从 start_g 起,goal=boss cleared):
+   - 删除线性 sub-goal 1-5 顺序(YK>=4 -> 27/27 -> RK -> HP -> boss)。
+   - GameAStar(actions=skeleton_actions, goal=goal, heuristic=heuristic, state_key=_state_key, pareto_metrics=_pareto_metrics(), max_expansions=16000)。
+   - 链式衔接选 top_goals[0](Pareto 最优);top_goals 空时返回失败。
 
-### 5. 重 stitch + 重 audit
-- 跑 `run_post40_from_zone3_candidate.py` 生成 TE tail
-- 跑 `stitch_strict20_preserve_pickaxe_4to50_walk.py` 重 stitch 4-50
-- audit 要求 `errors=0`、`continuity_warnings=[]`
-- 最终态校验：MT50 x6y5，`coin=false`（无双倍金币）、`downFly=0`（用在 50F→49F）、`won50=true`
+2. **skeleton_actions 扩展**(boss 段 _BOSS_PHASE):
+   - 加 **buy trader** 动作:遍历 TRADER_KEY_MAP,optional_talk_trader(MT6/MT7)(BK<2 或 YK<4 时,且 gold>=50)。
+   - 扩展 **acquire potion**:不限 HP<300,boss 段常试锁区药水(_static_potions + acquire_resource 跨层,经门/怪)。当前 2b 只 HP<300。
+   - acquire redKey(MT8 (10,2) 经 yellowGuard)- 已有 1b,确认 RK<1 时加。
+   - boss trigger(go_to MT10 (6,5) + SPAWNED_BOSS + clear)- 已有。
+   - acquire gem(MT10 blueGem/redGem)- 已有(_static_skeleton)。
+   - kill monster(补 YK/gold)- 已有。
 
-### 6. 对比
-- TE HP vs NE 11441：应显著高（省 ~22407 boss 伤，扣掉无双倍金币的损失）
-- TE HP vs 榜 41477：看差距，迭代
+3. **heuristic** 扩展(含 RK/HP 缺口):
+   - atk/def 缺口(现有 max(0,27-atk)*3 + max(0,27-def)*3)
+   - RK 缺:if rk<1: h += 估 redKey 成本(yellowGuard dmg ~378)
+   - HP 缺:if atk>=27 and def>=27 and hp<634: h += (634-hp) 估药水成本
+   - 上 MT10(现有 max(0,10-fn))
+
+4. **state_key/pareto**: 现有(_state_key: floor+yk/bk/rk+yd/bd/rd+gold//50+ss,Pareto 去 atk/def;_pareto_metrics: dmg/-atk/-def)。
+
+5. **max_expansions**: 16000(--max-expansions 覆盖)。
+
+### 性能策略
+- state_key 强去重(去 x/y + hp//20 + gold//50)。
+- 动作空间精简(boss 段只相关:gem/key/trader/potion/kill/boss)。
+- heuristic 引导(朝 27/27 + RK + HP + boss)。
+- Pareto frontier 保留非支配(刷宝石/买trader/补HP 分支不被 dmg-min 剪)。
+- 若慢(>10min):加 cheap top-N 截断 + incumbent(walk 路径作 hint)。
+
+### 验证
+- 从 gem_done pickle 跑 run_boss_subgoals,确认 boss cleared(_boss_cleared + HP>0)。
+- 对比 walk(HP=122 dmg=2454)。
+- py_compile + 跑 strict_live_click/zone3_model/project_docs_sync 测试。
+
+## 任务17: BK=200HP 排序
+
+### 改动
+- 链式衔接排序(run_gem_subgoals line 751-754, run_segment line 1074)从 `yk+bk+rk` 改成 key 价值:
+  `50*yk + 200*bk + 500*rk + gold*0.5`(1YK=50HP, 1BK=4YK=200HP, 1RK>=500HP per official_41477, 100G=50HP)。
+- 和 YK=50HP 对齐(CLAUDE.md 分数模型)。
+
+### 验证
+- 链式衔接选 key 价值最高 goal(非简单计数),BK 按 200HP 估值。
 
 ## 风险
-- **可行性**：strict20 起点的关键 shop 可能依赖双倍金币才买得起。去掉双倍金币后路由可能报错（买不到必需 atk/def）。若报错，需调整 shop 顺序或补金币 farming
-- **HP 上限**：即使跑通，TE HP 可能仍远低于 41477（榜高度优化）。第一阶段目标：跑通 + HP > NE 11441，再迭代
-- **web 验证**：留到离线 TE 稳定后做，不重复之前一步步 web 补的错误
-
-## 执行顺序
-1. 改 `run_post40` stages 为 TE（接 `post_shield_no49` + `late49_endgame`），修 won50
-2. 跑 `run_post40` 生成 TE tail，看 baseline HP（预期 >500；若 <11441 或报错进 3）
-3. 若 HP 不理想/报错：优化 `late49_endgame` 路由（shop/gem/怪/药水），beam 迭代
-4. 重 stitch + audit（errors=0, continuity=[]）
-5. 报告 TE HP，对比 NE 11441 和 TE 榜 41477，决定是否继续优化
+- 全 A* 性能(diag10 boss A* 1.8s/扩展,16000 扩展可能~8h)。需优化动作空间 + heuristic,可能需 incumbent。
+- 若 A* 找不到 boss cleared,加 walk 路径 incumbent 引导(或回退保留 27/27 _fetch + A* RK/HP/boss)。

@@ -1,60 +1,87 @@
 # 脚本索引
 
-脚本保持平铺，是为了继续支持 `python scripts\xxx.py` 直接运行和旧脚本的同目录 import。
+脚本按功能分到 5 个子文件夹(search/audit/build/live/baseline),`scripts` 是包,每个子文件夹是子包。
 
-## 当前策略链
+运行方式:`python scripts/<子包>/xxx.py`(脚本开头会自处理 sys.path,把项目根加到 path,使 `from scripts.<子包> import` 生效)。跨脚本 import 用 `from scripts.<子包> import xxx`,不要用裸 `import xxx`。
 
-- `phase1_resource_group_search.py`：4-9 拿盾阶段的资源组排序实验，保留 action search 兼容。
-- `continue_delayed_phase1_with_post9_resource.py`：从延后 4-9 最优候选继续跑 9F 后资源组策略。
-- `post9_resource_group_search.py`：9F 后资源组评分/选源策略。
-- `post9_gem_supply_search.py`：9F 后高层 Dijkstra/A* 多 lane 搜索；27/27 候选使用运行时 top-K 宝石顺序精修、轻量钥匙过滤、前缀缓存和真实楼层重放。
-- `gen_delayed_phase1_detailed_walk.py`：把 compact walk 展开成坐标级 detailed walk；支持 `--input` 和 `--output` 指定任意关键线路。
-- `compare_delayed_phase1_vs_user_guide.py`：当前最优线路与攻略线路的最终状态、分数、剩余资源差异对比。
+## search/ — 搜索/寻路
 
-## 旧策略/基线
+- `phase1_action_search.py`:旧 4-9 action search,被 post9_gem_supply_search import
+- `post9_action_search.py`:旧 9F 后 action search
+- `post9_resource_group_search.py`:9F 后资源组评分/选源策略
+- `post9_gem_supply_search.py`:9F 后 Dijkstra/A* 多 lane 搜索(orchestrator)
+- `post9_merchant_seed_search.py`:商人种子搜索
+- `post9_atomic_resource_dijkstra.py`:atomic 资源 Dijkstra
+- `post9_auto_resource_group_pareto.py`:auto 资源组 Pareto
+- `post9_compressed_resource_dijkstra.py`:compressed 资源 Dijkstra
+- （`search_post40_guide_route.py` 已移到 `src/solver/game_route.py`：通用 Game 类核心 `auto_sweep`/`strict_live_model` + save37/post-40 路线搜索）
+- `search_zone2_macro_routes.py`:2 区宏搜索
+- `search_zone2_open_compare.py`:2 区更宽本地比较
+- `search_zone3_slot26_explore.py`:slot26 搜索底座
+- `search_zone3_slot26_guided.py`:slot26 guided 搜索
+- `search_zone3_slot26_seeded.py`:slot26 seeded 搜索
+- `search_zone3_slot26_post40_seeded.py`:slot26 post-40 搜索
+- `probe_mt7_red_first_swap_sequence.py`:MT7 红宝石优先探针
+- `probe_zone3_slot26_sword_macro.py`:slot26 剑宏策略探针
+- `probe_zone3_slot26_macro_variants.py`:slot26 宏策略探针
+- `run_corrected_phase1_best_boss_until_deadline.py`:修正 phase1 best boss
+- `continue_delayed_phase1_with_post9_resource.py`:延后 phase1 + post9 资源
+- `search/zone3_event_actions.py`：通用 `Game` 搜索使用的 3 区明确事件动作。
 
-- `phase1_action_search.py`：旧 4-9 action search。
-- `post9_action_search.py`：旧 9F 后 action search。
-- `fixed_shield_strategy.py`：固定 4-9 拿盾 + 9F 红蓝宝石基准路线重放。
-- `replay_user_post9_route.py`：用户攻略线重放。
-- `gen_walkthrough_fixed_prefix.py`：固定前缀续搜 walk 生成。
-- `gen_natural_best_walk.py`、`gen_key_saving_walks.py`：历史自然/省钥匙路线 walk 生成。
+## audit/ — 审计/对比/报告
 
-## 分析与对比
+- `compare_merchant_resource_paths.py`:商人资源路径对比
+- `merchant_finalscore_audit.py`:商人 final-score 审计
+- `compare_post9_order_variants.py`:post9 顺序变体对比
+- `compare_mt6_key_variant.py`:MT6 钥匙变体对比
+- `compare_delayed_phase1_vs_user_guide.py`:delayed phase1 vs 攻略对比
+- `audit_zone2_path_legality.py`:2 区路径合法性审计
+- `report_zone2_remaining_diff.py`:2 区剩余资源差异
+- `report_zone3_remaining_diff.py`:3 区剩余资源差异
+- `report_zone3_slot26_clean_walk.py`:slot26 clean walk 报告
+- `report_post9_atomic_resource_graph.py`:post9 atomic 资源图
+- `report_post9_compressed_resource_topology.py`:post9 compressed 拓扑
+- `report_resource_group_floor_compact.py`:资源组逐层可视化
+- `floor_final_score.py`:final-score 计算核心模块
 
-- `report_post9_resource_group_pareto_top.py`
-- `report_resource_score_top.py`
-- `compare_phase1_dmg.py`
-- `compare_phase1_door_pareto.py`
-- `compare_walk_metrics.py`
-- `check_fixed_prefix_in_phase1_pareto.py`
-- `analyze_phase1_*.py`
-- `inspect_*.py`
+## build/ — walk 生成/拼接/refine
 
-## 网页操作
+- `gen_local_refined_best_walk.py`:生成跟踪 best artifact
+- `gen_best_current_boss_walk.py`:旧 phase1 boss walk 生成（不含 auto_sweep，金币标注过期；仍被 `gen_local_refined_best_walk.py` 引用，zone1 walk 已改用 Game 类 + `gen_zone_walk_md.py`）
+- `gen_delayed_phase1_detailed_walk.py`:compact walk 展开成 detailed（post9 搜索/审计依赖）
+- `local_order_refine_current_best.py`:本地顺序精修
+- `build_live_resource_group_cache.py`:资源组缓存
+- （`build_zone2_live_expected_walk.py` 已归档到 `history/stale_build_scripts/`，pre-Game-class，无活跃引用）
+- `prepend_40f_prefix_walk.js`:40F 前缀拼接
+- `search/zone3_game_route.py`：通用 `Game` 的 3 区事件适配与回放入口。
+- 旧 `GuideReplay` 已归档到 `history/zone3_guide_replay/`，不得作为新搜索入口。
 
-- `download_data.py`
-- `extract_maps.py`
-- `extract_high_maps_cdp.js`：MT41+ 地图数据的直连 CDP 提取器；避免 Python/PowerShell 捕获 `agent-browser.cmd` 输出时出问题。
-- `extract_high_maps.py` / `extract_high_maps.ps1`：`extract_high_maps_cdp.js` 的薄封装。
-- `live_zone3_walk_replayer_cdp.js`：`outputs/results/zone3_quick_pass_walk.json` 的直连 CDP 实机回放/检查器。
-- `snapshot_state.py`
-- `grab_state.py`
-- `read_full_state.py`
-- `simple_read.py`
-- `close_browser.py`
-- `test_browser.py`
-- `test_core.py`
+## live/ — 实机浏览器/数据提取
 
-读取或控制已经打开的 h5mota 游戏页时，chrome 必须在真实端口 9222 上外部启动并带 `--user-data-dir=browser-profile`，然后 `agent-browser connect 9222` 并用裸 `agent-browser eval`/`get`；**不要用 `--cdp 9222` flag**，**不要用 `--auto-connect`**（会粘到 agent-browser 自己的空白页）。
+- `live_read_state.js`:楼层感知状态读取
+- `live_load_save.js`:存档加载(走 `_doSL_load` → `loadData` 路径)
+- `live_zone3_mouse_replayer_cdp.js`:统一点击 verifier（1-4 区 / 4-50 层通用，CDP 真实点击 handler，唯一推荐入口）
+- （1-4 区统一只用 `live_zone3_mouse_replayer_cdp.js`。已归档：`live_zone2_runner.py` / `live_zone3_guide_runner.py` -> `history/zone_specific_live_runners/`；`live_zone1_auto_replay_cdp.js` / `live_zone3_walk_replayer_cdp.js` / `live_click_route_executor.py` -> `history/old_live_runners/`。均因 `core.doAction`/`setHeroLoc`/`moveTo`/方向键逐步走强推，禁用）
+- `launch_h5mota_chrome.ps1`:chrome 启动器
+- `import_save_slot_cdp.js`:存档导入
+- `export_save_slot_cdp.js`:存档导出
+- `export_current_cdp.js`:当前状态导出
+- `extract_maps.py`:地图提取
+- `extract_high_maps_cdp.js`:MT41+ CDP 提取器
+- `extract_high_maps.py` / `extract_high_maps.ps1`:薄封装
+
+## baseline/ — 攻略基线/旧策略
+
+- `fixed_shield_strategy.py`:固定 4-9 拿盾基线
+- `replay_user_post9_route.py`:用户攻略线重放
+- `replay_zone2_guide_route.py`:2 区攻略回放
+- `zone2_resource_groups.py`:2 区资源组评分
+
+## 浏览器连接
+
+chrome 必须在真实端口 9222 上外部启动并带 `--user-data-dir=browser-profile`,然后 `agent-browser connect 9222` 并用裸 `agent-browser eval`/`get`;**不要用 `--cdp 9222` flag**,**不要用 `--auto-connect`**。
 
 ```powershell
 agent-browser connect 9222
 agent-browser eval "(function(){return JSON.stringify({floor:core.status.floorId,x:core.status.hero.loc.x,y:core.status.hero.loc.y})})()"
 ```
-
-## 固定前缀 JIT 补给审计
-
-- `audit_fixed_prefix_user_post9_compressed.py`：逐步验证固定攻略前缀后的攻略路线可以由压缩图表达，最终应为 `HP=25 dmg=2601 door=40/2/1`。
-- `post9_gem_supply_search.py --stat-local-refine-jit-supply`：只重排宝石与上楼主干，主干不可达时再动态补钥匙或药水。
-- `--stat-extra-key-supply-depth 1`：接近 `27/27` 且黄钥匙紧张时，补给闭包额外多看一层。

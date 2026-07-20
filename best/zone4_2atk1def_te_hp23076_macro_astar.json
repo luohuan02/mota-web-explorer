@@ -1,0 +1,1009 @@
+{
+  "ok": true,
+  "bounded": true,
+  "method": "A* h=0 over completed strict-Game macro nodes with exact incumbent leaf pruning",
+  "incumbent_hp": 23076,
+  "incumbent_path": "outputs\\results\\zone4_all_farmfix_target241_hp_candidate.json",
+  "best_config": {
+    "groups": [
+      "mt31_blue",
+      "mt31_red",
+      "mt32_pair"
+    ],
+    "target": 241,
+    "final_kind": "hp"
+  },
+  "best": {
+    "path": "outputs\\results\\zone4_all_farmfix_target241_hp_candidate.json",
+    "final_hp": 23076,
+    "final": {
+      "hp": 23076,
+      "atk": 417,
+      "def": 475,
+      "yk": 5,
+      "bk": 1,
+      "rk": 0,
+      "gold": 906,
+      "floor": "MT50",
+      "x": 6,
+      "y": 5,
+      "dmg": 14479,
+      "yd": 51,
+      "bd": 11,
+      "rd": 7,
+      "times1": 15,
+      "centerFly": 0,
+      "upFly": 0,
+      "downFly": 0,
+      "earthquake": 0,
+      "bomb": 0,
+      "bigKey": 0,
+      "pickaxe": 0,
+      "superPotion": 0,
+      "snow": 1,
+      "knife": true,
+      "earthquakeBought": 1,
+      "coin": false,
+      "magicImmune": true,
+      "won49": true,
+      "won50": true
+    },
+    "shop_sequence": [
+      "def",
+      "def",
+      "def",
+      "atk",
+      "hp"
+    ],
+    "route_signature": {
+      "shops": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "steps": 451,
+      "final": {
+        "hp": 23076,
+        "atk": 417,
+        "def": 475,
+        "yk": 5,
+        "bk": 1,
+        "rk": 0,
+        "gold": 906,
+        "dmg": 14479,
+        "yd": 51,
+        "bd": 11,
+        "rd": 7,
+        "times1": 15,
+        "won49": true,
+        "won50": true
+      }
+    }
+  },
+  "catalog_best_config": {
+    "groups": [
+      "mt31_blue",
+      "mt31_red",
+      "mt32_pair"
+    ],
+    "target": 211,
+    "final_kind": "hp"
+  },
+  "catalog_best": {
+    "path": "outputs\\results\\zone4_all_farmfix_target211_hp_candidate.json",
+    "final_hp": 23076,
+    "final": {
+      "hp": 23076,
+      "atk": 417,
+      "def": 475,
+      "yk": 5,
+      "bk": 1,
+      "rk": 0,
+      "gold": 906,
+      "floor": "MT50",
+      "x": 6,
+      "y": 5,
+      "dmg": 14479,
+      "yd": 51,
+      "bd": 11,
+      "rd": 7,
+      "times1": 15,
+      "centerFly": 0,
+      "upFly": 0,
+      "downFly": 0,
+      "earthquake": 0,
+      "bomb": 0,
+      "bigKey": 0,
+      "pickaxe": 0,
+      "superPotion": 0,
+      "snow": 1,
+      "knife": true,
+      "earthquakeBought": 1,
+      "coin": false,
+      "magicImmune": true,
+      "won49": true,
+      "won50": true
+    },
+    "shop_sequence": [
+      "def",
+      "def",
+      "def",
+      "atk",
+      "hp"
+    ],
+    "route_signature": {
+      "shops": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "steps": 451,
+      "final": {
+        "hp": 23076,
+        "atk": 417,
+        "def": 475,
+        "yk": 5,
+        "bk": 1,
+        "rk": 0,
+        "gold": 906,
+        "dmg": 14479,
+        "yd": 51,
+        "bd": 11,
+        "rd": 7,
+        "times1": 15,
+        "won49": true,
+        "won50": true
+      }
+    }
+  },
+  "evaluated_nodes": 26,
+  "invalid_candidates": [
+    {
+      "path": "outputs\\results\\zone4_31red_atktarget251_finalhp_candidate.json",
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 251,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "magicDragon timing is not mandatory pre-knife: '终局钥匙投资金币 magicDragon'"
+      ]
+    },
+    {
+      "path": "outputs\\results\\zone4_31red_atktarget271_finalhp_candidate.json",
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 271,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "final fixed zero-damage gold: no path to MT31 x1y10: 31F 1000G 买4黄1蓝; HP=8419 ATK=408 DEF=407 YK=12 BK=1 RK=1 G=1312 MT31 x6y10"
+      ]
+    },
+    {
+      "path": "outputs\\results\\zone4_atk261_31blue_farmfix_candidate.json",
+      "config": {
+        "groups": [
+          "mt31_blue"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "key-investment gold cleanup: no path to MT25 x6y10: 25F red door; HP=18305 ATK=414 DEF=415 YK=9 BK=0 RK=0 G=2 MT25 x2y11"
+      ]
+    },
+    {
+      "path": "outputs\\results\\zone4_atk261_31both_candidate.json",
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "magicDragon timing is not mandatory pre-knife: '终局钥匙投资金币 magicDragon'"
+      ]
+    },
+    {
+      "path": "outputs\\results\\zone4_atk261_31red32_candidate.json",
+      "config": {
+        "groups": [
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "magicDragon timing is not mandatory pre-knife: '终局钥匙投资金币 magicDragon'"
+      ]
+    },
+    {
+      "path": "outputs\\results\\zone4_atk261_all_candidate.json",
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "magicDragon timing is not mandatory pre-knife: '终局钥匙投资金币 magicDragon'"
+      ]
+    },
+    {
+      "path": "outputs\\results\\zone4_target241_31both_farmfix_candidate.json",
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red"
+        ],
+        "target": 241,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "key-investment gold cleanup: cannot fund pre-dragon ATK 292, have=289 gold=782; HP=16418 ATK=289 DEF=439 YK=1 BK=1 RK=1 G=782 MT28 x8y5"
+      ]
+    },
+    {
+      "path": "outputs\\results\\zone4_target241_blue32_farmfix_candidate.json",
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "key-investment gold cleanup: cannot fund pre-dragon ATK 292, have=289 gold=882; HP=16487 ATK=289 DEF=443 YK=1 BK=0 RK=1 G=882 MT28 x8y5"
+      ]
+    },
+    {
+      "path": "outputs\\results\\zone4_incumbent_neighbor_no31red.json",
+      "config": {
+        "groups": [],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "errors": [
+        "magicDragon timing is not mandatory pre-knife: '终局钥匙投资金币 magicDragon'"
+      ]
+    }
+  ],
+  "popped": [
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 211,
+        "final_kind": "hp"
+      },
+      "cost": 76924,
+      "final_hp": 23076,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target211_hp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 221,
+        "final_kind": "hp"
+      },
+      "cost": 76924,
+      "final_hp": 23076,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target221_hp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 231,
+        "final_kind": "hp"
+      },
+      "cost": 76924,
+      "final_hp": 23076,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target231_hp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "atk"
+      },
+      "cost": 76924,
+      "final_hp": 23076,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target241_atk_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "def"
+      },
+      "cost": 76924,
+      "final_hp": 23076,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target241_def_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "hp"
+      },
+      "cost": 76924,
+      "final_hp": 23076,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target241_hp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "skip"
+      },
+      "cost": 76924,
+      "final_hp": 23076,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target241_skip_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "hp"
+      },
+      "cost": 77533,
+      "final_hp": 22467,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_target241_red32_farmfix_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 251,
+        "final_kind": "hp"
+      },
+      "cost": 77750,
+      "final_hp": 22250,
+      "shop_sequence": [
+        "atk",
+        "def",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target251_hp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 251,
+        "final_kind": "skip"
+      },
+      "cost": 77750,
+      "final_hp": 22250,
+      "shop_sequence": [
+        "atk",
+        "def",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target251_skip_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 251,
+        "final_kind": "def"
+      },
+      "cost": 78190,
+      "final_hp": 21810,
+      "shop_sequence": [
+        "atk",
+        "def",
+        "def",
+        "def",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target251_def_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 78382,
+      "final_hp": 21618,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_all_farmfix_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 271,
+        "final_kind": "hp"
+      },
+      "cost": 78382,
+      "final_hp": 21618,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target271_hp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 251,
+        "final_kind": "atk"
+      },
+      "cost": 78654,
+      "final_hp": 21346,
+      "shop_sequence": [
+        "atk",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target251_atk_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "def"
+      },
+      "cost": 78902,
+      "final_hp": 21098,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "def",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target261_def_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 79159,
+      "final_hp": 20841,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_31blue32_farmfix_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 79373,
+      "final_hp": 20627,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_32only_farmfix_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 79417,
+      "final_hp": 20583,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_31red32_farmfix_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 79687,
+      "final_hp": 20313,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_31both_farmfix_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 79863,
+      "final_hp": 20137,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget261_finalhp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "skip"
+      },
+      "cost": 79863,
+      "final_hp": 20137,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_skip.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 271,
+        "final_kind": "hp"
+      },
+      "cost": 79881,
+      "final_hp": 20119,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget271_v2_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "def"
+      },
+      "cost": 80363,
+      "final_hp": 19637,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "def",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_def.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 261,
+        "final_kind": "atk"
+      },
+      "cost": 80651,
+      "final_hp": 19349,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_incumbent_neighbor_final_atk.json"
+    },
+    {
+      "config": {
+        "groups": [],
+        "target": 261,
+        "final_kind": "hp"
+      },
+      "cost": 80867,
+      "final_hp": 19133,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_atk261_none_farmfix_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red"
+        ],
+        "target": 281,
+        "final_kind": "hp"
+      },
+      "cost": 80908,
+      "final_hp": 19092,
+      "shop_sequence": [
+        "atk",
+        "atk",
+        "atk",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_31red_atktarget281_finalhp_candidate.json"
+    }
+  ],
+  "better_than_incumbent": [],
+  "incumbent_exact_neighbors": [
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 231,
+        "final_kind": "hp"
+      },
+      "final_hp": 23076,
+      "delta_vs_incumbent": 0,
+      "exact_pruned": true,
+      "same_route_as_incumbent": true,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target231_hp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "atk"
+      },
+      "final_hp": 23076,
+      "delta_vs_incumbent": 0,
+      "exact_pruned": true,
+      "same_route_as_incumbent": true,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target241_atk_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "def"
+      },
+      "final_hp": 23076,
+      "delta_vs_incumbent": 0,
+      "exact_pruned": true,
+      "same_route_as_incumbent": true,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target241_def_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "skip"
+      },
+      "final_hp": 23076,
+      "delta_vs_incumbent": 0,
+      "exact_pruned": true,
+      "same_route_as_incumbent": true,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target241_skip_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 251,
+        "final_kind": "hp"
+      },
+      "final_hp": 22250,
+      "delta_vs_incumbent": -826,
+      "exact_pruned": true,
+      "same_route_as_incumbent": false,
+      "shop_sequence": [
+        "atk",
+        "def",
+        "def",
+        "hp",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_all_farmfix_target251_hp_candidate.json"
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_red",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "hp"
+      },
+      "final_hp": 22467,
+      "delta_vs_incumbent": -609,
+      "exact_pruned": true,
+      "same_route_as_incumbent": false,
+      "shop_sequence": [
+        "def",
+        "def",
+        "def",
+        "atk",
+        "hp"
+      ],
+      "path": "outputs\\results\\zone4_target241_red32_farmfix_candidate.json"
+    }
+  ],
+  "incumbent_invalid_neighbors": [
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt31_red"
+        ],
+        "target": 241,
+        "final_kind": "hp"
+      },
+      "candidates": [
+        {
+          "path": "outputs\\results\\zone4_target241_31both_farmfix_candidate.json",
+          "config": {
+            "groups": [
+              "mt31_blue",
+              "mt31_red"
+            ],
+            "target": 241,
+            "final_kind": "hp"
+          },
+          "errors": [
+            "key-investment gold cleanup: cannot fund pre-dragon ATK 292, have=289 gold=782; HP=16418 ATK=289 DEF=439 YK=1 BK=1 RK=1 G=782 MT28 x8y5"
+          ]
+        }
+      ]
+    },
+    {
+      "config": {
+        "groups": [
+          "mt31_blue",
+          "mt32_pair"
+        ],
+        "target": 241,
+        "final_kind": "hp"
+      },
+      "candidates": [
+        {
+          "path": "outputs\\results\\zone4_target241_blue32_farmfix_candidate.json",
+          "config": {
+            "groups": [
+              "mt31_blue",
+              "mt32_pair"
+            ],
+            "target": 241,
+            "final_kind": "hp"
+          },
+          "errors": [
+            "key-investment gold cleanup: cannot fund pre-dragon ATK 292, have=289 gold=882; HP=16487 ATK=289 DEF=443 YK=1 BK=0 RK=1 G=882 MT28 x8y5"
+          ]
+        }
+      ]
+    }
+  ],
+  "missing_incumbent_neighbors": [],
+  "claim": "completed catalog / one-edit neighborhood only; not global optimum proof"
+}
