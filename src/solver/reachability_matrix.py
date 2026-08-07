@@ -297,17 +297,27 @@ def _flood_floor(g: Game, fid: str, break_fakewalls: bool = False) -> FloorReach
 def cross_floor_reachable(g: Game, *, break_fakewalls: bool = True) -> set[tuple[str, int, int]]:
     """从当前英雄出发跨层 flood，返回所有可达 (fid, x, y)。
 
-    预筛骨架/钥匙资源可达性：skeleton_actions 只对可达资源生成 acquire，
-    _search_resource 只试可达钥匙组，避免远楼层 acquire 的贵跨层 go_to 浪费。
+    飞行：fly(fid) 免费传送到 visited 楼层（transition 上楼梯时加入 visited，
+    除 MT49/50）。已访问楼层直接作为起点 flood，不再依赖楼梯边--用户规则：
+    上楼楼梯只在未上楼时计入，上楼后可直接飞达已访问楼层。
 
-    跨层：当前楼层从英雄位置起 flood；可达楼梯（四邻在 reachable）延伸到目标
-    楼层，目标楼层再 flood（_entry_starts 把楼梯落点当起点，乐观过估）。
+    楼梯解锁新楼层：楼梯四邻可达且无法师致命陷阱（special 15/16）在必经邻位。
+    若楼梯旁唯一可达邻位落在法师掉血陷阱且致死（check_damage_at >= hp），
+    该楼梯不可用（无法站到楼梯旁解锁上一层）。
+
     门有钥匙预算就开（不扣，过估），怪按可杀性。宁可多生成（A* 边 go_to 精确
     拒绝假阳），不可漏估（漏估丢真解）。
     """
     reachable: set[tuple[str, int, int]] = set()
     done: set[str] = set()
+    # 起点：当前层 + 所有飞行可达的已访问楼层。fly(fid) 免费传送到 visited
+    # 楼层（transition 上楼梯时加入 visited，除 MT49/50）。用户规则：上楼楼梯
+    # 只在未上楼时计入，上楼后可直接飞达已访问楼层，不再依赖楼梯边。
     stack = [g.state["floor"]]
+    for fid in g.visited:
+        if fid in g.floors and fid not in done and fid not in stack:
+            stack.append(fid)
+    hp = int(g.state.get("hp", 0))
     while stack:
         fid = stack.pop()
         if fid in done:
@@ -320,8 +330,23 @@ def cross_floor_reachable(g: Game, *, break_fakewalls: bool = True) -> set[tuple
         for (x, y), block in floor.blocks.items():
             if block.eid not in STAIRS:
                 continue
-            # 楼梯格本身 terrain 不可踩，四邻可达 = 能上/下楼
-            if any(n in fr.reachable_cells for n in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1))):
+            # 楼梯格本身 terrain 不可踩，四邻可达 = 能上/下楼。但若必经邻位
+            # 落在法师掉血陷阱(special 15 魔法场 / special 16 半血)且致死，
+            # 楼梯不可用（无法站到楼梯旁解锁上一层）。用户规则：法师陷阱在
+            # 必经之路则不可飞/上楼。
+            usable = False
+            for n in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if n not in fr.reachable_cells:
+                    continue
+                if hp > 0:
+                    try:
+                        if g.check_damage_at(fid, n) >= hp:
+                            continue  # 法师陷阱致死，该邻位不可站
+                    except Exception:
+                        pass
+                usable = True
+                break
+            if usable:
                 tgt_n = floor_no(fid) + (1 if block.eid == "upFloor" else -1)
                 tgt = f"MT{tgt_n}"
                 if tgt in g.floors and tgt not in done:
@@ -401,4 +426,198 @@ def supplement_lookup(rm: ReachabilityMatrix, kinds: set[str]) -> list[Reachable
     if "potion" in kinds:
         out.extend(rm.supplement_potions)
     out.sort(key=lambda e: (e.access_dmg, e.path_len, e.fid))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# 属性增量 + 剩余资源估值 + zone-local comparison_score（2攻0防 zone 优化）
+#
+# 服务两个用途：
+# (a) comparison_score 的剩余资源估值（zone1+zone2 剩余 entries 按 HP 等价估值）。
+# (b) 骨架交换的等价分组/替换候选（small-opt，后续）。
+#
+# 口径对齐 scripts/search/post9_resource_group_search.py 的 VALUE 常量
+# （YK=50/BK=200/RK=420/ATK_GEM=260/DEF_GEM=280，zone1 post9 调校）。ATK/DEF 宝石
+# 估值是 zone1 基线，zone2+ 主观可调。gold 口袋值（带到 zone4）用 zone4 溢价，
+# 不用面值（post9 不含 gold 因 zone1 全花商店了）。
+# ---------------------------------------------------------------------------
+
+YK_VALUE = 50
+BK_VALUE = 200
+RK_VALUE = 420
+ATK_GEM_VALUE = 260   # 每 ATK 点 HP 等价（zone1 post9 基线，主观可调）
+DEF_GEM_VALUE = 280   # 每 DEF 点 HP 等价
+GOLD_FACE_VALUE = 0.5  # 每 gold 面值（100G=50HP），剩余怪金币用
+
+_SWORD_ATK = {"sword1": 10, "sword2": 20, "sword3": 40, "sword4": 50, "sword5": 100}
+_SHIELD_DEF = {"shield1": 10, "shield2": 20, "shield3": 40, "shield4": 50, "shield5": 100}
+_KEY_EID_FIELD = {"yellowKey": "yk", "blueKey": "bk", "redKey": "rk"}
+
+
+@dataclass(frozen=True)
+class AttrDelta:
+    """单个资源的属性增量。flags 是非 stat 效果（cross/magicImmune 等）。"""
+    atk: int = 0
+    defense: int = 0   # 'def' 是关键字
+    hp: int = 0
+    yk: int = 0
+    bk: int = 0
+    rk: int = 0
+    gold: int = 0      # 正=掉落金币，负=购买花费
+    flags: tuple = ()
+
+    def stat_key(self) -> tuple:
+        """等价分组键（stat 增量，不含 gold/flags）-- 宝石替换用。"""
+        return (self.atk, self.defense, self.hp, self.yk, self.bk, self.rk)
+
+
+def attribute_delta(entry: ReachableEntry, g: Game) -> list[AttrDelta]:
+    """获取该 entry 的属性增量列表。商店返回多选项（atk/def 买型），其它单项。
+
+    用途：comparison_score 剩余资源估值 + 骨架交换等价分组（small-opt）。
+    未建模的资源（fly/工具计数器/未在 TRADER_KEY_MAP 的 zone2 商人）返回 []。
+    """
+    eid = entry.eid
+    ratio = g.floors[entry.fid].ratio if entry.fid in g.floors else 1
+    if eid == "redGem":
+        return [AttrDelta(atk=ratio)]
+    if eid == "blueGem":
+        return [AttrDelta(defense=ratio)]
+    if eid == "greenGem":
+        return [AttrDelta(atk=ratio, defense=ratio)]
+    if eid in _SWORD_ATK:
+        return [AttrDelta(atk=_SWORD_ATK[eid])]
+    if eid in _SHIELD_DEF:
+        flags = ("magicImmune",) if eid == "shield5" else ()
+        return [AttrDelta(defense=_SHIELD_DEF[eid], flags=flags)]
+    if eid == "cross":
+        return [AttrDelta(flags=("cross",))]
+    if eid in _KEY_EID_FIELD:
+        return [AttrDelta(**{_KEY_EID_FIELD[eid]: 1})]
+    if eid == "redPotion":
+        return [AttrDelta(hp=50 * ratio)]
+    if eid == "bluePotion":
+        return [AttrDelta(hp=200 * ratio)]
+    if eid in SHOP_EIDS:
+        # atk 买 = +2*ratio，def 买 = +4*ratio（hp 买依赖 times1，状态相关，暂略）
+        return [AttrDelta(atk=2 * ratio), AttrDelta(defense=4 * ratio)]
+    if entry.kind == "monster":
+        money = int(g.enemies.get(eid, {}).get("money", 0))
+        return [AttrDelta(gold=money)]
+    if entry.kind == "trader_buy":
+        spec = TRADER_KEY_MAP.get((entry.fid, entry.pos))
+        if spec:
+            cost, yk, bk, rk, _keid = spec
+            return [AttrDelta(yk=yk, bk=bk, rk=rk, gold=-cost)]
+        return []
+    # fly / pickaxe / bomb / centerFly / ... : 无 stat 增量
+    return []
+
+
+def delta_value(d: AttrDelta) -> float:
+    """单个增量的 HP 等价面值。口袋 gold 的 zone4 溢价在 comparison_score 单独算。"""
+    return (
+        d.atk * ATK_GEM_VALUE
+        + d.defense * DEF_GEM_VALUE
+        + d.hp
+        + d.yk * YK_VALUE
+        + d.bk * BK_VALUE
+        + d.rk * RK_VALUE
+        + d.gold * GOLD_FACE_VALUE
+    )
+
+
+def entry_value(entry: ReachableEntry, g: Game) -> float:
+    """单个剩余 entry 的估值 = 其最佳增量选项的面值（商店取 max 选项）。"""
+    deltas = attribute_delta(entry, g)
+    if not deltas:
+        return 0.0
+    return max(delta_value(d) for d in deltas)
+
+
+def remaining_resource_value(rm: ReachabilityMatrix, g: Game) -> dict[str, float]:
+    """zone1+zone2 剩余（未获取）entries 的 HP 等价估值，按 kind 拆分。"""
+    by_kind: dict[str, float] = {}
+    for kind, entries in (
+        ("skeleton", rm.skeleton_entries),
+        ("shop", rm.shop_entries),
+        ("monster", rm.monster_entries),
+        ("supplement_key", rm.supplement_keys),
+        ("supplement_potion", rm.supplement_potions),
+    ):
+        by_kind[kind] = sum(entry_value(e, g) for e in entries)
+    by_kind["total"] = sum(by_kind.values())
+    return by_kind
+
+
+def comparison_score(
+    g: Game,
+    rm: ReachabilityMatrix,
+    *,
+    zone4_gold_premium: float = 2.5,   # 口袋 gold 相对面值的倍数（zone4 ratio5 vs zone2 ratio2）
+    times1_penalty: int = 0,          # 每 times1 的惩罚（2攻0防下 times1=2 常量，默认 0）
+) -> dict:
+    """zone1+zone2 终态比较口径。
+
+    score = HP + 钥匙值 + (1+2区剩余资源面值) + 口袋gold×zone4溢价 - times1×惩罚
+
+    - HP/钥匙/剩余：zone-local（post9 口径）。
+    - 口袋 gold：主观 zone4 溢价（后移到 zone4 买 ratio5 属性），非面值。
+      zone4_gold_premium=2.5 = ratio5/ratio2；可调（敏感度见报告）。
+    - times1：2攻0防下 = 2 常量；跨策略（vs 2ATK1DEF=3）才差异化，默认不罚。
+    """
+    s = g.state
+    hp = int(s["hp"]); yk = int(s["yk"]); bk = int(s["bk"]); rk = int(s["rk"])
+    gold = int(s["gold"]); times1 = int(s.get("times1", 0))
+    keys_val = yk * YK_VALUE + bk * BK_VALUE + rk * RK_VALUE
+    remain = remaining_resource_value(rm, g)
+    remain_total = remain["total"]
+    # 口袋 gold 按 zone4 溢价估值（非面值）：gold × 面值 × 溢价
+    gold_val = gold * GOLD_FACE_VALUE * zone4_gold_premium
+    total = hp + keys_val + remain_total + gold_val - times1 * times1_penalty
+    return {
+        "total": total,
+        "hp": hp,
+        "atk": int(s["atk"]), "def": int(s["def"]),
+        "keys_value": keys_val,
+        "yk": yk, "bk": bk, "rk": rk,
+        "gold": gold,
+        "gold_value": gold_val,
+        "zone4_gold_premium": zone4_gold_premium,
+        "remaining": remain,
+        "times1": times1,
+        "times1_penalty": times1_penalty,
+    }
+
+
+# --- 骨架交换等价分组/替换候选（small-opt，后续用）---
+
+def equivalence_groups(rm: ReachabilityMatrix, g: Game) -> dict[tuple, list[ReachableEntry]]:
+    """按 stat_key 分组可达 entries（同 delta 可互相替换）。商店按买型拆。"""
+    groups: dict[tuple, list[ReachableEntry]] = {}
+    for e in rm.skeleton_entries + rm.shop_entries + rm.supplement_keys + rm.supplement_potions:
+        for d in attribute_delta(e, g):
+            if d.stat_key() == (0, 0, 0, 0, 0, 0):
+                continue  # 纯金币/无 stat 不进等价组
+            groups.setdefault(d.stat_key(), []).append(e)
+    return groups
+
+
+def substitution_candidates(
+    rm: ReachabilityMatrix, visited: ReachableEntry, g: Game
+) -> list[ReachableEntry]:
+    """给一个已访问节点，返回同 stat_key 的未拾取等价项，按获取成本升序。"""
+    vds = attribute_delta(visited, g)
+    if not vds:
+        return []
+    target_keys = {d.stat_key() for d in vds}
+    out: list[ReachableEntry] = []
+    for e in rm.skeleton_entries + rm.shop_entries + rm.supplement_keys + rm.supplement_potions:
+        if (e.fid, e.pos) == (visited.fid, visited.pos):
+            continue
+        for d in attribute_delta(e, g):
+            if d.stat_key() in target_keys and d.stat_key() != (0, 0, 0, 0, 0, 0):
+                out.append(e)
+                break
+    out.sort(key=lambda e: (e.access_dmg, e.doors_on_path, e.path_len))
     return out

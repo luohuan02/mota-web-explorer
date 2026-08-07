@@ -1,0 +1,99 @@
+{
+  "schema": "mota.best.zone3_summary.v1",
+  "line": "2atk0def KILL (killed zKnight in zone2 instead of buying 800G red key)",
+  "zone": 3,
+  "source_slot": 32,
+  "source_checkpoint": "best/checkpoints/zone2_2atk0def_kill_end_save.json",
+  "start": {
+    "floor": "MT20",
+    "x": 6,
+    "y": 5,
+    "hp": 1215,
+    "atk": 76,
+    "def": 66,
+    "yk": 5,
+    "bk": 0,
+    "rk": 0,
+    "gold": 1298,
+    "times1": 2
+  },
+  "final": {
+    "floor": "MT41",
+    "x": 6,
+    "y": 2,
+    "hp": 609,
+    "atk": 166,
+    "def": 174,
+    "yk": 9,
+    "bk": 0,
+    "rk": 0,
+    "gold": 2285,
+    "dmg": 8806,
+    "yd": 35,
+    "bd": 2,
+    "rd": 1,
+    "times1": 10,
+    "pickaxe": 1,
+    "centerFly": 3
+  },
+  "steps": 264,
+  "shop_buys": 8,
+  "shop_sequence": [
+    "atk(80)",
+    "atk(140)",
+    "def(220)",
+    "def(320)",
+    "def(440)",
+    "atk(580)",
+    "hp(740)",
+    "atk(920)"
+  ],
+  "web_verify": {
+    "ok": true,
+    "load_slot": 32,
+    "auto": "battle=true,item=nopotion,wall=true",
+    "stat_mismatches": 0,
+    "position_only_mismatches": 11,
+    "note": "0 stat/gold mismatches; 11 position-only benign diffs (auto-kill stops adjacent + MT29 thief + centerFly3). 从 slot 32 (MT20) 全程 web 验证，MT21-30 离线建模（无 live bridge）。"
+  },
+  "comparison_vs_preserve_pickaxe": {
+    "preserve_pickaxe_final": {
+      "hp": 45,
+      "atk": 166,
+      "def": 166,
+      "yk": 7,
+      "gold": 2423,
+      "dmg": 10066,
+      "door": "37/2/1"
+    },
+    "kill_final": {
+      "hp": 609,
+      "atk": 166,
+      "def": 174,
+      "yk": 9,
+      "gold": 2285,
+      "dmg": 8806,
+      "door": "35/2/1"
+    },
+    "hp_gain": 564,
+    "def_gain": 8,
+    "dmg_reduction": 1260,
+    "gold_loss": 138,
+    "note": "KILL line reaches MT41 with +564 HP vs 2ATK1DEF preserve_pickaxe. Advantage: times1=2 (one cheaper shop tier) enables early 3rd def buy (def 100->116 at MT32), reducing zone3 damage by 1260."
+  },
+  "key_adaptation": [
+    "MT21-30 离线打通（取代 live bridge）：MT20->MT31 楼梯直走，MT23 yellowWall 不踩（本版本无需），MT29 thief 挖通中心暗道 (6,2)/(6,3) 否则 (6,11) 楼梯不可达，MT30 杀 6 史莱姆（0 伤 +22G）开机关门 (6,4)。",
+    "times1=2 优势（zone2 只买 2 攻杀 zKnight 替 800G 红钥匙）：进 zone3 每次商店便宜一档，MT32 首访第 3 次防购（def 100->116），早防全程减伤 1260。",
+    "BK 缺口适配：zone2 杀 zKnight 耗 MT14 (1,11) 蓝钥匙，改取 MT31 (4,4) 蓝钥匙（杀 (2,6) ghostSkeleton -62HP + 开 (1,5)/(3,4) 黄门）。",
+    "起点 slot 32 = zone2 KILL 结束 MT20 HP=1215 G=1298；MT21-30 仅 +22G（MT30 史莱姆），HP/atk/def/yk 不变，到 MT31 (6,2) HP=1215 G=1320 == 原 slot 151 桥点。"
+  ],
+  "files": {
+    "walk": "best/zone3_2atk0def_kill_walk.json",
+    "walk_md": "best/zone3_2atk0def_kill_walk.md",
+    "summary": "best/zone3_2atk0def_kill_summary.json",
+    "live_verify": "best/zone3_2atk0def_kill_live_verify.json",
+    "checkpoint": "best/checkpoints/zone3_2atk0def_kill_end_save.json",
+    "browser_slot_end": 152
+  },
+  "verified_date": "2026-07-16"
+}

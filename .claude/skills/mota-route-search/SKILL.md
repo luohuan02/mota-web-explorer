@@ -103,8 +103,53 @@ description: 用于魔塔/h5mota 本地路线搜索、最优寻路、攻略-vs-�
 
 ### 经验文件
 - zone1 完整经验（思路 + 抉择 + 对比，seg1-3 合并）：`skills/mota-route-search/zone1_experience.md`。经验少时合并成一个文件放 skill，不放 best。
-- 来源 = 已验证 walk（`best/current_best_boss_walk.md` HP=122）。
+- zone2 完整经验（2攻线，思路 + 抉择 + 事件机制，seg1-4）：`skills/mota-route-search/zone2_experience.md`。
+- zone1-2 KILL 线经验（2atk0def，杀 zKnight 不买红钥匙，vampire 固定伤害 + 三类资源 drop 教训）：`skills/mota-route-search/zone12_kill_line_experience.md`。
+- recording_to_game converter 合并经验（.h5route 录像 -> Game walk 的 coalesce：fold move-waypoint 安全性论证 + 走门格移除 + 零效果 move 剪枝 + 楼梯 U 型折返提升 + 双验证）：`skills/mota-route-search/recording_converter_experience.md`。
+- recording_seed_to_game converter 经验（录像 statlog -> Game walk：三类 NPC 通用转换[shop/trader delta 检测 + oldman trigger_tile_event] + 激进 coalesce 删空地到达步[replayer 远点点击+重试] + centerFly·upFly·downFly 源位置依赖例外 + 100+槽无法录像改用普通槽）：`skills/mota-route-search/recording_seed_converter_experience.md`。
+- 来源 = 已验证 walk：zone1 `best/current_best_boss_walk.md`（HP=122）+ zone1-2 KILL 线（当前最优）`best/zone12_2atk0def_recording_walk.md`（358 步 MT4-20，2攻0def 杀 zKnight，web 0 mismatch；zone1 末 625/30/30、zone2 末 MT20 HP=1215 ATK=76 DEF=66 YK=5）。旧买红钥匙 2 攻线（autoon）walk、drop753_774（HP=1241）已删，经验沉淀于 `zone2_experience.md` / `zone12_kill_line_experience.md`。
 - 每段可存 `variants/`（最优/搜索/攻略对照），供 `scripts/audit/compare_segment_walks.py`（待建）找分叉点 + HP 归因。
+
+### 录像复刻方法论（auto ON + skip-if-cleared）
+
+**两条录像->walk pipeline**（按录像路径是否 Game 兼容选）：
+- `scripts/search/zone12_recording_autoon.py`（本节）：auto ON + skip-if-cleared，内容驱动逐目标 `go_to`。录像路径恰好 Game 兼容时用（旧录像 MT4-9 零 stat 错）。
+- `scripts/search/recording_to_game.py`：解码 route events + 逐格 captured path 精确复现录像 exact 路径（PRE-state statlog 0 mismatch），再 coalesce 成节点级直达步，最后跑零效果 move 剪枝 + 楼梯 U 型折返提升。用户手玩调整路径与 Game 寻路分歧时用（autoon 失败的 fallback）。coalesce 合并逻辑（fold move-waypoint / 走门格移除 / 零效果 move 剪枝 / 楼梯 U 型折返提升）见 `recording_converter_experience.md`。
+
+有 .h5route 录像（auto OFF 显式步）作 ground truth 时，用 **auto ON** 离线复刻成可验证 walk（`scripts/search/zone12_recording_autoon.py`）：
+
+- 按录像 statlog hero 位置顺序走；下一目标格若已被 auto 清空（`block_at is None`）则**跳过**，否则 `go_to(target)` auto ON，auto_sweep 顺带清路上零伤怪/道具/暗墙。
+- 楼层切换：相邻层楼梯、跨层 fly。商店/商人：同层同位 + gold 变化判定走 `buy_shop`/`talk_trader`。
+- **event trigger 格不能跳**：空格（id 0）但是 event trigger 的（如 MT20 (6,8) vampire、MT29 (6,2) thief）必须走上去触发，用 `is_event_trigger = f"{x},{y}" in events` 守卫 skip-if-cleared。
+- **金币口径**：auto ON 比录像多杀零伤小怪，gold 比录像高约 +190（HP/ATK/DEF/YK/BK/RK/位置全匹配，gold 差已接受）。web 验证比 walk JSON vs 实机（0 mismatch），非 walk vs 录像 gold。
+- hero-step 事件（MT20 vampire/MT29 thief）建模在通用 `Game.trigger_tile_event`（go_to ARRIVE 触发），**不是 floor-entry**；fakeWall2+setBlock 事件锁（MT19 cross）需 replayer ARRIVE setBlock retry。详见 `zone2_experience.md`「事件机制」。
+
+### 移除录像绕路（skip_ranges + stop_before_idx）
+
+录像里某段是另一条线（如买红钥匙线）的专属绕路、当前分支不需要时，用 `rec_main(skip_ranges=[(lo,hi)], stop_before_idx=N, ...)` 跳过：
+
+- `skip_ranges`：跳过 statlog `[lo,hi)` 区间（飞行绕路等）。跳过后 hero 留在实际楼层，下一条目标跨层时按 position-agnostic fly。
+- `stop_before_idx`：在处理某 statlog idx 前停（跳过其后整段，如不买红钥匙则跳红钥匙接近段）。
+- **楼层检测必须用 hero 实际楼层 `g.state["floor"]`，不能用 statlog 相对 `cur["f"]`**，否则 skip_ranges 飞行绕路失同步（跳段后 statlog cur["f"] 还停在绕路起点楼层，误判后续换层）。rec_main 已修，非跳段时 no-op（不回归）。
+- **耦合段陷阱**：跳一段绕路前，检查是否有另一段也经同一格。例（2攻0防 KILL 线，2026-07-16）：移除 [362] MT12 绕路（seg5 fly MT19->MT12 杀 x2y5 -74HP），但 seg6（红钥匙商人接近）也经 x2y5--只跳 seg5 会让 seg6 重打 x2y5（无收益）。解法 = 跳 seg5 且 `stop_before_idx=951` 跳 seg6（KILL 分支不买红钥匙，seg6 整段多余）。移除后 web 验证 0 值不匹配（含金币），+74 HP / +2 YK / -46 G ≈ +151 HP 等价。
+
+### 可移除刷怪排查（per-visit 净资源流）
+
+判断 walk 里是否有“多打”的可移除刷怪，按楼层访问段（visit = 同层连续步，飞行/换层为界）汇总净 hp/gold/yk/bk/rk/atk/def：
+
+- 净 HP 负 且无属性/钥匙收益的段 = 纯金币刷怪候选（若非阻路怪可移除）。
+- **auto_sweep 把拾取/零伤击杀藏在 step.note**（如 `auto_sweep: x1y5 redPotion`），肉眼读 HP delta 会误判。例：MT8「开门->到达->飞走」看似 -1 YK 白开门，实为 auto_sweep 拾 redPotion(+50 HP)，净正收益不可移除。
+- 候选必须核对 note 的 auto_sweep 列表 + 跨段资源依赖（商人/门/钥匙流）才能确认可移除；阻路怪、商人购买（如 MT15 blueKey 200G、MT7 5YK 50G）、硬闸门（如 MT19 rock ATK70 地板，挡 zKnight 区）不可移除。
+- 2攻0防 KILL 线 zone1-2 经此排查：除 [362] 外无其它可移除刷怪（其余高伤段全是阻路/商人/rock 闸门/zKnight 核心杀）。
+
+### 道具拾取 pass 优化（挡路 vs auto 顺带）
+
+walk 里的「路过 pass」步（note 含 `auto_sweep:` 拾道具）是否可优化（合并进下一目标让 auto 远程顺带），判断 = **道具是否挡路**：
+
+- **不挡路道具**（在下一目标 auto_sweep BFS 可达范围、但不在 hero 寻路必经路上）：auto_sweep 远程顺带吃（`core.getItem` 不走路），不必专门走 pass。例（MT16 zone2，KILL 线 converter walk）：`x7y3 pass (auto: x7y3 yellowKey)` -> `x6y4 open blueDoor`——(7,3) yellowKey 在 (6,4) 的 auto BFS 范围且不挡路，直接到 (6,4) 开蓝门时 auto 顺带吃，(7,3) pass 冗余（可优化）。
+- **挡路道具**（在到下一目标的必经路上）：hero 寻路必经、走过拾取（路径拾取，非 auto 远程），不能 auto 顺带；须显式走吃或接受路径拾取。例（MT16 zone2，KILL 线 converter walk）：`x5y5 pass (auto: x5y5 redPotion, x7y7 yellowKey)` -> `x6y8 open yellowDoor`——若直接到 (6,8)，路线被 (5,5)(7,7) 道具挡，hero 走过去拾取而非 auto 远程顺带（降速），故先吃挡路道具是对的，符合可达矩阵访问逻辑。
+
+注：converter 逐格复现录像 captured path，录像里手玩多走的 pass（如不挡路道具）会保留（删则 web mismatch）。此经验用于判断录像/walk 里哪些 pass 是可优化点（重新规划/录像时可省），非改 converter 删步。auto_sweep 远程吃不走路见 `recording_converter_experience.md`。
 
 ### 工作流
 1. 写经验：从已验证 walk 反推策略 + 关键决策点 D1-D4 + 对比基准（攻略/搜索）。
@@ -116,17 +161,48 @@ description: 用于魔塔/h5mota 本地路线搜索、最优寻路、攻略-vs-�
 walk 的 HP delta 含 auto_sweep 副作用（血瓶 +50 等计入同一步），**不是纯单怪伤害**。纯伤害看 dmg 增量或 Game `enemy_damage`。例：MT4fly bluePriest 纯伤 88，同步 auto 血瓶 +50，HP 净变 -38（dmg 仍记 +88）。读 walk 伤害务必用 dmg 累计校验，勿直接用 HP delta。
 
 ### 要点（详见 zone1_experience.md）
-seg2 D1 回 MT4 redGem 过 bat 阈值省 168（搜索 932 主差）；seg2 D3 MT8 钥匙自给循环卡 MT7 出门 YK=3；seg3 D2 7楼红宝石走上线杀 skeletonSoldier 省 2 yk。
+分段依据 = 装备里程碑（剑->盾+9F宝石->27/27+boss），seg2/seg3 切分因「先冲盾再回头清扫宝石」伤害更低。seg2 D1 回 MT4 redGem 过 bat 阈值省 168（搜索 932 主差）；seg2 D3 MT8 钥匙自给循环卡 MT7 出门 YK=3；seg2 替代线 MT7 上线省 2 yk（非当前最优）；seg3 宝石顺序：红宝石按 atk 阈值排（MT7红首拿跨 atk23 三怪阈值、MT3红先于 MT5 跨 atk26 骷髅士兵阈值；MT10红 atk27 跨终局 yellowGuard/boss 阈值故最后），蓝宝石无阈值按钥匙流+路径成本排（MT3蓝->MT6蓝 YK 链、MT8->MT4->MT9 BK 链、MT1->MT8 与 MT5蓝->MT10蓝 贵路径放后享高 def），MT10 最后=路径成本最贵+终局阈值+MT10蓝先于MT10红减伤 11（非 YK 短缺，钥匙可先拿但多掉血），非 BK（起手 BK=1 可直接上）。红钥匙守卫+boss 必 27/27 打（atk27 跨 yellowGuard def22 / 队长阈值，atk 是杠杆非 def）。
 
-### 阈值表（Game 实测，def=10）
-| 怪 | atk20 | atk21 | atk22 | 阈值 |
-|---|---|---|---|---|
-| bat | 56 | 28 | 28 | atk21 −28 |
-| skeletonSoldier | 252 | 252 | 210 | atk22 −42 |
-| bluePriest/redSlime/greenSlime/skeleton | — | — | — | atk20->21 不降 |
+### 阈值表（atk 回合数跳变点；def 不影响 turns 故蓝宝石无阈值）
+
+阈值 = atk 跨过时 turns 降 1 的点（turns=ceil(怪hp/(atk-怪def))），def 只降每回合伤害不改变 turns，所以**蓝宝石（+def）无阈值、红宝石（+atk）才有**--seg3 宝石排序的总原则。dmg 为 def=21 实测示例（`tmp/seg3_trace.py` 可复跑）。
+
+| 怪 | 阈值 atk | turns 跳变 | 用在 |
+|---|---|---|---|
+| bat | 21 | t3->2 | seg2 flyback redGem（atk20->21）|
+| skeleton | 23 | t4->3 | seg3 MT7红首拿（atk22->23）|
+| bluePriest | 23 | t5->4 | seg3 MT7红首拿 |
+| skeletonSoldier | 22 / 23 / 26 | t7->6 / t6->5 / t5->4 | seg2 atk22；seg3 MT7红(atk23)、MT3红(atk26 先于 MT5)|
+| greenSlime/redSlime | 0 伤 | - | 无阈值 |
+| yellowGuard | 27 | t13->10 | 终局：红钥匙守卫（def22，atk26 hero_hit 4->5）。必须 27/27 打非 26/27--atk 是杠杆非 def，见 `zone1_experience.md`「红钥匙守卫和 boss」|
+| skeletonCaptain(boss) | 27 | t10->9 | 终局：MT10 boss（def15）。27/27 打省 38(atk)+27(def) |
+
+def=21 dmg 示例（验证用）：skeleton atk22=63/t4, atk23=42/t3；bluePriest atk22=44/t5, atk23=33/t4；skeletonSoldier atk25=124/t5, atk26=93/t4。def=27 终局示例：yellowGuard atk26=252/t13、atk27=189/t10；skeletonCaptain atk26=342/t10、atk27=304/t9（`tmp/seg3_points234.py`）。
+
+### 宝石排序原则（红按阈值，蓝按路径成本）
+
+- **红宝石（+atk，有阈值）**：按 atk 阈值紧迫度排，跨阈值的早拿降回合数（见阈值表 + `zone1_experience.md` seg3）。例：MT7红首拿跨 atk23 三怪阈值；MT3红 先于 MT5 跨 atk26 骷髅士兵阈值。
+- **蓝宝石（+def，无阈值）**：def 不降回合数，但同一清扫段内按**获取路径战损成本**排--路径越贵的越靠后，让贵路径在更高累积 def 下打（第 N 颗享最高 def，第 N-1 颗卡次高）。zone1 seg3 实测：MT10蓝 获取路径最贵（MT4 蓝法师+MT9 蝙蝠+MT10 骷髅，3 战 + BK 链），放第 6 享 def26；提到 MT5蓝（1 战路径）之前 +3 伤（HP 122->119，`tmp/reorder_mt10blue.py`）。同理 MT1蓝 先于 MT8蓝：两 bundle 钥匙流都可行（MT7骷髅 +2yk 够任一），按战损 MT1 段 3 战 57 伤、MT8 段 5 战 102 伤，贵的 MT8 放后享 def24，交换 +3 伤（`tmp/swap_mt1_mt8.py`）--别因它们靠近钥匙流段就误当钥匙序。
+- 适用所有区延后清扫段：def/无阈值宝石别随意排，按获取路径成本升序（便宜先、贵后）最优；同时受 YK/BK 流约束的，先满足钥匙流，再在钥匙流允许的范围内按路径成本细调。
 
 ### 搜索瓶颈（seg2 止 932，非 enemy_h）
 MT7 redGem 顺路优先（A* 选近不回 MT4，且 MT7 redGem 时 bat 群已打完，阈值收益丢失）+ 钥匙搜索杀 skeletonSoldier（seg1 YK 少补钥匙）。多因素耦合，非单 enemy_h 可解。
+
+## 2区分段经验库（2攻线，已验证 walk）
+
+来源 = zone1-2 KILL 线（当前最优）`best/zone12_2atk0def_recording_walk.md`（MT4-20，2攻0def 杀 zKnight，web 0 mismatch；zone2 末 MT20 HP=1215 ATK=76 DEF=66 YK=5）。2 攻线通用经验（宝石序/cross/vampire 机制）详见 `zone2_experience.md`，KILL 线 redKey 抉择详见 `zone12_kill_line_experience.md`。
+
+### 要点（详见 zone2_experience.md）
+分段 = 装备里程碑（MT12 2攻 -> sword2+shield2 -> ATK70+cross -> redKey+吸血鬼）。核心抉择 = **MT12 只买 2 攻**（ATK30->38），省 80G 延后 4 区防（ratio5 +20 vs zone2 ratio2 +8，同金币多 +12 DEF）。宝石序（已验证 walk）：MT16 blackSlime(38->40) **必须先于 MT17 sword2**（过 yellowGuard 4->3 回合阈值，省 88 伤；旧「2攻比3ATK多花72伤打卫兵」基于 ATK38 前提已过时，实际 ATK40 与 3ATK 同 3 回合）；ATK70 来自 **MT19 redGem**（非 MT18 redPriest，旧归因错），必须先于 MT19 rock（ATK70 地板，rock def68）。**cross 是吸血鬼硬门槛**（无 cross 15510 必死、有 cross 705），在 MT19 (6,3) fakeWall2+setBlock 拾取。**MT20 吸血鬼 = hero 踩 (6,8) 触发**（8 bigBat 合并进 vampire，不单独战斗无金币；afterBattle spawn 3红3蓝宝石+3蓝血瓶+3黄钥，+6/+6/+HP），非 floor-entry。redKey 买(800G)/杀(3 zKnight 372伤)：纯 zone2 杀略便宜(327<400)，但 end-to-end 买饿死 4 区攻（G 贫 -> ATK142 vs 166 -> 魔龙多挨 6180 -> 19562<23076），2攻+杀zKnight 是未探方向。
+
+### 阈值表（zone2，atk 回合数跳变点；breakpoint = atk_needed，见 `data/heuristics_table.json`）
+
+| 怪 | 阈值 atk | turns 跳变 | 用在 |
+|---|---|---|---|
+| yellowGuard（MT17 sword2 卫兵）| 39 | t4->3 | seg2 MT16 blackSlime(38->40) 先于 MT17 剑跨此阈值，4 卫兵省 88 伤 |
+| zombie | 43/49/57 | t8->7->6->5 | seg2 sword2(ATK40->60) 跨多 zombie 阈值（zone2 常见怪）|
+| rock（MT19 cross 守卫）| 69 | 不可杀->t20 | seg3 ATK70 地板（hero_hit=atk-68，<69 则 0 杀不掉；atk70 t10）|
+| vampire（MT20 boss）| 140（70+cross）| inf->t6 | seg4 cross 翻倍 atk(70->140)，无 cross=15510 必死、有 cross=705 |
 
 ## 搜索入口
 

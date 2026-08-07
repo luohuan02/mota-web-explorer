@@ -18,18 +18,12 @@ python scripts\baseline\replay_zone2_guide_route.py
 python scripts\search\search_zone2_macro_routes.py
 ```
 
-2. 读取当前网页状态，确认是否与 route checkpoint 匹配：
+2. 确认 chrome 已由 `scripts/live/launch_h5mota_chrome.ps1` 在真实端口 9222 外部启动（带 browser-profile），并 `agent-browser connect 9222`。**不要用 `--cdp 9222` flag**（会启动 agent-browser 自管 chrome、用 TEMP profile，丢 browser-profile 存档），**不要用 `--auto-connect`**（粘错 tab）。
+
+3. 读取当前网页状态，确认是否与 route checkpoint 匹配（楼层感知，避免 cmd.exe 破坏 JS）：
 
 ```powershell
-agent-browser.cmd --cdp 9222 eval "(function(){
-  const h = core.status.hero, loc = h.loc, t = h.items.tools;
-  return JSON.stringify({
-    floor: core.status.floorId, x: loc.x, y: loc.y,
-    hp: h.hp, atk: h.atk, def: h.def,
-    yk: t.yellowKey||0, bk: t.blueKey||0, rk: t.redKey||0,
-    gold: h.money||0
-  });
-})()"
+node scripts\live\live_read_state.js
 ```
 
 ## 执行路线（统一点击 verifier，1-4 区 / 4-50 层通用）
@@ -64,6 +58,10 @@ node scripts\live\live_zone3_mouse_replayer_cdp.js `
 
 - walk JSON 必须是通用 `Game` 类输出（`before/after` 直接对照实机），不是旧
   Replay 的楼梯合并格式。
+- replayer **只按 pos 点击，不解析 walk JSON 的 `action` 字段**（2026-07-16
+  grep 实证）。action 中文名/.md 英文动词（`game_route.ACTION_VERB_EN`）只服务
+  人读 .md；JSON 里出现 `破墙` 等中文 action 不影响复现，gen 旧版
+  `破墙->通过` 归一化已删除。
 - 3 区起按需 `--set-auto battle=true,item=nopotion,wall=true`（4 区半血陷阱控血）。
 - verifier 每步对照 `steps[startStep-1].before` 与实机状态；传送/换层/开门允许
   忽略最终坐标但不忽略数值。出错停下报告，不要继续猜。
@@ -109,8 +107,44 @@ node scripts\live\live_zone3_mouse_replayer_cdp.js `
 
 如果因为真实地图修正导致路线 JSON 与网页不同，先回到 `mota-route-audit` 修正 replay，再重新生成 route JSON，不要长期依赖 `--yk-offset` 一类补丁。
 
+## --out-json 验证结果判读（重要陷阱）
+
+`live_zone3_mouse_replayer_cdp.js --out-json` 写的 JSON 里，**不能直接信以下两个字段当“通过”**：
+
+- `strictWalk.ok` / 顶层 `ok`：**硬编码 `true`**（`buildStrictWalkFromLog` 恒置 `ok:true`），不论有无不匹配。看到 `ok:true` 不代表 0 mismatch。
+- `strictMismatch`：`strictMismatchText` 只比对 `floor/x/y/hp/atk/def/yk/bk/rk`，**不含 `gold`/`money`**。金币不匹配不会出现在 strictMismatch 里。
+
+要得出“0 值不匹配（含金币）”的可靠结论，必须**自己扫 `entries[]`**，逐条比对 live `after` vs `expectedAfter` 全字段（含 gold，用 `o.gold ?? o.money` 取值）：
+
+```js
+// tmp/check_mismatch.js 模板
+const data = JSON.parse(fs.readFileSync(verifyJson));
+let val=0, pos=0;
+for (const e of data.entries) {
+  const l=e.after, x=e.expectedAfter; const bad=[], posBad=[];
+  for (const f of ["floor","x","y","hp","atk","def","gold","yk","bk","rk"]) {
+    const lv = f==="gold" ? (l.gold??l.money) : l[f];
+    const xv = f==="gold" ? (x.gold??x.money) : x[f];
+    if (lv!==xv) (["floor","x","y"].includes(f)?posBad:bad).push(`${f}: exp ${xv} got ${lv}`);
+  }
+  if (bad.length) val++; if (posBad.length) pos++;
+}
+// val===0 才是“0 值不匹配含金币”；pos 是 target-click-only 坐标偏移（已知边界，可接受）
+```
+
+- target-click-only 让游戏自动寻路，hero 常停在目标相邻格 -> `x/y` 差 1-2 是**已知边界**（见 CLAUDE.md「h5mota 回放边界情况」），可接受；但 `hp/atk/def/gold/yk/bk/rk` 任何一条不一致都是真不匹配。
+- 通过判定 = `val===0`（值全匹配）且最终 `finalState` 与 `expected_final` 全等。`pos>0`（纯坐标偏移）不影响通过。
+- 反例（2026-07-16 实证）：2攻0防 KILL 线 skip362 walk，`strictWalk.ok=true` 但逐 entry 扫出 24 条 `strictMismatch`——全是 `x/y` 偏移、0 条值不匹配（含金币），最终 HP=1301 与 expected 全等，才算真通过。
+
 ## 当前二区实机注意点
 
+- 当前 zone1-2 最优（2攻0防 KILL 线，recording_to_game converter 版）复现命令：
+
+  ```powershell
+  node scripts\live\live_zone3_mouse_replayer_cdp.js --walk outputs\results\zone12_2atk0def_recording_walk.json --load-slot 1 --target-click-only --set-auto battle=true,item=true,wall=true
+  ```
+
+  预期：358 步、0 值不匹配（含金币），final `HP=1215 ATK=76 DEF=66 YK=5 BK=0 RK=0 G=1298`（MT20 x6y5）。人看 walk 与判读：`best/zone12_2atk0def_recording_walk.md`。
 - `MT1 x4y3` 已在 replay 中显式记录；新路线不应再需要 `--yk-offset -1`。
 - `MT1 x1y3 红血瓶` 应在开 `MT1 x4y3` 后顺路吃掉。
 - `MT14` 三兽人武士后，真实游戏会生成红钥匙物品；脚本会实际拾取，不当作凭空加 RK。
@@ -122,6 +156,61 @@ node scripts\live\live_zone3_mouse_replayer_cdp.js `
 - 不要从远处直接点击 `MT10 x6y1`。真实寻路会经过 `x6y2` 并触发事件，容易让 verifier 以为目标是队长战斗，实际却停在剧情事件中。
 - `clearMt10BossDyn`（`live_zone3_mouse_replayer_cdp.js` 内）已实现此顺序：阶段1 只清 spawned（x4-8/y4-7，**不含 captain 6,1**），阶段2 等 `x6y3` 事件墙开后先点 `x6y2` 处理骷髅队长剧情文本，再点 `x6y1` 打 captain。不要把 captain 纳入动态清怪循环，否则寻路经过 `x6y2` 会卡在 `lock=true event=action:text`。boss trigger 后若 `x6y5→x6y1` 路径上还存在其它事件格，同样要先点事件位置再点战斗目标，不要远距直点。
 - Boss 后生成怪位置以 live 地图为准动态读取；不要只按本地静态地图坐标清怪。
+
+## 回放器事件等待节奏（`live_zone3_mouse_replayer_cdp.js`）
+
+### auto 机制（关键：远程吃，不走路）
+
+`core.plugin.auto` 的 bfs 从 hero 位置一趟扫描，对可达的 enemy/item/wall **全部远程处理，hero 不走过去**：
+```js
+if (type==="enemy") core.battle(id,x,y)          // 远程战斗
+else if (type==="item")  core.getItem(id,1,x,y)  // 远程拾取 + 200ms 飞行动画
+else if (type==="wall")  core.removeBlock(x,y)   // 远程破墙
+```
+所以 walk JSON 一步带 N 个 auto 是对的；**hero 不会绕路到每个拾取点**。诊断回放慢步时不要假设"auto 在走路拾取"。
+
+### Space 节奏（非文本动作步不按 Space）
+
+verifier 在 `lock`/`eventId` 期间推进事件队列靠**真实按 Space**（禁用 `core.doAction`）。h5mota 源码 `_keyUpAction` 证明：**只有 `text`/`wait`/`choices`/`confirm` 四类动作步响应 Space**；`sleep`/`waitAsync`/`openDoor`/`move`/`generateMove`/`setCurtain`/`setBlock`/`hide`/`show` 等都靠定时器/动画回调自动推进，按 Space 是纯 no-op。
+
+- `SPACE_DISMISSABLE_ACTION_TYPES = {text, wait, choices, confirm}`：4 处等待循环遇非这 4 类动作步**只 120ms 轮询、不按 Space**（旧版无差别按 Space + 450ms sleep，afterBattle 的 `waitAsync`/`openDoor`、`generateMove`/`move` 期间空按，每次 pressKey 自身耗 ~150ms）。
+- 文本步 Space 节奏 200ms（旧 450）；`_label` 同步点 250ms（旧 600）。文本步降速安全：`_clickAction_text` 有 `if (core.status.event.animateUI) return` 守卫，hide 动画期间第二次 Space 被忽略，双击不可能。
+
+### pre-lock breakOnIdle（修过的大坑：PASS 步干等 15s）
+
+`runOneStep` 的 pre-lock 分支：某步启动时若前一步遗留事件还在（`pre.lock||eventId||moving||choices`），先 `waitForCandidates` 等状态匹配（coalesced）。**bug**：非 KILL 步用 `preTimeout=15000`，PASS 步（如 boss 后通过/拾取）在前一步 afterBattle 遗言文本还在时进入 pre-lock，但本步还没点击、状态永不匹配 -> **hero 空闲干等 15s 超时才 fall through 去点击**。实测 MT10 队长后 [151] 通过 x6y9 因此耗时 18.76s（15s 空等 + 3s 真活）。
+
+- 修复：`waitForCandidates` 加 `breakOnIdle` 参数。pre-lock 调用传 `true`：等待中一旦遗留事件清掉、状态变空闲（`!lock&&!eventId&&!moving&&!choices`）但无候选匹配，**立即 throw 跳出去 executeStep 点击**，不等 15s。coalesced 情况在空闲前就匹配返回，不受影响。post-click 调用保持默认 `false`（点击后空闲不匹配 = 真失败，走超时）。
+- 结果：[151] 18.76s->3.93s，总 129.7s->115.8s，0 mismatch 保持。MT20 宝物房同理。
+
+### 每步时间戳
+
+step 日志带墙钟 `[YYYY-MM-DD HH:MM:SS][NNN] ...`（`runOneStep` + record-only 两处），便于从日志算相邻步间隔定位慢步/空等。诊断慢步：看相邻 step 时间戳之差 = 上一步耗时；若 hero 长时间 `lock=false moving=false event=-:-` 又没点击，就是 pre-lock/等待类问题。
+
+### 真正不可压缩的等待
+
+只有游戏强制实时动画：MT10 小偷 `generateMove` 12 格×200ms+fadeIn500≈2.9s、MT20 trigger 3×`move time:1000`=3s、各 `sleep`/`setCurtain`。这些是 `setTimeout`/动画回调，禁用 doAction 下只能等。**auto 拾取/战斗/破墙是远程瞬时的，不算等待**（旧结论"拾取走路不可压缩"已作废）。
+
+### 录像缓冲区 `core.status.route` 保留（下载录像完整性的关键）
+
+`core.status.route` 是 h5mota 的**录像缓冲区**（命令数组，`encodeRoute` 在存档/下载录像时 dump 它），**和 `core.status.automaticRoute`（自动寻路队列）是两个字段**。verifier 的状态校验只读 hero hp/atk/keys/gold，**从不读 `core.status.route`**。
+
+- `clearRuntimeRoute` / `clearStaleMoving` 旧版顺手写了 `core.status.route = []`，把**录像缓冲区**当自动寻路队列清了 -> 每次飞行（`flyTo` 调 `clearRuntimeRoute`）都清空录像，下载到的 `.h5route` 只剩最近一次飞行后的尾巴（如 `FMT20:UM6:9UM5:6RU`），"从头回访录像"因首命令 `fly:MT20` 在新局未访问该层而报"录像文件出错"。
+- **已修复**：`clearRuntimeRoute` / `clearStaleMoving` 只保留 `stopAutomaticRoute` + `clearContinueAutomaticRoute`（清 `automaticRoute` 自动寻路队列，正确字段）+ replay 状态清理，**不再清 `core.status.route`**。`stopAutomaticRoute` / `clearContinueAutomaticRoute` 只动 `core.status.automaticRoute`，不碰录像缓冲区，保留它们无负面影响；清 `core.status.route` 是清错字段。
+- 为什么要清自动寻路队列：hero 自动寻路途中遇战斗/开门/NPC/商店被事件中断时，游戏把剩余步数存进 `automaticRoute.moveStepBeforeStop`，事件后 `continueAutomaticRoute` 恢复。`flyTo` / `useItem` / 商店接近这类**直接调游戏函数**绕过点击入口（点击新格会自己 `stopAutomaticRoute` 重新寻路），若残余 `moveStepBeforeStop` 还在，换层/用道具后可能恢复指向旧楼层旧坐标的寻路 -> 状态冲突。所以这两清理是给直接函数调用兜底，不是"等寻路走完"。
+- 验证：zone12 358 步 0 mismatch（含金币），`core.status.route` 650 命令完整，下载录像可从头回访。
+
+### 已知未解：原生回放偶发"黄门没开、人穿过去、yk 不匹配"（暂忽略）
+
+verifier 跑完下载的 `.h5route` 从头回访时，偶发某黄门（如 x8y11）没开、hero 穿过去、终局 yk 少消耗 1。**flaky**（同一 walk 时好时坏）。根因分析（web 源码确认，本塔 `enableMoveDirectly=true` + `enableRouteFolding=true`，`project/data.js:666-667`）：
+
+- **录像折叠**（`enableRouteFolding=true`）：`checkRouteFolding`（`control.js:2620-2640`）在**录制期间**（非回放）若 hero 回到之前到过的 (x,y,dir)+全数值属性相同的状态，就 `core.status.route = core.status.route.slice(0, one.length)` 截断，删掉两次访问间的命令（可能含开门步）。是否触发随 auto-BFS 时机变化 -> flaky。
+- **moveDirectly 瞬移**（`enableMoveDirectly=true`）：`move:x:y` 回放时 `moveDirectly`（`functions.js:1566`）是纯瞬移（`hero.loc.x=x; hero.loc.y=y`），不开门不打怪。`canMoveDirectly` BFS（`maps.js:866`）挡 noPass 门，但若有**不经过该门的备用路径**（挡路怪被 auto 清）就返回 ≥0，hero 瞬移到目标、门没开、yk 没消耗 = "穿过去"。
+- **回放合并连续 move**（`control.js:1879-1883`）：回放时连续 `move:` 合并，中间的只 push 进 route 不执行（次要，非 flaky）。
+
+**尝试过的修复（不生效，已回退）**：给 verifier 加 `--no-route-folding` flag 设 `core.flags.enableRouteFolding=false`。验证后**未解决**门跳过问题（关折叠后录像仍 flaky 丢门或门仍被绕过），已从代码回退。若后续重访此问题，方向：可能需关 `enableMoveDirectly` 强制走路开门（但改变移动时序，风险大），或从 converter/walk 侧保证开门步是显式走步而非 `move:x:y` 瞬移。
+
+**当前结论**：verifier JSON walk（每步 before/after 实机对照，0 mismatch 含金币）是规范复现证据；下载的 `.h5route` 原生回访只作辅助，其 flaky 门跳过不阻塞验证结论。
 
 ## 结束报告
 

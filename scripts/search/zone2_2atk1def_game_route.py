@@ -201,12 +201,32 @@ def replace_mt14_red_key_fight_with_mt12_merchant(steps: list[dict]) -> list[dic
     return steps[:start] + [merchant] + steps[end + 1:]
 
 
+def remove_def_shop(steps: list[dict]) -> list[dict]:
+    """2攻线：去掉 12F 防御商店购买，只保留 2 攻击。
+
+    2ATK1DEF 的 -8 DEF 在 2区多挨约 1200 HP，但 2攻 同时把 14F 三兽人武士红钥匙
+    换成 12F 800G 商人（见 replace_mt14_red_key_fight_with_mt12_merchant），
+    省下三兽人武士战斗约 2460 HP，净省 ~1200 HP，可存活。DEF 维持 30 进入 3/4区，
+    后续靠 4区爆防补回（官方 41477 策略）。
+    """
+    out = [s for s in steps if not (s.get("action") == "商店" and s.get("eid") == "blueShop:defense")]
+    if len(out) == len(steps):
+        print("WARN remove_def_shop: no blueShop:defense step found")
+    return out
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--buy-red-key-12", action="store_true")
+    parser.add_argument("--two-attack", action="store_true",
+                        help="2攻线: 12F 红钥匙商人 + 去掉 12F 防御商店 (2 atk only)")
     parser.add_argument("--out-json", type=Path, default=OUT_JSON)
     args = parser.parse_args()
-    if args.buy_red_key_12:
+    if args.two_attack:
+        raw_steps = parse_walk_md(WALK_MD)
+        steps = remove_def_shop(replace_mt14_red_key_fight_with_mt12_merchant(optimize_zone2_steps(raw_steps)))
+        print(f"2攻线: transformed verified scaffold to {len(steps)} steps (redKey-12 + no def shop)")
+    elif args.buy_red_key_12:
         raw_steps = parse_walk_md(WALK_MD)
         steps = replace_mt14_red_key_fight_with_mt12_merchant(optimize_zone2_steps(raw_steps))
         print(f"transformed verified scaffold to {len(steps)} steps for 12F red-key branch")

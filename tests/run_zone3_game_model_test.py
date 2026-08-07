@@ -49,6 +49,8 @@ def main() -> int:
         assert block and block.kind == "enemy"
         game.set_ground("MT34", pos)
         game.after_action("MT34", pos, block)
+    # MT34 中心事件是 autoEvent（auto_sweep 末尾触发），不是 afterBattle。
+    game._check_auto_events("MT34")
     assert game.block_at("MT34", (2, 6)).eid == "redKey", "中心八怪事件必须用红钥匙替换原不可破墙"
     game.state["floor"] = "MT34"
     game.state["x"], game.state["y"] = (2, 5)
@@ -60,14 +62,17 @@ def main() -> int:
         f"blocks={[(p, game.block_at('MT34', p)) for p in [(1,5),(3,5),(1,7),(3,7)]]}"
     )
 
+    # 实机 auto_sweep 杀中心最后一怪也触发 autoEvent（verifier MT34 x11y8 auto
+    # 杀 bat 后下一步 move 拾取 +4YK+1RK）。旧 `not auto` 约束已撤回。
     auto_last = Zone3Game(snapshot)
     for pos in center:
         block = auto_last.block_at("MT34", pos)
         assert block and block.kind == "enemy"
         auto_last.set_ground("MT34", pos)
         auto_last.after_action("MT34", pos, block, auto=(pos == center[-1]))
-    assert auto_last.block_at("MT34", (2, 6)).eid == "unbreakableWall", (
-        "实机中中心最后一怪被auto清理不会触发4黄1红，必须保留显式末杀"
+    auto_last._check_auto_events("MT34")
+    assert auto_last.block_at("MT34", (2, 6)).eid == "redKey", (
+        "auto 清理最后一怪后 autoEvent 触发4黄1红（与实机 verifier 一致）"
     )
     print("zone3 shared Game model: ok")
     return 0

@@ -363,6 +363,11 @@ def run_zone3(g: Game, sell_deficit: list[int] | None = None, walk_path: Path | 
                 g.state["usedCenterFly40"] = True
                 g.record("事件", (g.state["x"], g.state["y"]), eid, before, note or "40F 中心对称飞行")
                 continue
+            # MT29 小偷 (6,2) 事件：挖通中心暗道 (6,2)/(6,3)，否则 (6,11) 上楼梯不可达。
+            # thief_mt29_open_passage 内部 move_adjacent+set_ground，走通用 Game 合法性。
+            if fid == "MT29" and eid == "thief":
+                g.thief_mt29_open_passage()
+                continue
             # generic event: move adjacent + record (floor-specific side effects not modeled)
             hx, hy = g.state["x"], g.state["y"]
             if abs(hx - x) + abs(hy - y) > 1:

@@ -7,3 +7,4 @@ browser-profile/
 tmp*.py
 tmp/
 outputs/
+node_modules/

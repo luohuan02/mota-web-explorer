@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 from src.solver.game_route import Game, read_json
-from src.solver.reachability_matrix import compute_matrix
+from src.solver.reachability_matrix import compute_matrix, cross_floor_reachable
 
 
 def _load(path: str) -> Game:
@@ -97,10 +97,30 @@ def test_onfloor_key_collection():
     print(f"OK save1 MT3: on-floor key collection = {mt3.collected_keys}, gems reachable")
 
 
+def test_cross_floor_fly_reachable():
+    """cross_floor_reachable 含飞行可达的已访问楼层 + 楼梯延伸的下一层。
+
+    用户规则：上楼后楼梯不再计入，可直接飞达已访问楼层（fly(fid) 免费传送
+    到 visited 楼层）。zone2_end (MT20, visited MT1-20) 起，MT1 等已访问
+    楼层格应可达（飞行），MT21 应可达（MT20 upFloor 楼梯延伸）。
+    """
+    g = _load("best/checkpoints/zone2_end_save.json")
+    assert g.state["floor"] == "MT20", g.state["floor"]
+    assert "MT1" in g.visited and "MT19" in g.visited
+    reach = cross_floor_reachable(g)
+    fids = {fid for (fid, _x, _y) in reach}
+    # 飞行可达：已访问楼层 MT1-20 都在可达集
+    assert {"MT1", "MT10", "MT19"} <= fids, f"fly-reachable visited floors missing: {fids}"
+    # 楼梯延伸：MT20 upFloor 解锁 MT21
+    assert "MT21" in fids, f"MT21 (stair extension from MT20) missing: {fids}"
+    print(f"OK zone2_end MT20: cross_floor_reachable covers {len(fids)} floors (fly-visited + MT21 stair)")
+
+
 if __name__ == "__main__":
     test_save1_mt4()
     test_save100_yk0_door_blocked()
     test_mt12_shop_zone2plus()
     test_save150_mt32_shop_and_killability()
     test_onfloor_key_collection()
+    test_cross_floor_fly_reachable()
     print("\nALL reachability_matrix tests passed.")

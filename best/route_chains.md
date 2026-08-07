@@ -21,6 +21,8 @@
 |---|---|---|---|
 | `guide_chain_to_22264` | 1 区攻略 -> 2 区攻略 -> save36 bridge -> 3 区 slot36 -> 4 区 save37 | 检查点链接；尾段网页验证；拼接回放待定 | `HP=22264 ATK=418 DEF=517 G=1235 MT50 x6y5` |
 | `non_guide_current_best_branch` | 1 区当前最优 -> 2 区当前最优 2ATK1DEF 分支 -> checkpoint bridge -> 3 区留镐 -> 4 区纯净版 TE | 检查点链接；4区451步网页零数值差异、终战资源闭环和宏邻域 A* 审计通过；20F-31F仍缺机器可读 bridge walk | `HP=23076 ATK=417 DEF=475 YK=5 BK=1 G=906 MT50 x6y5` |
+| `kill_line_2atk0def` | 1-2 区 2攻0防录像 -> MT21-30 离线 (slot32) -> 3 区 KILL (slot152) -> 4 区待定 | zone1-2 录像 358 步 0 mismatch；MT21-30 离线打通（取代 live bridge, slot151 superseded）；3 区 264 步 0 数值差异（11 位置差，优于 23076 的 48）；4 区尾段待搜索 | 3 区终：`HP=609 ATK=166 DEF=174 YK=9 G=2285 MT41 x6y2`（比留镐 +564 HP） |
+| `recording_line_2atk3atk5def` | 2 区 2 攻 (stage-1, save32->MT31) -> 3 区 3 攻 5 防 录像 converter (save33 MT31 起, slot154 终) -> 4 区待定 | 3 区 278 步（激进 coalesce 451->278，空地到达/通过全删）网页零数值差异（converter from recording, auto nopotion）；replayer 远点点击+重试开门/击杀；保留 event-trigger/auto_sweep/楼梯/centerFly·upFly·downFly 前定位步；MT40 (6,7) boss 事件 + path_cost epsilon + MT38 (5,2) 商人 statlog delta 检测；4 区尾段待搜索（录像 TE33508 def542 参考） | 3 区终：`HP=13 ATK=166 DEF=214 YK=6 BK=1 G=2954 MT41 x6y2`（匹配 save33 录像真终态） |
 
 ## 各区产物
 
@@ -37,6 +39,9 @@
 | 3 | slot26 clean，8买 DEF | `MT31 HP=1249 ATK=76 DEF=64 G=176 YK=4` | `MT40 HP=556 ATK=170 DEF=198 G=926 YK=3`，simple stock `1169.0` | `best/zone3_slot26_clean_walk.json`、`best/zone3_slot26_clean_walk.md` | 4 区待定 |
 | 4 | save37 生命榜单 | `MT40 HP=78 ATK=166 DEF=218 G=2269 YK=4` | `MT50 HP=22264 ATK=418 DEF=517 G=1235 YK=4` | `best/post40_hp_leaderboard_summary.json`、`best/post40_hp_leaderboard_walk.json`、`best/post40_hp_leaderboard_walk.md`、`best/51_20260627113720_hp22264.h5route` | 存到 slot42 |
 | 4 | 当前 2ATK1DEF 留镐纯净版 TE | `MT41 HP=45 ATK=166 DEF=166 G=2423 YK=7 pickaxe=1`（槽150） | `MT50 HP=23076 ATK=417 DEF=475 G=906 YK=5 BK=1` | `best/zone4_2atk1def_te_hp23076_{summary,walk,live_verify,resource_audit,gem_damage_audit,macro_astar,terminal_astar}.*` | 451步 target-click-only 网页通过；0数值差异；提前31F红蓝及32F红蓝宝石；同target261纯伤少2365；商店序列防/防/防/攻/生命；8个一跳邻居全部解析；比20137提升2939HP |
+| 1-2 | 2攻0防 KILL 录像 | 新游戏/固定前缀 | `MT20 HP=1215 ATK=76 DEF=66 G=1298 YK=5`（vampire 奖励已收） | `best/zone12_2atk0def_recording_walk.md` | 存槽 32 -> 3 区 KILL（MT21-30 离线） |
+| 2->3 | MT21-30 离线打通 | `MT20 HP=1215 ATK=76 DEF=66 G=1298 YK=5`（slot32） | `MT31 HP=1215 ATK=76 DEF=66 G=1320 YK=5 times1=2` | zone3 Game 类离线（MT29 thief + MT30 六史莱姆），并入 zone3 walk；slot151 桥点 superseded | 3 区 KILL |
+| 3 | 2攻0防 KILL | `MT20 HP=1215 ATK=76 DEF=66 G=1298 YK=5`（slot32，MT21-30 离线打通到 MT31） | `MT41 HP=609 ATK=166 DEF=174 G=2285 YK=9 pickaxe=1 times1=10` | `best/zone3_2atk0def_kill_{summary,walk,walk.md,live_verify}.*`、`best/checkpoints/zone3_2atk0def_kill_end_save.json`、`best/checkpoints/zone2_2atk0def_kill_end_save.json` | 4 区 KILL 待定（槽152） |
 
 ## 复现说明
 
@@ -78,3 +83,35 @@
 - 2 区 canonical 回放（旧 search）`errors=0`；2 区 `2ATK1DEF` 分支摘要 `errors=0` 且 `strict_errors=0`（旧模型）。
 - 3 区 slot36 和 slot26 稳定 walk `errors=0`。
 - 4 区 save37 尾段已网页验证，最终红魔王战后存到 slot42。
+
+### 2攻0防 KILL 线（2026-07-16，3 区）
+
+`zone12.2atk0def_recording -> bridge.kill_mt20_to_mt31 -> zone3.2atk0def_kill -> zone4.2atk0def_kill_tail_pending`
+
+- 1-2 区：录像转换器逐格 captured path，358 步 web 0 mismatch，终点 `MT20 x6y5 HP=1215 ATK=76 DEF=66 YK=5 G=1298`。2攻0防 = zone2 只买 2 攻不买防，杀 zKnight 替买 800G 红钥匙（zKnight 房双蓝门消耗 MT14 (1,11) 蓝钥匙）。进 3 区 times1=2（比 2ATK1DEF 的 times1=3 便宜一档）。
+- bridge（已离线化）：MT21-28 楼梯 + MT29 小偷暗道 + MT30 六只 0 伤史莱姆，KILL DEF=66 全 0 伤。**2026-07-16 改为 zone3 Game 类离线打通**（`事件 MT29 thief` 调 `thief_mt29_open_passage` + MT30 计数器事件已在通用 Game），并入 zone3 walk 从 slot 32 起，不再需要 live bridge；slot 151 桥点 superseded。
+- 3 区：从槽 32（MT20）起，264 步 target-click-only 网页复验 `ok=true`，0 数值/金币差异，11 个仅位置差（auto 远程击杀停相邻 + MT29 thief + centerFly3 事件，优于 23076 的 48 个位置差）。auto `battle=true,item=nopotion,wall=true`。
+  - 终点：`MT41 x6y2 HP=609 ATK=166 DEF=174 YK=9 BK=0 G=2285 dmg=8806 door=35/2/1 pickaxe=1 times1=10`，存槽 152，导出 `best/checkpoints/zone3_2atk0def_kill_end_save.json`。
+  - **比 2ATK1DEF 留镐 +564 HP**（609 vs 45），+8 DEF，少受 1260 伤。根因：times1=2 使首购便宜一档，金币富余支撑 MT32 首访第 3 次防购（def 100->116），早防全程减伤。
+  - **BK 缺口适配（根因级，非补丁）**：KILL zone2 耗掉 MT14 (1,11) 蓝钥匙（zKnight 房），故留镐线的 MT14 (1,7)->(1,11) 回收不可用。改在 MT38 段 MT31 (6,2) 访问插 `拾取 MT31 (4,4) blueKey`：`go_to_decomposed` 自动杀 (2,6) ghostSkeleton（-62HP）+ 开 (1,5)/(3,4) 黄门 + auto_sweep 拾 (4,4) 蓝钥匙。净 -62HP/+1YK/+55G/+1BK。该 BK 开 MT39 (2,8) 蓝门（centerFly3 谜题，40F Boss 必需）。MT32 (4,8) 蓝钥匙在密闭簇不可达；MT32 (11,7) 需杀 redKnight（atk230）代价高，故选 MT31 (4,4)。
+  - 商店 8 购：攻(80)/攻(140)/防(220)/防(320)/防(440)/攻(580)/生命(740)/攻(920)。
+- 4 区：待从槽 152 独立搜索+网页验证；不复用 2ATK1DEF 4 区尾段（起点 HP=609 DEF=174 YK=9 G=2285 与留镐 HP=45 DEF=166 YK=7 G=2423 不同）。
+
+### 2区2攻3区3攻5防 录像线（2026-08-06，3 区）
+
+`zone12.2atk_recording_stage1_to_mt31 -> zone3.2atk3atk5def_recording -> zone4.2atk3atk5def_tail_pending`
+
+- 录像来源：`best/2区2攻3区3攻5防_v1.h5route`（官方纯净版-TE 参考路线，录像驱动 converter，非 Game 自搜）。
+- 2 区（2 攻，stage-1）：save32 = MT20 seed；stage-1 converter 30 步到 MT31。MT31 seed `MT31 x6y2 HP=1215 ATK=76 DEF=66 YK=5 G=1320`（= save33，替代 save153，因 100+ 槽无法录像）。
+- 3 区（3 攻 5 防，stage-2）：从槽 33（MT31）起，`recording_seed_to_game.py` converter 257 步（激进 coalesce 451->278->257，bounce-cancellation 移除已访问楼层 stair 往返弹跳 + event_positions 前置快照保留事件 trigger 步）target-click-only 网页复验 `ok=true`，0 数值/金币差异。auto `battle=true,item=nopotion,wall=true`。
+  - 终点：`MT41 x6y2 HP=13 ATK=166 DEF=214 YK=6 BK=1 RK=0 G=2954 dmg=4202 door=37/2/1 centerFly=2 times1=10`，存槽 154，导出 `best/checkpoints/zone3_2atk3atk5def_end_save.json`。匹配 save33 录像真终态（gold/yk 完全对齐，前 +200G/-3yk 发散已消）。
+  - **激进 coalesce（根因级，通用 _coalesce_redundant_arrivals）**：reachability matrix 直达目标点，空地到达/通过步全删（replayer 远点点击 automaticRoute 寻路 + maybeRetryAdjacentTarget 重试：KILL hero 相邻怪还在->重点，OPEN_DOOR 门还关->重点；far-KILL 分支也加重试）。保留例外：event-trigger 格（MT40 (6,7) spawn 奖励）/ auto_sweep（破墙开路）/ 楼梯+换层 / **centerFly·upFly·downFly 前一个定位步**（飞目的地 = hero 源位置的函数：centerFly = 中心对称点；upFly/downFly = 同 x,y 上/下楼；源位置删了飞目的地就错，如 MT40 centerFly 须从 (10,11) 飞到 (2,1)，从 (9,9) 对称到 (3,3) 被挡飞失败）。
+  - **MT40 (6,7) 骑士队长 boss 事件建模（根因级，通用 trigger_tile_event）**：`events["6,7"]` setEnemy special=1 (先攻) 后，12 怪（row4 ghostSkeleton/soldier + row2 swordsman/redKnight）+ (6,1) yellowKnight 逐个 move 到 (6,7) battle；全战后 spawn 奖励 3 redGem(+12atk) + 3 blueGem(+12def) + 3 yellowKey(+3yk) + 3 bluePotion，(6,1) 变 upFloor(87)，flag:402=true，hide (6,7)。多数路线 auto_sweep 已在到达 (6,7) 前直接清完 12 怪+(6,1) yellowKnight（零伤），事件只剩 spawn 奖励。**不 pop events["6,7"]**：实机 events 触发后不自动移除，auto plugin 检测 `has(events[heroLoc])` 直接 return 不跑 BFS，故奖励在 *下次* 行动（离开 (6,7) 的 move:5:1）才被 auto 拾取，匹配录像时序（踩 (6,7) atk 不变，move:5:1 时 +12/+12/+3）。
+  - **path_cost item epsilon 0.1（根因级，通用 path_to）**：实机 automaticRoute 在等长路径里偏好不穿道具（如 MT40 (6,7)->(5,1) 走 column6 避开 (5,4) bluePotion，而非等长 column5 穿它 +800hp）；但道具在直接最短路上仍被穿过拾取（无等长空替代时，如 strict test "target beyond pickup" 穿 redPotion）。`path_cost` item=1.1（empty=1.0）仅在等长路径 tiebreak 时偏向空地，不改变最短路结构。修此分歧前 converter walk 在 (5,4) bluePotion 处 +800hp 发散。
+  - **到达/通过 noop 中间步 coalesce（根因级，`recording_seed_to_game.py::_coalesce_redundant_arrivals`）**：converter 每个 `move:x:y`/arrow token emit 一步，连续空地定位步 before==after（无击杀/拾取/开门/stat 变化）是冗余 click。446->357 步。保留规则（不可删）：stat 变步、auto_sweep 步（破墙开路有地图效果）、楼梯点击（eid upFloor/downFloor）+ 紧接换层、meaningful 步前的**最后一个**定位步（replayer 远距 KILL/开门/拾取只点一次不触发，须 hero 先摆到相邻）、floor-event 触发格（如 MT40 (6,7) boss 事件，before==after 但 spawn 奖励，删了事件不触发）。两次失败教训：删 meaningful 前所有定位步 -> MT33 (9,5) 远距点不攻击；删 (6,7) 事件触发步 -> 奖励不 spawn。
+  - **stair 往返弹跳删除（根因级，`recording_seed_to_game.py::_cancel_stair_bounce_arrows`）**：录像里玩家有时在 upFloor/downFloor 楼梯反复按方向键弹跳（如 MT32(10,1)<->MT33(10,1) 连按 7 次 right，MT20<->MT21、MT36<->MT37、MT38<->MT39），每支 arrow 变成 walk 里的 通过+换层 对，纯噪音。检测：arrow 的 before.floor != after.floor = 踩楼梯换层；栈式消除相邻相反对（A->B 后 B->A），保留单个净换层。**关键**：用 seed `__visited__` + stage 内已访问楼层跟踪，只删**已访问**楼层的往返（如 809-816 MT32<->MT33，MT33 已在 777 首次访问）；**保留首次访问**的往返（如 777-778 MT32->MT33->MT32，MT33 新访问解锁后续 fly:MT33，删了 fly 失败）。move/fly/item 等非 arrow 语义动作断开栈（中间有真动作的往返不删）。278->257 步。
+  - **event_positions 前置快照（根因级，`recording_seed_to_game.py::convert`）**：coalesce 的 `is_event_tile` 例外依赖 `event_positions`（floor.events 触发格集合）。原在 action 循环**后**构建，但 `trigger_tile_event` 触发后 `hide` 会从 floor.events 删掉该格（如 MT33 (10,5) 骑士剑机关关门事件），导致已触发的 trigger 不在集合 -> coalesce 误删其 到达 步 -> replayer 没显式 click (10,5) -> hero 寻路到 (9,5) 时穿过 (10,5) 触发事件中途停住（事件打断 automaticRoute）。改为在循环**前**快照 event_positions，保留所有初始 trigger 步。
+  - **MT33 (10,5) 骑士剑机关关门事件**：events["10,5"] 踩上触发——setBlock yellowWall (11,4)；if 4 怪 (9,5)/(11,5)/(9,7)/(11,7) 未全死则 setBlock specialDoor (10,4)/(10,8) 关门 + flag:骑士剑机关=true；hide。walk 须显式 到达 (10,5) 触发它（hero 站 (10,5)），再 click (9,5) 杀怪；不能让 hero 寻路穿过 (10,5)（事件打断 route 后 hero 停 (10,5)，`maybeRetryAdjacentTarget` 重试点 (9,5) 虽能补杀但依赖重试且多一次停顿）。
+  - **MT2 (8,2) steelDoor waitAsync 游戏缺陷 workaround（replayer `clearStuckWaitAsync`）**：(8,2) blueGuard afterBattle 若 flag:2 已置（杀 (6,2) 后）则 async openDoor 开 6 个 steelDoor ((5,5)/(5,8)/(5,11)/(9,5)/(9,8)/(9,11)) + waitAsync。steelDoor 的 async openDoor 在 asyncId 留下 function 回调永不调用 -> waitAsync 永不清空 -> 复验卡死。workaround：waitAsync 滞留 >6s 后删 asyncId 的 falsy/滞留 function 键（**不** dismiss 事件），让游戏自己的 waitAsync 轮询检测 asyncId 空 -> 自清 -> afterBattle 继续触发开门后 auto-sweep 拾取新可达的 yellowKey ((3,4)/(4,4)/(3,5))。若 dismiss 事件则 bypass 开门完成 -> auto-sweep 不重跑 -> yk 少 3 发散。
+  - 商店序列：MT32 防 x5（def 66->146）+ 攻 x3（atk 76->142）+ MT32 防再补；详见 walk.md。
+- 4 区：待从槽 154 独立搜索+网页验证；录像参考 TE33508（def542，多买 3 次防 + 做 MT2 小偷过 MT35）。

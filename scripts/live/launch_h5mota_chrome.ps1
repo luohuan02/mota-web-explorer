@@ -32,8 +32,10 @@ if (-not $listening) {
     ForEach-Object { Write-Host "kill zombie PID $($_.ProcessId)"; Stop-Process -Id $_.ProcessId -Force }
   Start-Sleep -Seconds 2
 
-  # 3. Launch chrome directly on 9222 with the browser-profile.
-  Start-Process $chrome -ArgumentList "--remote-debugging-port=9222","--user-data-dir=$profile",$url
+  # 3. Launch chrome directly on 9222 with the browser-profile. Anti-freeze
+  #    flags: recording replay (statlog capture) needs setTimeout/rAF unthrottled
+  #    even when the tab is occluded/backgrounded, otherwise replay stalls.
+  Start-Process $chrome -ArgumentList "--remote-debugging-port=9222","--user-data-dir=$profile","--disable-features=CalculateNativeWinOcclusion","--disable-background-timer-throttling","--disable-backgrounding-occluded-windows","--disable-renderer-backgrounding",$url
 
   # 4. Wait for the CDP port to come up.
   for ($i = 0; $i -lt 30; $i++) {

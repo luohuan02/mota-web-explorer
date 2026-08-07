@@ -1,15 +1,21 @@
 {
   "schema": "mota.best.checkpoints.v1",
-  "updated": "2026-07-13",
+  "updated": "2026-08-06",
   "description": "阶段性存档注册表。每区 web 验证全过后导出，供后续会话 --from-checkpoint / --load-slot 恢复。save JSON 与 save1_current_snapshot.json 同格式。",
   "slots_in_use": {
     "save36": "zone2 end (MT20 vampire 后, 拾取 MT20 后奖励前) — 2区→3区桥起点",
     "save37": "zone3 end (MT40) — 3区→4区桥，post-40 HP 榜单起点",
     "save38": "zone3 bridge (MT31 入口) — MT21-30 实机打通后, MT31-40 离线 Game 类起点",
-    "save100": "zone1 end (MT10 boss 后, 补给前) - 1区->2区桥起点, 2026-07-11 web 验证后存档"
-    ,"save123": "zone3 2ATK1DEF end (MT41 entrance) - SUPERSEDED (HP=65 route); 不作 4 区起点"
-    ,"save124": "zone3 2ATK1DEF minhp25 end (MT41 x6y2 HP=25) - 不留镐旧分支"
-    ,"save150": "zone3 2ATK1DEF preserve-pickaxe end (MT41 x6y2 HP=45, YK=7, pickaxe=1) - 当前 zone3-to-zone4 TE 起点"
+    "save100": "zone1 end (MT10 boss 后, 补给前) - 1区->2区桥起点, 2026-07-11 web 验证后存档",
+    "save123": "zone3 2ATK1DEF end (MT41 entrance) - SUPERSEDED (HP=65 route); 不作 4 区起点",
+    "save124": "zone3 2ATK1DEF minhp25 end (MT41 x6y2 HP=25) - 不留镐旧分支",
+    "save150": "zone3 2ATK1DEF preserve-pickaxe end (MT41 x6y2 HP=45, YK=7, pickaxe=1) - 当前 zone3-to-zone4 TE 起点",
+    "save151": "SUPERSEDED: MT21-30 现离线打通, zone3 KILL 改从 slot 32 (MT20) 起; slot 151 (MT31 桥点) 不再需要 (保留作 MT31 中间态参考)",
+    "save152": "zone3 2atk0def KILL end (MT41 x6y2 HP=609 ATK=166 DEF=174 YK=9 G=2285, pickaxe=1) - 4区 KILL 起点",
+    "save153": "zone3 2atk3atk5def seed (MT31 x6y2 HP=1215 ATK=76 DEF=66 YK=5 G=1320) - 录像 2区2攻3区3攻5防 zone3 起点; 【已弃用录像】100+ 槽无法录像, 改用 save33 (同状态 MT31)",
+    "save33": "zone3 2atk3atk5def seed (MT31 x6y2 HP=1215 ATK=76 DEF=66 YK=5 G=1320) - 录像 2区2攻3区3攻5防 zone3 起点 (stage-2 converter load slot, 替代 save153 因 100+ 槽无法录像)",
+    "save154": "zone3 2atk3atk5def end (MT41 x6y2 HP=13 ATK=166 DEF=214 YK=6 BK=1 RK=0 G=2954) - 录像 2区2攻3区3攻5防 zone3 终点, 4区 TE 起点 (匹配 save33 录像真终态)",
+    "save32": "zone2 2atk0def KILL end (MT20 x6y5 HP=1215 ATK=76 DEF=66 YK=5 BK=0 G=1298) - zone3 KILL 起点 (MT21-30 离线打通, 不需 live bridge)"
   },
   "checkpoints": [
     {
@@ -81,6 +87,37 @@
       "verified_date": "2026-07-12",
       "source_walk": "superseded (HP=65 旧路线; HP=125 版 walk 已删; 用 zone3_2atk1def_minhp25_end)",
       "resume_cmd": "(deprecated) use zone3_2atk1def_minhp25_end"
+    },
+    {
+      "id": "zone3_2atk0def_kill_end",
+      "status": "verified",
+      "boundary": "MT41 entrance; hero MT41 [6,2] HP=609 ATK=166 DEF=174 YK=9 BK=0 RK=0 G=2285 dmg=8806 door=35/2/1; pickaxe=1 preserved; times1=10 (2atk0def KILL line: zone2 killed zKnight instead of buying 800G red key, so enters zone3 at times1=2)",
+      "save_json": "best/checkpoints/zone3_2atk0def_kill_end_save.json",
+      "browser_slot": 152,
+      "verified_date": "2026-07-16",
+      "source_walk": "best/zone3_2atk0def_kill_walk.json (232 target-click-only steps from slot151; auto battle=true,item=nopotion,wall=true; full web verification ok=true, 0 stat/gold mismatch, 11 position-only benign diffs (cleaner than 23076's 48); BK deficit from zone2 zKnight room resolved via MT31 (4,4) blueKey detour replacing MT14 (1,11) back-collection; +564 HP vs preserve_pickaxe)",
+      "resume_cmd": "python scripts/search/zone4_game_route.py --from-checkpoint best/checkpoints/zone3_2atk0def_kill_end_save.json",
+      "note": "zone3 2atk0def KILL 终点 (MT41 HP=609)。从 slot 32 (MT20) 经 MT21-30 离线打通 + MT31-40 到达, web 验证 ok=true 0 stat mismatch。4 区 KILL 起点。"
+    },
+    {
+      "id": "zone2_2atk0def_kill_end",
+      "browser_slot": 32,
+      "status": "verified",
+      "verified_date": "2026-07-16",
+      "note": "zone2 2atk0def KILL 结束 (MT20 HP=1215 G=1298)。zone3 KILL 起点: MT21-30 离线 Game 类打通 (MT29 thief + MT30 六史莱姆), 不需 live bridge。",
+      "resume_cmd": "python scripts/search/zone3_game_route.py --from-checkpoint best/checkpoints/zone2_2atk0def_kill_end_save.json --walk best/zone3_2atk0def_kill_walk.json --out-json outputs/results/zone3_kill_from_slot32_replay.json"
+    },
+    {
+      "id": "zone3_2atk3atk5def_end",
+      "browser_slot": 154,
+      "status": "verified",
+      "verified_date": "2026-08-06",
+      "boundary": "MT41 入口；hero MT41 [6,2] HP=13 ATK=166 DEF=214 YK=6 BK=1 RK=0 G=2954 dmg=4202 door=37/2/1 centerFly=2；录像 2区2攻3区3攻5防 zone3 终点 (converter from recording, auto battle=true,item=nopotion,wall=true)；匹配 save33 录像真终态 (gold/yk 完全对齐)",
+      "save_json": "best/checkpoints/zone3_2atk3atk5def_end_save.json",
+      "source_walk": "best/zone3_2atk3atk5def_recording_walk.json (257 target-click-only steps, 激进 coalesce 451->278->257; bounce-cancellation 移除 MT32<->MT33 等已访问楼层的往返 stair 弹跳 (保留 777-778 首次访问 MT33 解锁 fly); event_positions 快照前置保留 MT33 (10,5) 骑士剑机关关门事件 trigger 步 (coalesce 不再误删); from save33 MT31; 空地到达/通过全删 (replayer 远点点击+重试), 保留 event-trigger/auto_sweep/楼梯/centerFly·upFly·downFly 前定位步; MT40 (6,7) boss event + path_cost epsilon + MT38 (5,2) 商人 statlog delta; replayer clearStuckWaitAsync 处理 MT2 (8,2) afterBattle 开 6 steelDoor 的 stale asyncId callback; web verify ok=true 0 stat/gold mismatch)",
+      "verified_live_json": "best/zone3_2atk3atk5def_recording_live_verify.json",
+      "verify_cmd": "node scripts/live/live_zone3_mouse_replayer_cdp.js --walk best/zone3_2atk3atk5def_recording_walk.json --load-slot 33 --target-click-only --set-auto battle=true,item=nopotion,wall=true --out-json best/zone3_2atk3atk5def_recording_live_verify.json",
+      "resume_cmd": "python scripts/search/recording_seed_to_game.py --capture outputs/results/2atk_3atk5def_v1_capture.json --seed-save best/checkpoints/zone3_2atk3atk5def_seed_mt31_save.json --stage mt31-mt40 --start-stat 705 --out outputs/results/2atk_3atk5def_seed_mt31_mt40.json"
     }
   ]
 }

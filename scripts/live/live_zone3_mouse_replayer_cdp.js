@@ -16,6 +16,10 @@ const RUNTIME = {
   strictHumanInput: false,
 };
 
+// Timestamp (ms) the current waitAsync action event first appeared; used to
+// force-clear stale asyncId callbacks that hang the waitAsync (game bug).
+let waitAsyncStuckSince = 0;
+
 const ACT = {
   CHECK: "\u6821\u9a8c",
   KILL: "\u51fb\u6740",
@@ -84,6 +88,7 @@ function parseArgs(argv) {
     expectAuto: null,
     outJson: null,
     recordOnly: false,
+    allowNotOk: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -106,6 +111,7 @@ function parseArgs(argv) {
     else if (arg === "--expect-auto") out.expectAuto = parseAutoSpec(argv[++i]);
     else if (arg === "--out-json") out.outJson = path.resolve(argv[++i]);
     else if (arg === "--record-only") out.recordOnly = true;
+    else if (arg === "--allow-not-ok") out.allowNotOk = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return out;
@@ -349,6 +355,15 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Wall-clock timestamp "YYYY-MM-DD HH:MM:SS" for per-step logs, so replay timing
+// (e.g. a step that idles 15s before its click) can be analyzed from the log.
+function tsStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ` +
+    `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
 function stateText(s) {
   return `${s.floor} x${s.x}y${s.y} HP=${s.hp} ATK=${s.atk} DEF=${s.def} ` +
     `YK=${s.yk} BK=${s.bk} RK=${s.rk} G=${s.money} ` +
@@ -359,6 +374,18 @@ function stateText(s) {
 function isLabelEvent(s) {
   return s.eventId === "action" && (s.eventType === "_label" || s.pendingType === "_label");
 }
+
+// h5mota action-event key handling (from _keyUpAction / _keyDownAction source):
+// only step types text/wait/choices/confirm respond to Space/Enter; every other step
+// type (sleep/waitAsync/openDoor/move/generateMove/setCurtain/setBlock/hide/show/...)
+// auto-advances via timer or animation callback and Space is a proven no-op. So when an
+// action event is sitting on a non-dismissable step, we poll quickly WITHOUT pressing
+// Space -- pressing it wastes ~150ms (pressKey focus+keydown hold+keyup) per iteration
+// and the post-press 450ms sleep made boss afterBattle / MT10 thief generateMove / MT20
+// trigger move chains feel sluggish. Space-dispatch for text is still rate-limited below
+// to stay above the text-box _animateUI("hide") window (the animateUI guard in
+// _clickAction_text also makes double-advance impossible, but we keep a margin).
+const SPACE_DISMISSABLE_ACTION_TYPES = new Set(["text", "wait", "choices", "confirm"]);
 
 function sameObservableState(a, b) {
   return a.floor === b.floor &&
@@ -398,6 +425,33 @@ async function clearStaleLock(cdp) {
         return JSON.stringify({ok:true});
       }
       return JSON.stringify({ok:false});
+    })()`
+  );
+}
+
+async function clearStuckWaitAsync(cdp, force) {
+  // A waitAsync action event waits for core.animateFrame.asyncId to empty.
+  // Some async openDoor events (e.g. MT2 (8,2) afterBattle opens 6 steelDoors)
+  // leave a stale callback in asyncId that is never invoked, so the waitAsync
+  // never clears and the replay stalls. First pass: delete falsy stale keys.
+  // If `force` is set (the waitAsync has been stuck for several seconds), also
+  // delete function-callback keys whose async action will never complete.
+  // Do NOT dismiss the event ourselves -- deleting the stale keys lets the
+  // game's own waitAsync poll detect asyncId empty and advance the afterBattle
+  // queue (which fires the post-openDoor auto-sweep that picks up the now-
+  // reachable yellowKeys behind the steelDoors).
+  if (RUNTIME.strictHumanInput) return { ok: false, reason: "strict-human-input" };
+  return evalJson(
+    cdp,
+    `(function(){
+      try {
+        var af=core.animateFrame||{}, aid=af.asyncId||{}, cleaned=0, forced=0;
+        for (var k in aid) {
+          if (!aid[k]) { delete aid[k]; cleaned++; }
+          else if (${force ? "true" : "false"}) { delete aid[k]; forced++; }
+        }
+        return JSON.stringify({ok:(cleaned+forced)>0, cleaned:cleaned, forced:forced, remain:Object.keys(aid).length});
+      } catch(e) { return JSON.stringify({ok:false, err:e.message}); }
     })()`
   );
 }
@@ -442,7 +496,7 @@ async function clearStaleMoving(cdp) {
           var second=compact();
           if (core.status.heroMoving && !ar2.autoHeroMove && !ev2.id && !ev2.ui && same(first, second)) {
             core.status.heroMoving=0;
-            core.status.route=[];
+            // 不要清 core.status.route（录像缓冲区），原因见 clearRuntimeRoute。
             if (core.status.lockControl) {
               if (core.unlockControl) core.unlockControl();
               else core.status.lockControl=false;
@@ -464,7 +518,11 @@ async function clearRuntimeRoute(cdp) {
       try {
         if (core.stopAutomaticRoute) core.stopAutomaticRoute();
         if (core.clearContinueAutomaticRoute) core.clearContinueAutomaticRoute();
-        core.status.route = [];
+        // 不要清 core.status.route：它是 h5mota 的录像缓冲区（"下载录像"/存档时
+        // encodeRoute 会 dump 它），不是自动寻路队列。自动寻路队列是
+        // core.status.automaticRoute，上面两行已经清了。这里清 route 会让下载到的
+        // .h5route 只剩最近一次 clearRuntimeRoute 之后的尾巴（如 FMT20:...），
+        // "从头回访录像"因首命令 fly:MT20 未访问该层而报"录像文件出错"。
         if (core.status.replay) {
           core.status.replay.toReplay = [];
           core.status.replay.totalList = [];
@@ -566,7 +624,11 @@ function canRetryAdjacentTarget(action, live, floor, x, y, ev) {
   // that are not part of the recorded step (MT32 paired blue guards).
   if ([ACT.KILL, ACT.EVENT_BATTLE].includes(action)) return !!ev && ev.cls === "enemys";
   if (action === ACT.OPEN_DOOR) return !!ev && ev.trigger === "openDoor";
-  if ([ACT.TALK, ACT.PASS].includes(action)) return !!ev;
+  if (action === ACT.TALK) return !!ev;
+  // PASS:hero 相邻即可 retry(走门格)。converter 合并"开门+走门格"成一步 pass X 时,
+  // 首次点 X(door_stay 开门 hero stay 邻格)后门 block 清开 ev=null,但 hero 没到 X--
+  // 须再点 X 走门格。原 walk pass X(门已开)hero 一步到 X(dist 0,line 562 拦不进 retry)。
+  if (action === ACT.PASS) return true;
   if (action === ACT.ARRIVE && (!ev || ev.noPass)) return true;
   if (!ev) return false;
   if (ev.trigger === "changeFloor") return true;
@@ -1502,13 +1564,13 @@ async function loadSlot(cdp, slot) {
   return result;
 }
 
-async function waitForCandidates(cdp, steps, candidateIndexes, desc, timeoutMs = 90000) {
+async function waitForCandidates(cdp, steps, candidateIndexes, desc, timeoutMs = 90000, breakOnIdle = false) {
   const end = Date.now() + timeoutMs;
   let last = await state(cdp);
   while (Date.now() < end) {
     last = await state(cdp);
     if (isLabelEvent(last)) {
-      await sleep(600);
+      await sleep(250);
       continue;
     }
     for (const idx of candidateIndexes) {
@@ -1523,12 +1585,38 @@ async function waitForCandidates(cdp, steps, candidateIndexes, desc, timeoutMs =
         return { state: last, matchedStep: idx };
       }
     }
+    // Pre-lock context (breakOnIdle): the previous step's lingering event (e.g. boss
+    // afterBattle text) has now settled -- state is idle -- but this step's target
+    // hasn't been achieved. That means this step needs its own click; don't sit idle
+    // for the full preTimeout (was 15s for non-KILL steps). Throw so the caller falls
+    // through to executeStep. Coalesced cases match above before reaching here.
+    if (breakOnIdle && !last.lock && !last.eventId && !last.moving && !last.hasChoices) {
+      throw new Error(`pre-lock idle no-match for ${desc}; last=${stateText(last)}`);
+    }
     if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move" || last.eventType === "generateMove")) {
+      if (last.eventType && !SPACE_DISMISSABLE_ACTION_TYPES.has(last.eventType)) {
+        if (last.eventType === "waitAsync") {
+          // SteelDoor async openDoor (e.g. MT2 (8,2) afterBattle) can leave a
+          // stale callback in asyncId that never fires, hanging the waitAsync.
+          // First try clearing falsy stale keys; if still stuck after 6s, force
+          // -clear function-callback keys whose async will never complete.
+          if (!waitAsyncStuckSince) waitAsyncStuckSince = Date.now();
+          const force = Date.now() - waitAsyncStuckSince > 6000;
+          const cleared = await clearStuckWaitAsync(cdp, force);
+          if (cleared && cleared.ok) { await sleep(250); continue; }
+          await sleep(120);
+          continue;
+        }
+        await sleep(120);
+        continue;
+      }
       const progressed = await continuePendingAction(cdp);
       if (progressed.ok) {
         await sleep(250);
         continue;
       }
+    } else {
+      waitAsyncStuckSince = 0;
     }
     if (last.moving && !last.autoHeroMove && !last.eventId && !last.hasChoices) {
       await clearStaleMoving(cdp);
@@ -1572,7 +1660,7 @@ async function waitForCandidates(cdp, steps, candidateIndexes, desc, timeoutMs =
     }
     if (last.lock || last.eventId) {
       await pressKey(cdp, "Space");
-      await sleep(450);
+      await sleep(200);
       continue;
     }
     await sleep(120);
@@ -1589,10 +1677,14 @@ async function waitIdle(cdp, timeoutMs = 15000) {
   while (Date.now() < end) {
     last = await state(cdp);
     if (isLabelEvent(last)) {
-      await sleep(600);
+      await sleep(250);
       continue;
     }
     if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move" || last.eventType === "generateMove")) {
+      if (last.eventType && !SPACE_DISMISSABLE_ACTION_TYPES.has(last.eventType)) {
+        await sleep(120);
+        continue;
+      }
       const progressed = await continuePendingAction(cdp);
       if (progressed.ok) {
         await sleep(250);
@@ -1625,7 +1717,7 @@ async function waitIdle(cdp, timeoutMs = 15000) {
     }
     if (last.lock || last.eventId) {
       await pressKey(cdp, "Space");
-      await sleep(450);
+      await sleep(200);
       continue;
     }
     return last;
@@ -1639,11 +1731,15 @@ async function waitForChoices(cdp, timeoutMs = 15000) {
   while (Date.now() < end) {
     last = await state(cdp);
     if (isLabelEvent(last)) {
-      await sleep(600);
+      await sleep(250);
       continue;
     }
     if (last.hasChoices) return last;
     if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move")) {
+      if (last.eventType && !SPACE_DISMISSABLE_ACTION_TYPES.has(last.eventType)) {
+        await sleep(120);
+        continue;
+      }
       const progressed = await continuePendingAction(cdp);
       if (progressed.ok) {
         await sleep(250);
@@ -1711,6 +1807,16 @@ async function settleAlreadyCompletedStep(cdp, step) {
   if (step.floor === "MT20" && step.eid === "vampire" && step.action === ACT.EVENT) {
     const vamp = await targetEvent(cdp, "MT20", 6, 6);
     if (!vamp || vamp.cls !== "enemys") return null;
+  }
+  // MT29 thief (6,2): hero talks to open (6,3) + remove thief. Side-effect-only
+  // (no HP/key/gold change; hero stays at (5,2)). State-match would falsely
+  // skip it before (6,3) opens, then the upFloor x6y11 step fails ("target
+  // click stopped before stair"). If the thief is still present or (6,3) is
+  // still closed, the event must execute.
+  if (step.floor === "MT29" && step.eid === "thief" && step.action === ACT.EVENT) {
+    const thief = await targetEvent(cdp, "MT29", 6, 2);
+    const door = await targetEvent(cdp, "MT29", 6, 3);
+    if (thief || door) return null;
   }
   // Pickaxe: only "already completed" if the target wall is actually gone.
   // The hero's stats/position are unchanged by using a pickaxe, so a pure
@@ -2060,7 +2166,7 @@ async function closeChoiceMenu(cdp, timeoutMs = 8000) {
   while (Date.now() < end) {
     last = await state(cdp);
     if (isLabelEvent(last)) {
-      await sleep(600);
+      await sleep(250);
       continue;
     }
     if (!last.hasChoices) {
@@ -2075,6 +2181,10 @@ async function closeChoiceMenu(cdp, timeoutMs = 8000) {
       continue;
     }
     if (last.eventId === "action" && (!last.eventType || last.pendingAction || last.eventType === "hide" || last.eventType === "show" || last.eventType === "sleep" || last.eventType === "setCurtain" || last.eventType === "setBlock" || last.eventType === "setBgFgBlock" || last.eventType === "openDoor" || last.eventType === "waitAsync" || last.eventType === "move")) {
+      if (last.eventType && !SPACE_DISMISSABLE_ACTION_TYPES.has(last.eventType)) {
+        await sleep(120);
+        continue;
+      }
       const progressed = await continuePendingAction(cdp);
       if (progressed.ok) {
         await sleep(250);
@@ -2083,7 +2193,7 @@ async function closeChoiceMenu(cdp, timeoutMs = 8000) {
     }
     if (last.lock || last.eventId) {
       await pressKey(cdp, "Space");
-      await sleep(300);
+      await sleep(200);
       continue;
     }
     return last;
@@ -2416,6 +2526,29 @@ async function executeStep(cdp, step) {
         }
       }
     }
+    else if (step.floor === "MT29" && step.eid === "thief") {
+      // 29F thief (6,2): click (6,2) -> hero stops adjacent (5,2) -> multi-segment
+      // dialogue -> openDoor (6,3) + thief leaves. Dismiss each dialogue segment
+      // (Space) until the event fully settles, or (6,3) stays closed and the
+      // upFloor (6,11) step fails.
+      let live = st;
+      if (live.x === x && live.y === y) {
+        await pressKey(cdp, "Space");
+      } else {
+        await mouseClickTile(cdp, x, y);
+        await waitMovementSettled(cdp);
+      }
+      for (let guard = 0; guard < 16; guard++) {
+        live = await state(cdp);
+        if (!live.lock && !live.eventId && !live.moving) break;
+        if (live.lock || live.eventId) {
+          await pressKey(cdp, "Space");
+          await sleep(500);
+        } else {
+          await sleep(200);
+        }
+      }
+    }
     else {
       await mouseClickTile(cdp, x, y);
       const after = await state(cdp);
@@ -2471,6 +2604,30 @@ async function executeStep(cdp, step) {
         return;
       }
     }
+    // hero 不相邻怪(Manhattan>1):清 stale action event 后直接点怪格,web automaticRoute
+    // 寻路到怪并击杀(穿 yellowWall/门)。原 approach-tile 循环是 converter 漏 MT32 (6,10)
+    // 先攻事件时的误诊断(把 (6,10) 当 pass 合并,hero 起点/click 目标全错);根因修后直接点目标。
+    if (step.action === ACT.KILL && st.floor === step.floor && Math.abs(st.x - x) + Math.abs(st.y - y) > 1) {
+      const ev = await targetEvent(cdp, step.floor, x, y);
+      if (ev && (ev.cls === "enemys" || ev.trigger === "battle")) {
+        await waitMovementSettled(cdp, 8000);
+        st = await state(cdp);
+        // 清 automaticRoute action 事件残留(换层/移动后 event=action 未 close,lockControl 拒点)
+        if (st.lock && !st.moving && !st.hasChoices && (st.eventId === "action" || !st.eventId)) {
+          await evalValue(
+            cdp,
+            String.raw`(function(){try{core.status.event=null;if(core.unlockControl)core.unlockControl();else core.status.lockControl=false;}catch(e){}return true})()`
+          );
+          await sleep(300);
+        }
+        await mouseClickTile(cdp, x, y);
+        await waitMovementSettled(cdp, 10000);
+        // 远点单次点击:automaticRoute 可能把 hero 寻路到相邻就停(没自动攻击)。
+        // canRetryAdjacentTarget(KILL)=hero 相邻且怪还在 -> 再点一次触发战斗。
+        await maybeRetryAdjacentTarget(cdp, step);
+        return;
+      }
+    }
     if (step.action === ACT.EVENT_BATTLE && st.x === x && st.y === y) {
       if (!(st.lock || st.eventId || st.moving || (st.animateAsyncCount || 0) > 0)) {
         await mouseClickCanvas(cdp);
@@ -2522,7 +2679,82 @@ async function executeStep(cdp, step) {
     } else {
       await mouseClickTile(cdp, x, y);
       await maybeRetryAdjacentTarget(cdp, step);
-      const after = await state(cdp);
+      let after = await state(cdp);
+      if (after.moving) { await waitMovementSettled(cdp); after = await state(cdp); }
+      // boss (skeletonCaptain/vampire 等): 从远处点击怪格 hero 走到相邻触发 boss
+      // 对话(lock=action)但未战斗,先 Space 确认对话,再用键盘 arrow 朝怪触发战斗
+      // (CLAUDE.md:boss 用键盘事件,如 MT50 redKing;MT10 captain 同)。
+      if (step.action === ACT.KILL && after.floor === step.floor
+          && Math.abs(after.x - x) + Math.abs(after.y - y) === 1
+          && after.lock && after.eventId === "action") {
+        const ev = await targetEvent(cdp, step.floor, x, y);
+        if (ev && (ev.cls === "enemys" || ev.trigger === "battle")) {
+          let st = after;
+          for (let g = 0; g < 8 && (st.lock || st.eventId); g++) {
+            await pressKey(cdp, "Space");
+            await sleep(400);
+            st = await state(cdp);
+          }
+          if (st.floor === step.floor && Math.abs(st.x - x) + Math.abs(st.y - y) === 1
+              && !st.lock && !st.eventId && !st.moving && !st.hasChoices) {
+            const dx = x - st.x, dy = y - st.y;
+            await pressKey(cdp, dx > 0 ? "ArrowRight" : dx < 0 ? "ArrowLeft" : dy > 0 ? "ArrowDown" : "ArrowUp");
+            await waitMovementSettled(cdp);
+            // boss 战后 hero 可能未踏上怪格(击败对话挡),确认对话 + 点击怪格踏上去
+            let st2 = await state(cdp);
+            for (let g = 0; g < 8 && (st2.lock || st2.eventId); g++) {
+              await pressKey(cdp, "Space");
+              await sleep(400);
+              st2 = await state(cdp);
+            }
+            if (st2.floor === step.floor && (st2.x !== x || st2.y !== y)
+                && !st2.lock && !st2.eventId && !st2.moving && !st2.hasChoices
+                && await targetSideEffectDone(cdp, step, x, y)) {
+              await mouseClickTile(cdp, x, y);
+              await waitMovementSettled(cdp);
+            }
+            return;
+          }
+        }
+      }
+      // fakeWall2 with afterOpenDoor setBlock (e.g. MT19 (6,3): break fakeWall2 ->
+      // setBlock cross item). The click breaks fakeWall2 and triggers a setBlock
+      // action event; the hero stops adjacent with lock=action:setBlock and the
+      // spawned item is not yet collectable. Advance the setBlock action, then
+      // re-click the target so the hero steps onto it / picks up the spawned
+      // item. Without this the item stays uncollected (cross not picked -> later
+      // zombie/vampire damage diverges because cross doubles atk vs them).
+      let sawSetBlock = false;
+      for (
+        let guard = 0;
+        guard < 5 && after.floor === step.floor && (after.x !== x || after.y !== y);
+        guard += 1
+      ) {
+        if (
+          after.lock &&
+          after.eventId === "action" &&
+          (after.eventType === "setBlock" || after.eventType === "setBgFgBlock")
+        ) {
+          sawSetBlock = true;
+          await pressKey(cdp, "Space");
+          await sleep(220);
+          after = await state(cdp);
+          continue;
+        }
+        if (
+          sawSetBlock &&
+          !after.lock &&
+          !after.moving &&
+          !after.eventId &&
+          !after.hasChoices
+        ) {
+          await mouseClickTile(cdp, x, y);
+          await sleep(300);
+          after = await state(cdp);
+          continue;
+        }
+        break;
+      }
       const floorChanged = after.floor !== st.floor;
       const dist = Math.abs(after.x - x) + Math.abs(after.y - y);
       if (
@@ -2575,7 +2807,7 @@ async function maybeCloseMenu(cdp, step, next) {
 async function runOneStep(cdp, steps, oneBased, stop) {
   const step = steps[oneBased - 1];
   const [x, y] = step.pos;
-  console.log(`[${String(oneBased).padStart(3, "0")}] ${step.floor} x${x}y${y} ${step.action} ${step.eid || ""}`);
+  console.log(`[${tsStamp()}][${String(oneBased).padStart(3, "0")}] ${step.floor} x${x}y${y} ${step.action} ${step.eid || ""}`);
   // Formal verification is step-exact. Coalescing later expected states hid
   // incorrect offline auto attribution; adaptive coalescing belongs only to
   // explicit --record-only runs.
@@ -2634,7 +2866,15 @@ async function runOneStep(cdp, steps, oneBased, stop) {
     await maybeCloseMenu(cdp, steps[consumed - 1], steps[consumed]);
     return { state: result.state, consumed };
   }
-  if (step.action === ACT.ARRIVE && steps[oneBased] && steps[oneBased].action === ACT.FLY) {
+  // An ARRIVE step may carry auto_sweep side effects (e.g. MT19 (6,3) auto-picks
+  // cross after breaking fakeWall2). Skipping it just because the next step is a
+  // fly leaves those side effects untriggered -- the hero never reaches the tile,
+  // the cross is never picked up, and later zombie/vampire damage diverges (cross
+  // doubles atk vs those enemies). Only skip when the arrive has no auto side
+  // effects. Snapshot does not record the cross flag, so valuesMatch alone cannot
+  // detect this; the note is the signal.
+  if (step.action === ACT.ARRIVE && steps[oneBased] && steps[oneBased].action === ACT.FLY
+      && !(typeof step.note === "string" && step.note.indexOf("auto_sweep") >= 0)) {
     const live = await state(cdp);
     const expected = expectedState(step);
     if (
@@ -2656,7 +2896,7 @@ async function runOneStep(cdp, steps, oneBased, stop) {
       ? 180000
       : 15000;
     try {
-      const result = await waitForCandidates(cdp, steps, candidates, `step ${oneBased}`, preTimeout);
+      const result = await waitForCandidates(cdp, steps, candidates, `step ${oneBased}`, preTimeout, true);
       if (result.matchedStep !== oneBased) {
         console.log(`      -> coalesced through step ${result.matchedStep}`);
       }
@@ -2685,7 +2925,7 @@ async function runRecordOnly(cdp, walk, steps, args, stop) {
   for (let oneBased = args.startStep; oneBased <= stop;) {
     const step = steps[oneBased - 1];
     const [x, y] = step.pos;
-    console.log(`[${String(oneBased).padStart(3, "0")}] ${step.floor} x${x}y${y} ${step.action} ${step.eid || ""} [record]`);
+    console.log(`[${tsStamp()}][${String(oneBased).padStart(3, "0")}] ${step.floor} x${x}y${y} ${step.action} ${step.eid || ""} [record]`);
     const beforeStep = await state(cdp);
     const candidates = coalesceCandidateIndexes(steps, oneBased).filter((idx) => idx <= stop);
     let after = beforeStep;
@@ -2779,7 +3019,8 @@ async function run() {
     if (args.undoSteps > 0 || args.undoOnFailure > 0) throw new Error("--strict-human-input forbids scripted undo");
   }
   const walk = JSON.parse(fs.readFileSync(args.walk, "utf8"));
-  if (!walk.ok) throw new Error(`walk is not ok: ${walk.errors}`);
+  if (!walk.ok && !args.allowNotOk) throw new Error(`walk is not ok (mismatches=${(walk.mismatches||[]).length} errors=${(walk.errors||[]).length}); pass --allow-not-ok to force replay for conversion-logic validation`);
+  if (!walk.ok) console.log(`[warn] walk.ok=false (mismatches=${(walk.mismatches||[]).length} errors=${(walk.errors||[]).length}) -- forcing replay per --allow-not-ok`);
   // Normalize English action aliases (e.g. "merchant" -> "商人") in place so all
   // downstream consumers (record-only, strict walk builder, writeRunLog) see the
   // canonical Chinese ACT constants.

@@ -92,6 +92,27 @@ python scripts\audit\audit_zone2_path_legality.py
 python scripts\audit\report_zone2_remaining_diff.py
 ```
 
+## final-score 0 伤口径对比（含剩余资源）
+
+比较两条路线**不要只看 `final-stock`**（存量 = HP + YK×50 + BK×200 + G/2），它会漏掉未拾资源。用 **`final-score` = stock + 剩余资源组**（0 伤拾取、BK=200、未开门扣钥匙、0 伤怪金币 money/2；宝石/红钥匙默认 0 除非 atk/def<27 或脚本另有目标）。
+
+**关键特性**：资源在存量还是剩余（0 伤可达）final-score 总值等价 -- 拾取只把资源从 residual 移到 stock，不改变 final-score。所以"吃不吃 boss 后资源"在 final-score 口径下不影响对比，只影响存量分布。同理 auto ON/OFF 若资源都 0 伤可达，final-score 不变（auto ON 把资源从 residual 移到 stock）。
+
+录像转 Game 后用 `recording_to_game.py --residual-out` 导出 zone1-20 剩余资源分类 + final-score：
+
+```powershell
+python scripts\search\recording_to_game.py --route <decoded_route.json> --statlog <statlog_pre.json> --save1 outputs\results\save1_current_snapshot.json --paths <paths.json> --out <conv.json> --auto battle=true,item=true,wall=true --stop-floor MT21 --residual-out <res.json>
+```
+
+`res.json` 含：`current_stock`（当前 yk/bk/gold/hp）、`stock`、`residual_value`、`final_score`、`cat_summary`（剩余 YK/BK/药/宝石/未开门/0伤怪金币 分类计数）、`cats`（每类坐标明细）、`residual_breakdown`（逐项 +-）。
+
+对比要点：
+- 当前存量 yk/bk/gold + 剩余 yk/bk/药瓶/0伤怪金币 分类逐项对比。
+- **花费钥匙开门的必须扣**：未开黄门 ×50、未开蓝门 ×200（已计入 residual，开门消耗钥匙价值）。
+- 用 auto 设置匹配录像的转换跑（auto OFF 录像传 `battle=false,item=false,wall=false`）；auto ON 转换若 mismatch 多（路径分叉）终态不可信，用 auto OFF（web 验证 0 mismatch）的终态更可靠，boss 资源在 final-score 下不必单独补（存量/剩余等价）。
+- 0 伤怪金币要求 atk >= enemy.def（cross 对 zombie/zombieKnight/vampire atk×2）；高伤怪不计入 final-score 剩余。
+- `final-stock`（只存量）只能当 tie-breaker，不能替代 final-score 对比；它会奖励"多拾资源进存量"的线，惩罚"留资源在剩余"的线，即使两线总资源等价。
+
 基础回归：
 
 ```powershell
@@ -177,3 +198,41 @@ python tests\run_floorsearch_test.py
 - 15F 蓝钥匙商人与 11F 盾房应批处理：先买蓝钥匙，再一次性完成 11F 左下钥匙、蓝门、两个高级法师和银盾，避免额外飞行往返。
 - 16F 圣水不要只按当前 HP 加值审计；它随 ATK+DEF 缩放。若 `HP=676 ATK=70 DEF=66` 已能打 20F 吸血鬼并以 `HP=11` 存活，则 20F 前应跳过圣水，留到后续属性更高或 HP 门槛必须时再取/用。
 - 19F 十字架前 `x6y4/x6y3` 暗墙要和实机对齐：击杀 `x7y6 rock` 后可以自动拿附近黄钥匙，但不要把两格 fakeWall 完全压进 auto_sweep；walk JSON 应保留显式 pass/take，实机验证要覆盖这一段。
+
+## 2026-07-16 walk .md auto 显示判读（gen_zone_walk_md.py）
+
+审查人读 walk `.md` 时，"属性对但 auto 没写" 或 "HP 突跳无解释" 通常是生成器 `scripts/build/gen_zone_walk_md.py` 的显示层问题，不是路线错。三类根因（已修）：
+
+1. **步内 auto（击杀步 `(auto: 列表)` 漏显）**：Game 类 go_to 路径内击杀折叠把 auto 写成 `"auto: "` 前缀（game_route.py:1385），而 `extract_clear_note` 旧版只认 `"auto_sweep:"`。判读：若击杀步 delta 有 `[YK 0->4]` 但无 `(auto: ...)` 列表，且 note 含 `auto:`，是显示漏显。修复后两种前缀都认。
+
+2. **gap auto（到达步整步消失）**：延迟 auto_sweep 把本步移动中清的资源折进 `step.before`，使 before==after、步内 delta 为空，被 `should_emit_arrive` 当空步抑制。判读：楼层 `before:` 到 `after:` 属性跳变（如 yk 1->2、HP 101->1301）但中间无任何 step 解释，是 gap auto 被抑制。修复后 `delta_before` 用上一发出步的 after（prev_after），gap 计入本步 delta 并放出该步。
+
+3. **击杀步 auto 列表重复目标**：0-dmg 自动击杀目标的点击步（strict_auto_enemy_target）会把被杀目标本身列进 auto（如 `kill bigBat (auto: x9y11 bigBat, x8y11 bluePotion)`）。判读：auto 列表首项 = 被杀坐标即重复。修复后按 step.pos 剔除。
+
+判读 .md 时的基线规则：**每步 `[delta]` 的基线是上一条已发出步的 after，不是本步 before**（正常步两者相等；gap auto 步 before 已含 auto，必须用 prev_after 才能看到变化）。楼层 `before:`/`after:` 应连续（上一楼层 after == 下一楼层 before），不连续说明有 gap auto 或路线问题。
+
+验证 .md 正确性：跑 `python tests/run_zone_walk_md_test.py` + `python tests/run_project_docs_sync_test.py`；逐 step 核对可用 node 脚本扫 `steps[].before/after` 与 .md 的 delta/连续性（参考 `tmp/consistency_check.js`：82 floor block 0 连续性缺口、final after == JSON final）。相关 memory：`gen-md-auto-display-fix`。
+
+注意区分：**显示 bug（上面三类，改 gen_md 即可）** vs **路线废动作（往返楼层/楼梯代飞/0 伤怪主动清，属录像复刻 zone12_recording_autoon.py 继承的录像低效，改路线需重生成+web 验证）**。.md 修好后仍出现的 "废动作" 才是路线问题。
+
+## 2026-07-16 walk 生成管线零手写（协议常量单一真相源）
+
+「录像 -> Game walk JSON -> web 复验 -> 人看 walk」全管线要求：**游戏知识映射只写在 `src/solver/game_route.py` 一处，converter / replayer / gen 零手写**。gen 不得本地定义任何映射，一律 import：
+
+- `ACTION_VERB_EN`：action 中文名 -> 人读 .md 英文动词（含 `破墙`->pass、zone2+ 适配层 `商店/商人/对话/事件/事件奖励/事件战斗`）。`record()` 新增 action 必须在此登记，否则 .md action 行 fallback 中文。
+- `SKIP_ACTIONS`（不 emit 的 action，含 zone2 适配层 `事件开门`）/ `FLOOR_TRANSITIONS`（deferred 归因硬边界 `换层/飞行`）。
+- `DOOR_KEY`：门 eid -> (钥匙 state key, 开门计数 key)。Game 内部 `_apply_door_live` / `apply_block` / auto 门判断共用同一份。
+- `AUTO_KEYS`：`("battle","item","wall")`，`set_auto` 校验与 gen `fmt_auto_config` 共用。
+- `Game.TRIGGER_EVENT_DESC`：事件 trigger 格人读描述，与 `trigger_tile_event` 分支一一对应；gen 在 trigger-event pass 步自动加 `(触发: ...)`。
+
+新增 action / 事件触发点 checklist：只改 `game_route.py`（`ACTION_VERB_EN` 登记 / `trigger_tile_event` 分支 + `TRIGGER_EVENT_DESC` 条目）。converter 的 trigger-event 标记由 `apply_block` / `trigger_tile_event` 返回值驱动（无坐标表），gen 描述自动拾取，管线其余脚本零改动。
+
+失败模式（2026-07-16 MT10 (6,9) stall 实证）：通用 `trigger_tile_event` 漏注册某事件格时，converter `step_path` 调 `trigger_tile_event` 返回 False → step note 不打 `trigger-event` → `move:x:y` 的 `_has_trigger` 不分段、把含事件格的 captured path 合并成「直达终点」一步 → replayer 只点终点；但 web automaticRoute 寻路途中踩事件格会**中断、hero 停在事件格** → replayer 期望 hero 在终点 → 位置 mismatch / stall（`game_route.py:466` 早注释过此模式）。判读：replayer 卡在某步、live hero 坐标停在某个事件格而 conv 期望更远的终点，先查该格是否在 `TRIGGER_EVENT_DESC` / `trigger_tile_event` 登记。
+
+区域适配层 vs 通用 Game 类的事件同步：`zoneN_game_route.py` 的 `apply_*` 适配方法可能早建模了某事件（如 zone2 `apply_mt10_supply` 已建模 MT10 (6,9) thief：auto-eat 12 + hero 停 6,9），但 converter 用的是**通用 `Game` 类**、不读适配层。适配层已建模的事件必须**同步**到通用 `trigger_tile_event` + `TRIGGER_EVENT_DESC`，否则 converter 转换时漏中断点。新增事件点先 grep 适配层有无现成建模可参考，避免知识只落在适配层。
+
+验证与判读：
+
+- 改 `game_route.py` / gen 后：重生成 .md 应与改前**零 diff**（行为等价），再跑 `run_zone_walk_md_test` + `run_zone3_game_model_test` + `run_project_docs_sync_test`。
+- `run_strict_live_click_model_test` 的 MT48 `y: expected 7, got 6` 失败是 pre-existing（干净 HEAD 同样复现）。隔离验证法：`git stash push -- <改动文件>; python tests\...; git stash pop`（用 `;` 不用 `&&`，保证 pop 总执行）。
+- 剩余耦合（非手写，暂不改）：note 字符串协议 `auto_sweep:` / `auto:` / `动态清:` / `trigger-event` 前缀（Game 写、gen/converter 解析），升级结构化字段（`step["auto_clear"]`）需动 Game record 全部写入点 + 存量 JSON，单独立项；summary label `best_after_mt10_boss_supply` 只服务 zone1 旧 summary 更新路径。

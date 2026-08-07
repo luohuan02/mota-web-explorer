@@ -3,9 +3,9 @@
 
 把 `outputs/results/<zone>_game_route.json`（Game 类 auto ON，含 auto_sweep 隐式
 击杀/拾取，金币正确）转成人读 .md，标注每步 auto_sweep 后的金币/属性 delta，
-行末注明自动清理的怪/道具。action 行格式保持 replayer 可解析（zone1 英文
-open/kill/take/pass/trigger；zone2 同样英文，.md 仅供人读，实机走 zone3 replayer
-读 walk JSON）。
+行末注明自动清理的怪/道具。action 行英文动词来自 game_route.ACTION_VERB_EN
+（.md 仅供人读；实机 verifier live_zone3_mouse_replayer_cdp.js 读 walk JSON
+按 pos 点击，不解析 action 字段）。
 
 用法:
   python scripts/build/gen_zone_walk_md.py \
@@ -27,18 +27,19 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 
-# Game 类中文 action -> 英文动词（.md action 行）
-ACTION_EN = {
-    "开门": "open",
-    "击杀": "kill",
-    "拾取": "take",
-    "通过": "pass",
-    "到达": "move", "飞行": "fly",
-}
-# 不 emit 为 action 行的步（replayer 自动处理 / 非 hero 点击）。楼层切换
-# 同样不 emit，但它是 deferred 归因的硬边界，不能像同层隐藏步骤一样穿透。
-FLOOR_TRANSITIONS = {"换层", "飞行"}
-SKIP_ACTIONS = {"换层", "已清理", "事件开门"}
+import sys
+sys.path.insert(0, str(ROOT))
+from src.solver.game_route import (
+    ACTION_VERB_EN,
+    AUTO_KEYS,
+    DOOR_KEY,
+    FLOOR_TRANSITIONS,
+    SKIP_ACTIONS,
+    Game,
+)
+# action 英文名 / SKIP_ACTIONS / FLOOR_TRANSITIONS / DOOR_KEY / AUTO_KEYS /
+# trigger-event 描述(Game.TRIGGER_EVENT_DESC) 全部从 game_route 导入，本文件
+# 不手写任何游戏知识映射；新增 action/事件点只改 game_route 一处。
 
 
 def state_text(s: dict[str, Any]) -> str:
@@ -76,21 +77,40 @@ def gold_gain(eid: str, before_gold: int, after_gold: int) -> int:
 def extract_clear_note(note: str) -> tuple[str, str] | None:
     """从 step.note 提取清理列表，返回 (label, list_str)。
 
-    - `auto_sweep:` 是 0 伤自动清（auto_sweep BFS），label='auto'
+    - `auto_sweep:` / `auto:` 都是 0 伤自动清（auto_sweep BFS），label='auto'。
+      Game 类 go_to 在不同分支写这两种前缀（路径内击杀折叠写 `auto:`，其余写
+      `auto_sweep:`）；一条 note 可能含多段，全部合并，否则 `auto:` 段会漏显。
     - `动态清:`（clearMt10BossDyn）是 boss 战显式逐个击杀（带伤害，非 0 伤），
-      label='boss'，不能混成 auto
+      label='boss'，不能混成 auto。
     """
     if not note:
         return None
-    for marker, label in (("auto_sweep:", "auto"), ("动态清:", "boss")):
-        i = note.find(marker)
-        if i >= 0:
-            rest = note[i + len(marker):].strip()
+    i = note.find("动态清:")
+    if i >= 0:
+        rest = note[i + len("动态清:"):].strip()
+        for sep in (";", "；"):
+            j = rest.find(sep)
+            if j >= 0:
+                rest = rest[:j]
+        return ("boss", rest.strip().rstrip(","))
+    auto_parts: list[str] = []
+    for marker in ("auto_sweep:", "auto:"):
+        start = 0
+        while True:
+            k = note.find(marker, start)
+            if k < 0:
+                break
+            rest = note[k + len(marker):].strip()
             for sep in (";", "；"):
                 j = rest.find(sep)
                 if j >= 0:
                     rest = rest[:j]
-            return (label, rest.strip().rstrip(","))
+            rest = rest.strip().rstrip(",")
+            if rest:
+                auto_parts.append(rest)
+            start = k + len(marker)
+    if auto_parts:
+        return ("auto", ", ".join(auto_parts))
     return None
 
 
@@ -135,13 +155,13 @@ def deferred_auto_after(step: dict[str, Any], following_arrives: list[dict[str, 
                 changed = True
     elif action == "开门":
         eid = step.get("eid")
-        key = {"yellowDoor": "yk", "blueDoor": "bk", "redDoor": "rk"}.get(eid)
+        kk = DOOR_KEY.get(eid)
         for stat in ("atk", "def", "yk", "bk", "rk"):
             if before.get(stat) != after.get(stat):
                 display[stat] = before.get(stat, 0)
                 changed = True
-        if key:
-            display[key] = before.get(key, 0) - 1
+        if kk:
+            display[kk[0]] = before.get(kk[0], 0) - 1
     if not changed:
         return None
     return display
@@ -174,13 +194,9 @@ def action_line(step: dict[str, Any]) -> str | None:
         return f"- {fid} x{pos[0]}y{pos[1]} trigger boss event"
     if action in SKIP_ACTIONS:
         return None
-    verb = ACTION_EN.get(action)
-    if verb is None:
-        # 商店/商人/对话/事件/事件奖励 等（zone2+），用英文动词占位
-        verb = {
-            "商店": "shop", "商人": "trader", "对话": "talk",
-            "事件": "event", "事件奖励": "reward", "事件战斗": "eventbattle",
-        }.get(action, action)
+    # 中->英动词表在 game_route.ACTION_VERB_EN（含 zone2+ 适配层 action）；
+    # 未登记的 action fallback 中文——新 action 应在 ACTION_VERB_EN 登记。
+    verb = ACTION_VERB_EN.get(action, action)
     # eid 必须是 [A-Za-z0-9_:]+ 才能被 parseWalk 解析（zone1 replayer）；含冒号的
     # 商店 eid（blueShop:attack）也保留。中文 eid 不会出现在 Game 类输出。
     return f"- {fid} x{pos[0]}y{pos[1]} {verb} {eid}".rstrip()
@@ -207,7 +223,7 @@ def fmt_auto_config(auto: Any) -> str | None:
     if not isinstance(auto, dict) or not auto:
         return None
     parts = []
-    for k in ("battle", "item", "wall"):
+    for k in AUTO_KEYS:
         if k in auto:
             v = auto[k]
             if isinstance(v, bool):
@@ -306,9 +322,14 @@ def gen_md(
         fid = step["floor"]
         after = step["after"]
         before = step["before"]
-        # 每一行只显示该 Game step 自己的 before/after。禁止把上一点击的
-        # auto、钥匙或事件副作用迁移到下一条 move 上。
-        delta_before = before
+        # delta 基线用上一条已发出步的 after（prev_after），而非本步 before。正常
+        # 步 before==prev_after，无影响；但 Game 类 go_to 的延迟 auto_sweep 会把
+        # 本步移动中清的零伤怪/道具折进本步 `before`（before==after，步内 delta
+        # 为空），用 prev_after 才能把这段 gap auto 计入本步 delta 并避免被
+        # should_emit_arrive 当空步抑制（如 MT8 x5y4 到达拾 3 把 yk）。这不是
+        # "把上一点击副作用迁移到下一条 move"：gap auto 本就是本步移动的产物，
+        # 只是 Game 把它记到了 before；prev_after 把它归位到本步。
+        delta_before = prev_after if prev_after is not None else before
         following_arrives: list[dict[str, Any]] = []
         display_after = after
         line = action_line(step)
@@ -329,22 +350,38 @@ def gen_md(
         if pending_auto_suffix:
             suffix_parts.append(pending_auto_suffix)
             pending_auto_suffix = None
-        elif step.get("action") == "到达" and delta:
-            suffix_parts.append("(auto: resource group on move)")
         clear = extract_clear_note(step.get("note", ""))
         if clear:
             label, lst = clear
             if label == "auto":
-                if following_arrives:
-                    pending_auto_suffix = f"(auto: {lst})"
-                else:
-                    suffix_parts.append(f"(auto: {lst})")
+                # 击杀步的 auto 列表剔除被杀目标本身：它是本步点击目标，不是
+                # 附带清理（如 MT11 x9y11 bigBat 被 auto 列为 x9y11 bigBat）。
+                if step.get("action") == "击杀" and step.get("pos"):
+                    tgt = f"x{step['pos'][0]}y{step['pos'][1]} "
+                    items = [s.strip() for s in lst.split(",") if s.strip()]
+                    items = [it for it in items if not it.startswith(tgt)]
+                    lst = ", ".join(items)
+                if lst:
+                    if following_arrives:
+                        pending_auto_suffix = f"(auto: {lst})"
+                    else:
+                        suffix_parts.append(f"(auto: {lst})")
             else:
                 # boss 动态清是带伤害的显式逐杀（非 0 伤 auto），分开标
                 suffix_parts.append(f"(boss 动态清: {lst})")
+        elif step.get("action") == "到达" and delta:
+            # 到达步有 delta 但 note 无 auto 列表（罕见，如延迟事件副作用）：
+            # 标注资源组在移动中变化，避免 delta 无解释。有 actual auto 列表时
+            # 上面已处理，不会落到这里。
+            suffix_parts.append("(auto: resource group on move)")
         elif g_gain > 0 and step["action"] not in ("击杀",):
             # 金币增加但非显式击杀 -> auto_sweep 隐式击杀（Game 类 note 未详）
             suffix_parts.append(f"(auto: +{g_gain}G)")
+        if "trigger-event" in (step.get("note", "") or ""):
+            # 事件 trigger pass: hero 踩格触发楼层事件（spawn/移动/开门），converter
+            # 标 trigger-event。加人读描述让人知道为何走该格（非普通路过）。
+            _desc = Game.TRIGGER_EVENT_DESC.get((fid, (step["pos"][0], step["pos"][1])))
+            suffix_parts.append(f"(触发: {_desc})" if _desc else "(触发事件)")
         suffix = " " + " ".join(suffix_parts) if suffix_parts else ""
         # gain_tag 只给显式击杀标（敌人金币）；非击杀步的金币增量已在 (auto: +NG) 里
         gain_tag = f" (+{g_gain}G)" if g_gain > 0 and step["action"] == "击杀" else ""
@@ -400,14 +437,6 @@ def update_summary(summary: dict[str, Any], final: dict[str, Any],
     return out
 
 
-def normalize_live_walk(game_route: dict[str, Any]) -> dict[str, Any]:
-    out = json.loads(json.dumps(game_route))
-    for step in out.get("steps", []):
-        if step.get("action") == "破墙":
-            step["action"] = "通过"
-    return out
-
-
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--game-route-json", type=Path, required=True)
@@ -436,7 +465,9 @@ def main() -> int:
     summary_for_md = None
     if isinstance(summary, dict):
         summary_for_md = summary.get("summary", summary)
-    live_route = normalize_live_walk(game_route)
+    # 破墙 等 action 不再归一化：replayer 只按 pos 点击不解析 action，
+    # .md 英文动词由 ACTION_VERB_EN 映射（破墙->pass）。
+    live_route = game_route
     auto_config = fmt_auto_config(game_route.get("auto"))
     source_json_ref = args.game_route_json.as_posix()
     md_text = gen_md(

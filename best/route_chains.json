@@ -1,6 +1,6 @@
 {
   "schema": "mota.best.route_chains.v1",
-  "updated": "2026-07-15",
+  "updated": "2026-08-06",
   "game": {
     "name": "h5mota 51",
     "game_url": "https://h5mota.com/games/51/",
@@ -21,7 +21,9 @@
   "continuity_status": {
     "guide_chain_to_22264": "linked by stable artifacts and matching checkpoints; post-40 tail is web-verified from save37 and saved to slot42; a single stitched 1F-to-50F web replay is still pending.",
     "non_guide_chain": "stable through current-best Zone 1/2, the web-verified 2ATK1DEF preserve-pickaxe Zone 3 Game route, and an independently generated, residual-audited, and web-verified pure-TE Zone 4 tail ending at HP=23076.",
-    "known_gap": "20F-to-31F bridge currently comes from browser save checkpoints, not a tracked machine-readable walk in best/."
+    "kill_line_2atk0def": "2攻0防 KILL line: zone1-2 recording web-verified (HP=1215 at MT20), bridge web-verified (slot151), zone3 web-verified 232 steps 0 stat mismatch (MT41 HP=609, +564 HP vs preserve_pickaxe, slot152). zone4 tail pending.",
+    "known_gap": "20F-to-31F bridge currently comes from browser save checkpoints, not a tracked machine-readable walk in best/.",
+    "recording_line_2atk3atk5def": "2区2攻3区3攻5防录像线: zone3 (MT31->MT41) converter walk web-verified 278 steps (coalesce 451->278) 0 stat/gold mismatch (MT41 HP=13 ATK=166 DEF=214 YK=6 G=2954; 匹配 save33 录像真终态). 激进 coalesce: 空地到达/通过全删 (reachability matrix 直达目标, replayer 远点点击+maybeRetryAdjacentTarget 重试开门/击杀); 保留 event-trigger 格/auto_sweep/楼梯+换层/centerFly·upFly·downFly 前一个定位步 (飞目的地依赖源位置). MT40 (6,7) boss 事件建模 + path_cost item epsilon 0.1 + MT38 (5,2) 商人 200G->3yk statlog delta 检测. zone3 种子改用 save33 (MT31, 替代 save153, 因 100+ 槽无法录像). zone4 tail 待探索."
   },
   "chains": [
     {
@@ -79,6 +81,64 @@
         "dmg": 10066,
         "pickaxe": 1
       }
+    },
+    {
+      "id": "kill_line_2atk0def",
+      "label": "2攻0防 KILL 线 (zone2 杀 zKnight 替买 800G 红钥匙)",
+      "segments": [
+        "zone12.2atk0def_recording",
+        "bridge.kill_mt20_to_mt31",
+        "zone3.2atk0def_kill",
+        "zone4.2atk0def_kill_tail_pending"
+      ],
+      "status": "zone1-2 recording web-verified (358 steps 0 mismatch); MT21-30 离线打通 (取代 live bridge, slot 151 superseded); zone3 web-verified from slot 32 (264 steps, 0 stat mismatch, 11 position-only); zone4 pending. KILL enters zone3 at times1=2, reaching MT41 HP=609 vs preserve_pickaxe HP=45 (+564 HP).",
+      "best_known_zone3_hp_state": {
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 609,
+        "atk": 166,
+        "def": 174,
+        "yk": 9,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2285,
+        "dmg": 8806,
+        "door": "35/2/1",
+        "pickaxe": 1,
+        "times1": 10
+      }
+    },
+    {
+      "id": "recording_line_2atk3atk5def",
+      "label": "2区2攻3区3攻5防 录像线 (官方纯净版-TE 参考路线, 录像驱动 converter)",
+      "segments": [
+        "zone12.2atk_recording_stage1_to_mt31",
+        "zone3.2atk3atk5def_recording",
+        "zone4.2atk3atk5def_tail_pending"
+      ],
+      "status": "zone3 (MT31->MT41) web-verified 257 target-click-only steps 0 stat/gold mismatch from save33 (converter from recording, auto battle=true,item=nopotion,wall=true). 激进 coalesce 451->257: 空地到达/通过全删 (replayer 远点点击+maybeRetryAdjacentTarget 重试), 保留 event-trigger/auto_sweep/楼梯/centerFly·upFly·downFly 前定位步. bounce-cancellation 移除已访问楼层的 stair 往返弹跳 (MT32<->MT33 等), 保留 777-778 首次访问 MT33 (解锁 fly:MT33). event_positions 快照前置保留 MT33 (10,5) 骑士剑机关关门事件 trigger 步 (coalesce 不再误删, 否则 hero 寻路穿过 (10,5) 触发事件后停住). MT40 (6,7) 骑士队长 boss 事件建模进 trigger_tile_event (12 怪+(6,1) yellowKnight 先攻, 全战后 spawn 奖励+(6,1) upFloor). path_cost item=1.1 epsilon 修 MT40 (6,7)->(5,1) 穿 bluePotion 分歧. MT38 (5,2) 商人 200G->3yk statlog delta 检测. replayer clearStuckWaitAsync 处理 MT2 (8,2) afterBattle 开 6 steelDoor 的 stale asyncId callback (删 falsy/滞留 function 回调, 不 dismiss 事件让 waitAsync 自清以触发开门后 auto-sweep 拾 yellowKey). zone2 (2atk) 前段 stage-1 (save32 MT20 seed HP=1215). zone4 tail 待探索 (录像 TE33508 def542 参考).",
+      "best_known_zone3_hp_state": {
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 13,
+        "atk": 166,
+        "def": 214,
+        "yk": 6,
+        "bk": 1,
+        "rk": 0,
+        "gold": 2954,
+        "dmg": 4202,
+        "door": "37/2/1",
+        "centerFly": 2,
+        "times1": 10
+      },
+      "source_walk": "best/zone3_2atk3atk5def_recording_walk.json",
+      "source_walk_md": "best/zone3_2atk3atk5def_recording_walk.md",
+      "verified_live_json": "best/zone3_2atk3atk5def_recording_live_verify.json",
+      "checkpoint": "best/checkpoints/zone3_2atk3atk5def_end_save.json",
+      "checkpoint_slot": 154
     }
   ],
   "segments": {
@@ -323,8 +383,17 @@
         "outputs/results/zone3_current_2atk1def_mt31_checkpoint.json"
       ],
       "checkpoint": {
-        "save_slot": 59, "floor": "MT31", "x": 6, "y": 2,
-        "hp": 1211, "atk": 76, "def": 72, "yk": 4, "bk": 0, "rk": 0, "gold": 1138
+        "save_slot": 59,
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1211,
+        "atk": 76,
+        "def": 72,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1138
       },
       "connects_to": "zone3.current_2atk1def_preserve_pickaxe"
     },
@@ -341,12 +410,32 @@
         "best/checkpoints/zone3_2atk1def_preserve_pickaxe_end_save.json"
       ],
       "start_state": {
-        "floor": "MT31", "x": 6, "y": 2, "hp": 1211, "atk": 76, "def": 72,
-        "yk": 4, "bk": 0, "rk": 0, "gold": 1138, "dmg": 0
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1211,
+        "atk": 76,
+        "def": 72,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1138,
+        "dmg": 0
       },
       "end_state": {
-        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
-        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "dmg": 10066, "door": "37/2/1", "pickaxe": 1
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 45,
+        "atk": 166,
+        "def": 166,
+        "yk": 7,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2423,
+        "dmg": 10066,
+        "door": "37/2/1",
+        "pickaxe": 1
       },
       "steps": 238,
       "errors": 0,
@@ -368,12 +457,31 @@
         "best/checkpoints/zone3_2atk1def_end_save.json"
       ],
       "start_state": {
-        "floor": "MT31", "x": 6, "y": 2, "hp": 1211, "atk": 76, "def": 72,
-        "yk": 4, "bk": 0, "rk": 0, "gold": 1138, "dmg": 0
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1211,
+        "atk": 76,
+        "def": 72,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1138,
+        "dmg": 0
       },
       "end_state": {
-        "floor": "MT41", "x": 6, "y": 2, "hp": 125, "atk": 174, "def": 166,
-        "yk": 4, "bk": 0, "rk": 0, "gold": 1828, "dmg": 8086, "door": "27/2/1"
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 125,
+        "atk": 174,
+        "def": 166,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1828,
+        "dmg": 8086,
+        "door": "27/2/1"
       },
       "steps": 213,
       "errors": 0,
@@ -558,13 +666,35 @@
         "best/zone4_2atk1def_te_hp17659_live_verify.json"
       ],
       "start_state": {
-        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
-        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 45,
+        "atk": 166,
+        "def": 166,
+        "yk": 7,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2423,
+        "pickaxe": 1
       },
       "end_state": {
-        "floor": "MT50", "x": 6, "y": 5, "hp": 17659, "atk": 429, "def": 441,
-        "yk": 1, "bk": 0, "rk": 0, "gold": 520, "dmg": 17886,
-        "door": "50/9/7", "times1": 16, "magicImmune": true, "won49": true, "won50": true
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 17659,
+        "atk": 429,
+        "def": 441,
+        "yk": 1,
+        "bk": 0,
+        "rk": 0,
+        "gold": 520,
+        "dmg": 17886,
+        "door": "50/9/7",
+        "times1": 16,
+        "magicImmune": true,
+        "won49": true,
+        "won50": true
       },
       "steps": 514,
       "errors": 0,
@@ -586,13 +716,35 @@
         "best/zone4_2atk1def_te_hp18187_live_verify.json"
       ],
       "start_state": {
-        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
-        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 45,
+        "atk": 166,
+        "def": 166,
+        "yk": 7,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2423,
+        "pickaxe": 1
       },
       "end_state": {
-        "floor": "MT50", "x": 6, "y": 5, "hp": 18187, "atk": 429, "def": 441,
-        "yk": 0, "bk": 1, "rk": 0, "gold": 520, "dmg": 16968,
-        "door": "44/9/7", "times1": 16, "magicImmune": true, "won49": true, "won50": true
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 18187,
+        "atk": 429,
+        "def": 441,
+        "yk": 0,
+        "bk": 1,
+        "rk": 0,
+        "gold": 520,
+        "dmg": 16968,
+        "door": "44/9/7",
+        "times1": 16,
+        "magicImmune": true,
+        "won49": true,
+        "won50": true
       },
       "steps": 490,
       "errors": 0,
@@ -617,13 +769,36 @@
         "best/zone4_2atk1def_te_hp18277_resource_audit.md"
       ],
       "start_state": {
-        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
-        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 45,
+        "atk": 166,
+        "def": 166,
+        "yk": 7,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2423,
+        "pickaxe": 1
       },
       "end_state": {
-        "floor": "MT50", "x": 6, "y": 5, "hp": 18277, "atk": 439, "def": 425,
-        "yk": 3, "bk": 1, "rk": 0, "gold": 2346, "pre_boss_gold": 1846, "dmg": 17418,
-        "door": "49/10/7", "times1": 15, "magicImmune": true, "won49": true, "won50": true
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 18277,
+        "atk": 439,
+        "def": 425,
+        "yk": 3,
+        "bk": 1,
+        "rk": 0,
+        "gold": 2346,
+        "pre_boss_gold": 1846,
+        "dmg": 17418,
+        "door": "49/10/7",
+        "times1": 15,
+        "magicImmune": true,
+        "won49": true,
+        "won50": true
       },
       "steps": 472,
       "errors": 0,
@@ -650,13 +825,36 @@
         "best/zone4_2atk1def_te_hp20137_macro_astar.json"
       ],
       "start_state": {
-        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
-        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 45,
+        "atk": 166,
+        "def": 166,
+        "yk": 7,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2423,
+        "pickaxe": 1
       },
       "end_state": {
-        "floor": "MT50", "x": 6, "y": 5, "hp": 20137, "atk": 423, "def": 426,
-        "yk": 3, "bk": 0, "rk": 0, "gold": 1801, "pre_boss_gold": 1301, "dmg": 18498,
-        "door": "48/11/7", "times1": 15, "magicImmune": true, "won49": true, "won50": true
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 20137,
+        "atk": 423,
+        "def": 426,
+        "yk": 3,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1801,
+        "pre_boss_gold": 1301,
+        "dmg": 18498,
+        "door": "48/11/7",
+        "times1": 15,
+        "magicImmune": true,
+        "won49": true,
+        "won50": true
       },
       "steps": 458,
       "errors": 0,
@@ -692,13 +890,36 @@
         "best/zone4_2atk1def_te_hp23076_terminal_astar.json"
       ],
       "start_state": {
-        "floor": "MT41", "x": 6, "y": 2, "hp": 45, "atk": 166, "def": 166,
-        "yk": 7, "bk": 0, "rk": 0, "gold": 2423, "pickaxe": 1
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 45,
+        "atk": 166,
+        "def": 166,
+        "yk": 7,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2423,
+        "pickaxe": 1
       },
       "end_state": {
-        "floor": "MT50", "x": 6, "y": 5, "hp": 23076, "atk": 417, "def": 475,
-        "yk": 5, "bk": 1, "rk": 0, "gold": 906, "pre_boss_gold": 406, "dmg": 14479,
-        "door": "51/11/7", "times1": 15, "magicImmune": true, "won49": true, "won50": true
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 23076,
+        "atk": 417,
+        "def": 475,
+        "yk": 5,
+        "bk": 1,
+        "rk": 0,
+        "gold": 906,
+        "pre_boss_gold": 406,
+        "dmg": 14479,
+        "door": "51/11/7",
+        "times1": 15,
+        "magicImmune": true,
+        "won49": true,
+        "won50": true
       },
       "steps": 451,
       "errors": 0,
@@ -720,6 +941,125 @@
       "variant": "slot26_tail",
       "status": "pending",
       "reason": "slot26 clean Zone 3 end has different ATK/DEF/HP/gold/key economy from save37; do not reuse the 22264 tail without a new search and web replay."
+    },
+    "zone12.2atk0def_recording": {
+      "zone": "1_to_2",
+      "floor_range": "1F-20F",
+      "variant": "2atk0def_kill (killed zKnight instead of buying 800G red key)",
+      "objective": "2攻0防 KILL 线 zone1-2; converter from real recording (逐格 captured path)",
+      "status": "web-verified 358 steps 0 mismatch on 2026-07-15; final HP=1215 G=1298 at MT20 x6y5 (vampire rewards collected)",
+      "artifacts": [
+        "best/zone12_2atk0def_recording_walk.md"
+      ],
+      "end_state": {
+        "floor": "MT20",
+        "x": 6,
+        "y": 5,
+        "hp": 1215,
+        "atk": 76,
+        "def": 66,
+        "yk": 5,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1298
+      },
+      "note": "2攻0防: zone2 bought 2 atk (no def), killed zKnight (BK-neutral via room double blueDoors) instead of buying 800G red key. Consumed MT14 (1,11) blueKey + opened MT14 (1,7) door in zone2 (unavailable for zone3 back-collection). enters zone3 at times1=2.",
+      "connects_to": "bridge.kill_mt20_to_mt31"
+    },
+    "bridge.kill_mt20_to_mt31": {
+      "zone": "2_to_3",
+      "variant": "kill_2atk0def_bridge",
+      "status": "OFFLINE-MODELED 2026-07-16: MT21-30 现由 zone3 Game 类离线打通 (MT29 thief + MT30 六史莱姆), 并入 zone3.2atk0def_kill walk 从 slot 32 起. 不再是 live bridge. slot 151 桥点 SUPERSEDED (保留作 MT31 中间态参考).",
+      "artifacts": [
+        "outputs/results/zone3_kill_bridge_mt20_31_walk.json",
+        "outputs/results/zone3_kill_mt31_checkpoint.json"
+      ],
+      "checkpoint": {
+        "save_slot": 151,
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1215,
+        "atk": 76,
+        "def": 66,
+        "yk": 5,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1320,
+        "times1": 2
+      },
+      "note": "MT21-28 stairs + MT29 thief event + MT30 six 0-dmg slimes, all 0-dmg at KILL DEF=66. times1=2 (2 zone2 shop buys) vs 2ATK1DEF's times1=3. 【2026-07-16 更新】MT21-30 离线打通: MT20->MT31 楼梯直走 (MT23 yellowWall 不踩), MT29 thief 挖通中心暗道, MT30 杀 6 史莱姆 (0 伤 +22G) 开机关门. slot32(G=1298)->MT31(G=1320), HP/atk/def/yk 不变.",
+      "connects_to": "zone3.2atk0def_kill"
+    },
+    "zone3.2atk0def_kill": {
+      "zone": 3,
+      "floor_range": "MT20 (slot32, zone2 KILL end) -> MT21-30 (offline) -> MT31-40 -> MT41 entrance",
+      "variant": "2atk0def_kill",
+      "objective": "pure TE HP branch; 2攻0防 KILL line; auto battle=true,item=nopotion,wall=true",
+      "status": "offline Game replay ok=True (264 steps from slot 32); full target-click-only web verification passed 2026-07-16; ok=true, 0 stat/gold mismatch, 11 position-only benign diffs. MT21-30 离线打通 (无 live bridge). 起点 slot 32 MT20 HP=1215 G=1298; 终点 MT41 HP=609 ATK=166 DEF=174 YK=9 G=2285.",
+      "artifacts": [
+        "best/zone3_2atk0def_kill_summary.json",
+        "best/zone3_2atk0def_kill_walk.json",
+        "best/zone3_2atk0def_kill_walk.md",
+        "best/zone3_2atk0def_kill_live_verify.json",
+        "best/checkpoints/zone3_2atk0def_kill_end_save.json"
+      ],
+      "start_state": {
+        "floor": "MT31",
+        "x": 6,
+        "y": 2,
+        "hp": 1215,
+        "atk": 76,
+        "def": 66,
+        "yk": 5,
+        "bk": 0,
+        "rk": 0,
+        "gold": 1320,
+        "times1": 2
+      },
+      "end_state": {
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 609,
+        "atk": 166,
+        "def": 174,
+        "yk": 9,
+        "bk": 0,
+        "rk": 0,
+        "gold": 2285,
+        "dmg": 8806,
+        "door": "35/2/1",
+        "pickaxe": 1,
+        "times1": 10
+      },
+      "steps": 232,
+      "errors": 0,
+      "web_verify": "best/zone3_2atk0def_kill_live_verify.json",
+      "verified_browser_slot": 151,
+      "checkpoint_browser_slot": 152,
+      "shop_buys": 8,
+      "shop_sequence": [
+        "atk(80)",
+        "atk(140)",
+        "def(220)",
+        "def(320)",
+        "def(440)",
+        "atk(580)",
+        "hp(740)",
+        "atk(920)"
+      ],
+      "key_adaptation": "KILL zone2 consumed MT14 (1,11) blueKey (zKnight room), so preserve_pickaxe's MT14 (1,7)->(1,11) back-collection is unavailable. Replaced with MT31 (4,4) blueKey detour at the MT38-segment MT31 visit: kill (2,6) ghostSkeleton (-62HP) + open (1,5)/(3,4) yellowDoors + auto_sweep picks (4,4) blueKey. Net detour: -62 HP, +1 YK, +55 G, +1 BK. That BK opens MT39 (2,8) blueDoor (centerFly3 puzzle, required for MT40 boss).",
+      "hp_gain_vs_preserve_pickaxe": 564,
+      "connects_to": "zone4.2atk0def_kill_tail_pending"
+    },
+    "zone4.2atk0def_kill_tail_pending": {
+      "zone": 4,
+      "floor_range": "41F-50F",
+      "variant": "2atk0def_kill_from_slot152",
+      "status": "pending independent Game search and web verification; do not reuse 2ATK1DEF zone4 tail (different start: HP=609 ATK=166 DEF=174 YK=9 G=2285 times1=10 vs preserve_pickaxe HP=45 DEF=166 YK=7 G=2423)",
+      "source_checkpoint": "best/checkpoints/zone3_2atk0def_kill_end_save.json",
+      "source_browser_slot": 152
     }
   }
 }

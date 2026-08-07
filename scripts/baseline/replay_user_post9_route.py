@@ -121,17 +121,8 @@ ROUTE = [
     },
 ]
 
-SPAWNED_BOSS = {
-    (5, 4): "skeletonSoldier",
-    (7, 4): "skeletonSoldier",
-    (6, 4): "skeleton",
-    (5, 5): "skeleton",
-    (7, 5): "skeleton",
-    (5, 6): "skeleton",
-    (6, 6): "skeleton",
-    (7, 6): "skeleton",
-    (6, 1): "skeletonCaptain",
-}
+# MT10 boss spawn 终态 (web events["6,5"] 确认): 单一真相源在 game_route.MT10_BOSS_SPAWN。
+from src.solver.game_route import MT10_BOSS_SPAWN as SPAWNED_BOSS
 
 
 def as_state_text(state):
