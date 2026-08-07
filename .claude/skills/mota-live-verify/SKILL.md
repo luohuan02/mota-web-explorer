@@ -28,8 +28,8 @@ node scripts\live\live_read_state.js
 
 ## 执行路线（统一点击 verifier，1-4 区 / 4-50 层通用）
 
-**禁止**使用已归档的 `live_zone2_runner.py` / `live_zone3_guide_runner.py`
-（方向键逐步走 + `core.doAction`，见 `history/zone_specific_live_runners/`）。
+**禁止**使用旧 `live_zone2_runner.py` / `live_zone3_guide_runner.py`
+（方向键逐步走 + `core.doAction`；已于 2026-08-08 pre-cleanup 删除，git tag `pre-cleanup-2026-08-08` 可恢复）。
 1-4 区全部用统一 CDP 点击 verifier `scripts/live/live_zone3_mouse_replayer_cdp.js`
 + 通用 `Game` 类生成的 walk JSON。它用游戏地图点击 handler（`_sys_ondown` /
 `_sys_onup`）由游戏自身寻路一次到位，不逐步走、不强制移动英雄。

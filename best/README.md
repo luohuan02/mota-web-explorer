@@ -53,13 +53,13 @@ search 模型。关键点：
 重生流程：
 1. 跑 Game 类：`python scripts/search/zone1_game_route.py`（1 区）或
    `python scripts/search/zone2_2atk1def_game_route.py`（2 区 2ATK1DEF），产出
-   `outputs/results/<zone>_game_route.json`。
+   `best/<zone>_walk.json`（recording_seed_to_game.py 产出在 `best/`）。
 2. 生成 .md + summary：`python scripts/build/gen_zone_walk_md.py --game-route-json <json>
    --md <md> --summary-json <summary> --zone <N> --old-final-gold <old>`。
 
-实机验证（统一点击 verifier `live_zone3_mouse_replayer_cdp.js`，1-4 区通用；旧 zone 专用 runner 已归档到 `history/old_live_runners/`）：
-- 1 区：`node scripts/live/live_zone3_mouse_replayer_cdp.js --walk outputs/results/zone1_game_route.json --load-slot <100+> --target-click-only`
-- 2 区：`node scripts/live/live_zone3_mouse_replayer_cdp.js --walk outputs/results/zone2_2atk1def_game_route.json --load-slot <100+> --target-click-only`
+实机验证（统一点击 verifier `live_zone3_mouse_replayer_cdp.js`，1-4 区通用；旧 zone 专用 runner 已于 2026-08-08 pre-cleanup 删除，git tag `pre-cleanup-2026-08-08` 可恢复）：
+- 3 区（2区2攻3区3攻5防录像线 stage-2）：`node scripts/live/live_zone3_mouse_replayer_cdp.js --walk best/zone3_2atk3atk5def_recording_walk.json --load-slot 33 --target-click-only --set-auto battle=true,item=nopotion,wall=true`
+- 全程（save32 MT20 -> MT41）：`node scripts/live/live_zone3_mouse_replayer_cdp.js --walk best/zone3_2atk3atk5def_recording_full_walk.json --load-slot 32 --target-click-only --set-auto battle=true,item=nopotion,wall=true`
 
 当前状态：
 - 1 区 G=313（Game 类 auto_sweep），**MT9 末 G=67 实机已对齐**。

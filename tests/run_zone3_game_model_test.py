@@ -15,7 +15,7 @@ from scripts.search.zone3_game_route import Zone3Game
 
 
 def main() -> int:
-    snapshot = read_json(ROOT / "outputs" / "results" / "slot26_snapshot.json")
+    snapshot = read_json(ROOT / "best" / "checkpoints" / "zone3_2atk3atk5def_seed_mt31_save.json")
     game = Zone3Game(snapshot)
     game.strict_live_model = True
     game.auto_flags = {"battle": True, "item": "nopotion", "wall": True}

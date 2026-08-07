@@ -117,7 +117,7 @@
       "source_walk": "best/zone3_2atk3atk5def_recording_walk.json (257 target-click-only steps, 激进 coalesce 451->278->257; bounce-cancellation 移除 MT32<->MT33 等已访问楼层的往返 stair 弹跳 (保留 777-778 首次访问 MT33 解锁 fly); event_positions 快照前置保留 MT33 (10,5) 骑士剑机关关门事件 trigger 步 (coalesce 不再误删); from save33 MT31; 空地到达/通过全删 (replayer 远点点击+重试), 保留 event-trigger/auto_sweep/楼梯/centerFly·upFly·downFly 前定位步; MT40 (6,7) boss event + path_cost epsilon + MT38 (5,2) 商人 statlog delta; replayer clearStuckWaitAsync 处理 MT2 (8,2) afterBattle 开 6 steelDoor 的 stale asyncId callback; web verify ok=true 0 stat/gold mismatch)",
       "verified_live_json": "best/zone3_2atk3atk5def_recording_live_verify.json",
       "verify_cmd": "node scripts/live/live_zone3_mouse_replayer_cdp.js --walk best/zone3_2atk3atk5def_recording_walk.json --load-slot 33 --target-click-only --set-auto battle=true,item=nopotion,wall=true --out-json best/zone3_2atk3atk5def_recording_live_verify.json",
-      "resume_cmd": "python scripts/search/recording_seed_to_game.py --capture outputs/results/2atk_3atk5def_v1_capture.json --seed-save best/checkpoints/zone3_2atk3atk5def_seed_mt31_save.json --stage mt31-mt40 --start-stat 705 --out outputs/results/2atk_3atk5def_seed_mt31_mt40.json"
+      "resume_cmd": "python scripts/search/recording_seed_to_game.py --capture best/captures/2atk_3atk5def_v1_capture.json --seed-save best/checkpoints/zone3_2atk3atk5def_seed_mt31_save.json --stage mt31-mt40 --start-stat 705 --out best/zone3_2atk3atk5def_recording_walk.json"
     }
   ]
 }

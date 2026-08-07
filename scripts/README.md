@@ -51,17 +51,17 @@
 - `gen_delayed_phase1_detailed_walk.py`:compact walk 展开成 detailed（post9 搜索/审计依赖）
 - `local_order_refine_current_best.py`:本地顺序精修
 - `build_live_resource_group_cache.py`:资源组缓存
-- （`build_zone2_live_expected_walk.py` 已归档到 `history/stale_build_scripts/`，pre-Game-class，无活跃引用）
+- （`build_zone2_live_expected_walk.py` pre-Game-class 已于 2026-08-08 pre-cleanup 删除，git tag `pre-cleanup-2026-08-08` 可恢复）
 - `prepend_40f_prefix_walk.js`:40F 前缀拼接
-- `search/zone3_game_route.py`：通用 `Game` 的 3 区事件适配与回放入口。
-- 旧 `GuideReplay` 已归档到 `history/zone3_guide_replay/`，不得作为新搜索入口。
+- `search/zone3_game_route.py`：通用 `Game` 的 3 区事件适配（Zone3Game 子类，搜索脚本仍引用；converter 已改用 base `Game`）。
+- 旧 `GuideReplay` 已于 2026-08-08 pre-cleanup 删除，不得作为新搜索入口。
 
 ## live/ — 实机浏览器/数据提取
 
 - `live_read_state.js`:楼层感知状态读取
 - `live_load_save.js`:存档加载(走 `_doSL_load` → `loadData` 路径)
 - `live_zone3_mouse_replayer_cdp.js`:统一点击 verifier（1-4 区 / 4-50 层通用，CDP 真实点击 handler，唯一推荐入口）
-- （1-4 区统一只用 `live_zone3_mouse_replayer_cdp.js`。已归档：`live_zone2_runner.py` / `live_zone3_guide_runner.py` -> `history/zone_specific_live_runners/`；`live_zone1_auto_replay_cdp.js` / `live_zone3_walk_replayer_cdp.js` / `live_click_route_executor.py` -> `history/old_live_runners/`。均因 `core.doAction`/`setHeroLoc`/`moveTo`/方向键逐步走强推，禁用）
+- （1-4 区统一只用 `live_zone3_mouse_replayer_cdp.js`。旧 `live_zone2_runner.py` / `live_zone3_guide_runner.py` / `live_zone1_auto_replay_cdp.js` / `live_zone3_walk_replayer_cdp.js` / `live_click_route_executor.py` 均因 `core.doAction`/`setHeroLoc`/`moveTo`/方向键逐步走强推已禁用，2026-08-08 pre-cleanup 删除，git tag `pre-cleanup-2026-08-08` 可恢复）
 - `launch_h5mota_chrome.ps1`:chrome 启动器
 - `import_save_slot_cdp.js`:存档导入
 - `export_save_slot_cdp.js`:存档导出

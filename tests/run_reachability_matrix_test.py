@@ -31,7 +31,7 @@ def _load(path: str) -> Game:
 
 
 def test_save1_mt4():
-    g = _load("outputs/results/save1_current_snapshot.json")
+    g = _load("best/checkpoints/save1_mt4_snapshot.json")
     rm = compute_matrix(g)
     # 已访问 MT1-4，宝石在 MT1/3/4
     assert g.state["floor"] == "MT4", g.state["floor"]
@@ -87,7 +87,7 @@ def test_save150_mt32_shop_and_killability():
 
 def test_onfloor_key_collection():
     """save1 MT3 拾楼层内钥匙后能开黄门到宝石（collected_keys>0）。"""
-    g = _load("outputs/results/save1_current_snapshot.json")
+    g = _load("best/checkpoints/save1_mt4_snapshot.json")
     rm = compute_matrix(g)
     mt3 = rm.floors.get("MT3")
     assert mt3 is not None

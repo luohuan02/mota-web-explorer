@@ -89,7 +89,7 @@ agent-browser eval "(function(){var fid=core.status.floorId,m=core.status.maps[f
 
 ## 保存和读取
 
-保存位用 `scripts/live/export_save_slot_cdp.js` 导出 / `import_save_slot_cdp.js` 导入（只写 100+ 槽，localforage 键 `51_save<N>`），不要再用已归档的 `scripts/live/live_zone2_runner.py`（见 `history/zone_specific_live_runners/`）。手工探查时可以通过 `core.control.saveData(null)` 读取内存存档，通过 `core.utils.setLocalForage('save101', data, cb)` 保存。
+保存位用 `scripts/live/export_save_slot_cdp.js` 导出 / `import_save_slot_cdp.js` 导入（localforage 键 `51_save<N>`；普通槽可录像，100+ 槽无法录像见 [[save-slot-policy]]），不要再用旧 `scripts/live/live_zone2_runner.py`（2026-08-08 pre-cleanup 删除，git tag `pre-cleanup-2026-08-08` 可恢复）。手工探查时可以通过 `core.control.saveData(null)` 读取内存存档，通过 `core.utils.setLocalForage('save101', data, cb)` 保存。
 
 注意：
 

@@ -47,7 +47,7 @@ https://www.taptap.cn/moment/15225056477054087
 3. web 复验：`node scripts/live/live_zone3_mouse_replayer_cdp.js --walk <json> --load-slot <100+> --target-click-only [--set-auto battle=true,item=...,wall=true]`。
 
 - 唯一 verifier = `scripts/live/live_zone3_mouse_replayer_cdp.js`（CDP 真实点击 handler `_sys_ondown`/`_sys_onup`，游戏自身寻路一次到位）。1-4 区全用它，不要用 zone 专用 runner。
-- 禁用 API（导致人无法通过 web 复现）：`core.doAction` / `core.moveHero` / `core.setHeroLoc` / `core.changeFloor`、方向键逐步走。已归档的旧 runner 见 `history/zone_specific_live_runners/`、`history/old_live_runners/`。
+- 禁用 API（导致人无法通过 web 复现）：`core.doAction` / `core.moveHero` / `core.setHeroLoc` / `core.changeFloor`、方向键逐步走。旧 runner（zone 专用 + `core.doAction`/`setHeroLoc` 强推）已删除（2026-08-08 pre-cleanup，git tag `pre-cleanup-2026-08-08` 可恢复）。
 - 50F 相邻 Boss / confirmBox 选择可用真实键盘事件（`dispatchKeyDown` / `agent-browser press`），不算强制移动。
 
 ## 阶段性存档（stage checkpoints）
@@ -222,7 +222,7 @@ HP=361 ATK=23 DEF=23 YK=2 BK=1 RK=0 G=93 dmg=915 door=28/0/0
 - `config/`、`data/`、`src/`、`scripts/`、`tests/`
 - `browser-profile/` 仅本地；存放 h5mota 浏览器存档/profile，被 git 忽略
 
-不要删除 `src/solver/`、`data/`、`browser-profile/`、`config/`。（`src/legacy/` 已按"不相关归档"移到 `history/legacy_game_state_core/`，内容保留，不在活跃路径。）
+不要删除 `src/solver/`、`data/`、`browser-profile/`、`config/`。（旧 `src/legacy/` 不相关归档已于 2026-08-08 pre-cleanup 删除，git tag `pre-cleanup-2026-08-08` 可恢复。）
 
 `outputs/` 被 git 忽略，可能含大量临时报告、检查点和过期实验。
 
@@ -271,7 +271,7 @@ agent-browser eval "(function(){var h=core.status.hero,loc=h.loc,t=h.items.tools
 
 本地浏览器 profile 是 `browser-profile/`；不要删除。
 
-实机路线回放**统一用** `scripts/live/live_zone3_mouse_replayer_cdp.js`（1-4 区 / 4-50 层通用，CDP 真实点击 handler，游戏自身寻路一次到位），配合通用 `Game` 类生成的 walk JSON，详见 `skills/mota-live-verify/SKILL.md`。**禁用**已归档的 `scripts/live/live_zone2_runner.py` / `live_zone3_guide_runner.py`（方向键逐步走 + `core.doAction`，导致"一步一步走 / 楼层附近上下徘徊"，见 `history/zone_specific_live_runners/`）。验证器要用真实地图点击 handler，不要强制移动英雄。已知 h5mota 回放边界情况包括：空的 `waitAsync` 事件壳、需要第二次点击的相邻 noPass 目标、副作用后实机坐标不同的逻辑路线目标、以及 39F/40F 中心对称道具（`centerFly3` 拾取，`centerFly` 可用工具）。50F 相邻 Boss 触发要用真实键盘/游戏键事件路径；不要用 `core.moveHero` 或直接坐标编辑。
+实机路线回放**统一用** `scripts/live/live_zone3_mouse_replayer_cdp.js`（1-4 区 / 4-50 层通用，CDP 真实点击 handler，游戏自身寻路一次到位），配合通用 `Game` 类生成的 walk JSON，详见 `skills/mota-live-verify/SKILL.md`。**禁用**旧 `scripts/live/live_zone2_runner.py` / `live_zone3_guide_runner.py`（方向键逐步走 + `core.doAction`，导致"一步一步走 / 楼层附近上下徘徊"；已于 2026-08-08 pre-cleanup 删除，git tag `pre-cleanup-2026-08-08` 可恢复）。验证器要用真实地图点击 handler，不要强制移动英雄。已知 h5mota 回放边界情况包括：空的 `waitAsync` 事件壳、需要第二次点击的相邻 noPass 目标、副作用后实机坐标不同的逻辑路线目标、以及 39F/40F 中心对称道具（`centerFly3` 拾取，`centerFly` 可用工具）。50F 相邻 Boss 触发要用真实键盘/游戏键事件路径；不要用 `core.moveHero` 或直接坐标编辑。
 
 ## 注意
 - 如果要运行 python 临时脚本，请去掉换行符执行，或者写 tmp/tmp.py 然后执行 tmp/tmp.py
