@@ -18,7 +18,7 @@ description: 用于审计魔塔/h5mota 攻略合法性、回放攻略路线、�
 - 大阶段结尾必须打印 `dmg`、开门数、`final-score` 或当前脚本对应的综合分，并列出关键组成，例如库存分、剩余资源组价值、未来 0 伤怪金币、商人/商店残值、钥匙/金币折算。
 - 自动操作造成的拾取/清怪应写为“自动处理跳过”，但不能丢掉由上一动作触发的 HP、钥匙、金币和地图块变化。
 - 自动资源组要按真实点击入口压缩成一步：选择会触发自动 BFS 的近端目标格作为点击点，把同组被自动拾取/清理的资源写进备注，不要把本地逐资源顺序逐行输出。典型例子：9F 中部资源组应点击 `MT9 x7y4`，备注自动处理 `x5y4 黄钥匙`、`x6y5 红宝石`、`x7y6 红头怪`，然后下一步直接点 `x4y5` 黄门。
-- 开门后不会立刻触发自动 BFS；审计 walk 时不要假设门后资源已经结算，必须等后续移动、战斗、拾取或事件触发后再记录自动处理。
+- 开门 sweep 归属（2026-08-31 定稿）：hero 点击开门会经 walk-through 踏上刚开的门格，auto sweep 从门格起跑并归入**门步本身**（`Game._apply_door_live`，含门格带火时的踏格清火）；审计 walk 时门后可达资源应记在门步，不要推到后续步。例外：事件开门、Boss 掉落等**非 hero 移动**的开门不触发 auto，仍等下一次 hero 移动/战斗/拾取再结算。
 - strict walk 必须以一次真实 target-click 为原子。寻路途中一旦遇到战斗、拾取、开门或事件，就结束当前原子、结算本次允许的 auto，再从新状态重新寻路；不能让一条离线路径跨过多个动作格后才统一 auto。
 - 事件开门、Boss 掉落、击杀后生成资源等地图变化本身不触发 auto。触发动作只记录自身结果；下一次真实移动/战斗/拾取才可结算新出现或新可达的资源组。
 - 被 auto 消费的资源坐标应在机器路线状态中标记为已完成，后续种子再次引用这些坐标时直接跳过，不能生成空地移动；Markdown 只能忠实格式化机器 JSON，不能在展示层隐藏多余步骤。
@@ -33,6 +33,12 @@ description: 用于审计魔塔/h5mota 攻略合法性、回放攻略路线、�
 - `best/route_chains.md`
 
 这两个文件记录攻略线、非攻略/搜索线、save36/slot26/save37 桥接关系，以及哪些段能连续复现。
+
+按楼层拆分 + 剩余资源对账（分层剩余 + 汇总 gold/钥匙/商店 2-sheet xlsx）：用 `scripts/audit/gen_recording_floor_breakdown.py`（一条命令自动读 walk.provenance；分层 sheet 列权威 Game 重放的全部 50 层，接续段未到楼层标 `*` 继承种子存档末态；拼接 walk 用 `--rem-walk <接续段walk>` 提供权威重放 provenance）。**战略节点累计快照**（区界楼层/魔龙前/TE最终boss前）加 `--checkpoints 11层,31层,41层,魔龙前,TE最终boss前` 追加第三个「检查点记录」sheet（dmg/恢复血量/药瓶恢复HP/消耗yk·bk·rk/剩余yk·bk 自己+地图+合计/获得金币合计+打怪双口径/持有金币/地图剩余金币/商店购买情况；打怪口径=实机「数据统计」金币）——**不要为单条录像手写一次性 tmp 报告脚本**（41206 教训）。**关键口径与陷阱详见 `mota-route-search/floor_breakdown_experience.md`**（尤其：剩余怪金/剩余资源必须用共享 Game 重放 g.floors，walk-diff 会因 auto_sweep note 截断高估；打怪金=金币增量分类含事件生成怪；钥匙分裸拾取/商人买；剩余商人/事件剔消费与纯剧情与 step-on 已触发；TE最终boss前必须限定 MT50 真魔王，49F 假魔王 eid 同为 redKing）。
+
+多条已验证 walk 的整体+逐层差异对比（差异层门坐标/击杀/金币 + checkpoint 表 + 结论行）：用 `scripts/audit/gen_route_compare.py --walk 标签=walk.json(可重复) --out x.xlsx --note 结论(可重复)`。逐层差异表 N==2 布局（2026-09-17 用户定稿）：dmg/黄/蓝/金币每组×2 列后插 diff 具体值列（前一线−后一线，红门不加；不用 Excel 公式，脚本 data_only 可直读），门坐标差异=真 diff 只列各线独有坐标。checkpoint 取首次到达/首次攻略完（末次离层会被飞行回访污染）；门经济对比用「各层开门耗钥差异」口径。详见 `mota-route-search/floor_breakdown_experience.md`「多线对比报告」节。
+
+**产物固定校验（每次生成 breakdown/compare 后必须跑，全 PASS 才算完成）**：`python scripts/audit/verify_route_artifacts.py --walk <walk.json>`。六项：① 权威重放 final==walk final（防漂移）；② 击杀/拾取格集合==walk（两侧同用「击杀步+note 条目」提取——**静态差集法对事件生成怪失效**（MT10 骷髅/MT50 redKing 均为 tile 17/0 事件格），且 sweep 击杀在 Game 步内折叠进 note，两侧必须同一套提取）；③ 钥匙对账每色=0（note 条目优先、商人步排除）；④ 金币恒等式 Σ正−Σ负==final−start；⑤ 门闭合残差逐层列出（须=魔法钥匙 bigKey/事件开门，人工确认——MT41 19/16=bigKey、MT1/3/39 各 1=事件开门为已知项）；⑥ 剩余怪金 ≤ walk-diff 上界。
 
 审计 37 号存档 / 40F 后续生命榜单 walk：
 
@@ -101,8 +107,16 @@ python scripts\audit\report_zone2_remaining_diff.py
 录像转 Game 后用 `recording_to_game.py --residual-out` 导出 zone1-20 剩余资源分类 + final-score：
 
 ```powershell
-python scripts\search\recording_to_game.py --route <decoded_route.json> --statlog <statlog_pre.json> --save1 outputs\results\save1_current_snapshot.json --paths <paths.json> --out <conv.json> --auto battle=true,item=true,wall=true --stop-floor MT21 --residual-out <res.json>
+python scripts\search\recording_to_game.py --route <decoded_route.json> --statlog <statlog_pre.json> --save1 best\checkpoints\save1_mt4_snapshot.json --out <conv.json> --auto battle=true,item=true,wall=true --stop-floor MT21 --residual-out <res.json>
 ```
+
+**`--paths` 现为可选**（2026-08-09）：`recording_to_game.py` 无 `--paths` 能跑通多数录像
+（V1 买 rk 线 0 mismatch 到 MT31 HP=1232 web 复验全过）。旧"Game 寻路必发散、须喂
+captured path"结论已推翻 -- 发散根因是 4 个可修通用模型 bug（事件门没开 / 触发格没踩 /
+no-op 误跳 spawn 型 trigger / coalesce 折了 shop 目标）。**新录像先跑无 `--paths`**，
+发散再退 `--paths`；发散点先按 4 类模型 bug 排查并修 `game_route.py` / converter，**别写
+浏览器侧 path 捕获绕过根因**（见 CLAUDE.md「根因优先约束」）。4 修复 + 诊断方法论详见
+`mota-route-search/recording_converter_experience.md`「无需 captured path 的 4 个模型修复」。
 
 `res.json` 含：`current_stock`（当前 yk/bk/gold/hp）、`stock`、`residual_value`、`final_score`、`cat_summary`（剩余 YK/BK/药/宝石/未开门/0伤怪金币 分类计数）、`cats`（每类坐标明细）、`residual_breakdown`（逐项 +-）。
 

@@ -61,8 +61,8 @@ def scan_residual(g: Game, lo: int = 1, hi: int = 20):
     door: yellowDoor -50 / blueDoor -200; enemy: 0伤(atk>=def) 金币 money/2。"""
     s = g.state
     cross_targets = {"zombie", "zombieKnight", "vampire"}
-    item_val = {"yellowKey": 50, "blueKey": 200, "redPotion": 50, "bluePotion": 200}
-    door_cost_map = {"yellowDoor": 50, "blueDoor": 200}
+    item_val = {"yellowKey": 100, "blueKey": 500, "redPotion": 50, "bluePotion": 200}
+    door_cost_map = {"yellowDoor": 100, "blueDoor": 500}
     total = 0
     rows = []
     cats = {"yellowKey": [], "blueKey": [], "redPotion": [], "bluePotion": [],
@@ -442,6 +442,22 @@ def _merge_waypoint_into_target(wp: dict, tgt: dict) -> dict:
     return merged
 
 
+def _is_shop_npc_target(s) -> bool:
+    """Shop/NPC interaction target: hero must reach the adjacent tile first and
+    face-on trigger the commonEvent (shop/trader dialog). Folding the preceding
+    move waypoint into the target makes the replayer click the NPC from wherever
+    the hero is (possibly far), so automaticRoute routes the hero to adjacent and
+    repeatTargetClick can mis-select a buy option (MT12 blueShop: hero at (8,11)
+    after bat, folded 事件 blueShop click bought HP instead of atk). Keep the
+    move-to-adjacent step separate so the hero stands adjacent before the click."""
+    a = s.get("action")
+    if a in ("商店", "商人"):
+        return True
+    if a == "事件" and s.get("eid") in {"blueShop", "trader", "shop", "oldman"}:
+        return True
+    return False
+
+
 def _fold_move_waypoint(steps: list) -> list:
     """Pass 2:fold move waypoint + 紧接目标步。
 
@@ -482,7 +498,8 @@ def _fold_move_waypoint(steps: list) -> list:
         # (hero 到邻格 auto_sweep 清挡)+ door_stay 独立(点门开门)。3攻5防 MT9
         # step 237 move(杀(1,8)骷髅)+door_stay(3,7)fold 致 hero (1,10) 卡。
         if ((mm and adjacent and not _is_door_walkonto_merged(nxt)
-                and nxt.get("action") != "开门")
+                and nxt.get("action") != "开门"
+                and not _is_shop_npc_target(nxt))
                 or (is_walkonto and _is_pass(s))):
             steps[i] = _merge_waypoint_into_target(s, nxt)
             del steps[i + 1]
@@ -1059,13 +1076,22 @@ def main() -> int:
             # 之前只查 pos 会把 door_stay 误判转身漏开门(si=57 up door_stay yk4->3 漏,
             # 连锁 yk 多 1 到 MT32 误判 trader)。
             nxt_arr = statlog[this_si + 1] if this_si is not None and this_si + 1 < len(statlog) else None
+            # break_wall_stay (arrow at fakeWall/fakeWall2: 破墙 + hero 停邻格) 改 pos
+            # 也不改 stat -> 会被上面的"pos+stat 全不变"误判转身跳过,漏破墙+漏 spawn
+            # 道具(如 MT19 (6,3) cross: si652 up 破 fakeWall2 spawn cross 被跳过 -> si653
+            # 踩上时 cross 生成时机错 -> cross 没拿到 -> MT20 vampire 无 cross 爆伤)。
+            # 故目标若是可破墙(fakeWall/fakeWall2),即使 pos+stat 不变也不当转身跳过。
+            _tgt_blk = g.block_at(hf, (tx, ty))
+            _tgt_breakable = bool(_tgt_blk and _tgt_blk.kind == "terrain"
+                                  and _tgt_blk.eid in {"fakeWall", "fakeWall2"})
             if (nxt_arr and nxt_arr["f"] == hf
                     and (nxt_arr["x"], nxt_arr["y"]) == (g.state["x"], g.state["y"])
                     and nxt_arr["yk"] == g.state["yk"]
                     and nxt_arr["bk"] == g.state["bk"]
                     and nxt_arr["rk"] == g.state["rk"]
                     and nxt_arr["hp"] == g.state["hp"]
-                    and nxt_arr["g"] == g.state["gold"]):
+                    and nxt_arr["g"] == g.state["gold"]
+                    and not _tgt_breakable):
                 ri += 1
                 continue
             f = g.floors[hf]
@@ -1190,7 +1216,7 @@ def main() -> int:
     if args.residual_out:
         rtotal, rrows, cats = scan_residual(g)
         s = g.state
-        stock = s["hp"] + s["yk"] * 50 + s["bk"] * 200 + s["gold"] * 0.5
+        stock = s["hp"] + s["yk"] * 100 + s["bk"] * 500 + s["gold"] * 1.0
         cat_summary = {
             "剩余YK道具": len(cats["yellowKey"]),
             "剩余BK道具": len(cats["blueKey"]),

@@ -125,6 +125,8 @@ class GameAStar:
         upper_bound: float = math.inf,
         top_k: int = 1,
         pareto_metrics: tuple[GameMetric, ...] | None = None,
+        progress_every: int | None = None,
+        on_expansion: Callable[[Game, int], None] | None = None,
     ) -> None:
         if weight < 0:
             raise ValueError("weight must be non-negative")
@@ -152,6 +154,8 @@ class GameAStar:
         # attributes where lower is better (e.g. -atk, -def, -yk).  None falls
         # back to single-cost Dijkstra/A* (Pareto degenerates to best-cost).
         self.pareto_metrics = tuple(pareto_metrics) if pareto_metrics else None
+        self.progress_every = progress_every
+        self.on_expansion = on_expansion
 
     @staticmethod
     def hp_loss_cost(before: Game, after: Game, _action: GameAction) -> float:
@@ -259,6 +263,10 @@ class GameAStar:
                 continue
 
             expansions += 1
+            if (self.on_expansion is not None
+                    and self.progress_every
+                    and expansions % self.progress_every == 0):
+                self.on_expansion(game, expansions)
             seen_names: set[str] = set()
             for action in self.actions(game):
                 if action.name in seen_names:

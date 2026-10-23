@@ -442,12 +442,12 @@ def supplement_lookup(rm: ReachabilityMatrix, kinds: set[str]) -> list[Reachable
 # 不用面值（post9 不含 gold 因 zone1 全花商店了）。
 # ---------------------------------------------------------------------------
 
-YK_VALUE = 50
-BK_VALUE = 200
+YK_VALUE = 100
+BK_VALUE = 500
 RK_VALUE = 420
 ATK_GEM_VALUE = 260   # 每 ATK 点 HP 等价（zone1 post9 基线，主观可调）
 DEF_GEM_VALUE = 280   # 每 DEF 点 HP 等价
-GOLD_FACE_VALUE = 0.5  # 每 gold 面值（100G=50HP），剩余怪金币用
+GOLD_FACE_VALUE = 1.0  # 每 gold 面值（100G=100HP，同 1YK），剩余怪金币用
 
 _SWORD_ATK = {"sword1": 10, "sword2": 20, "sword3": 40, "sword4": 50, "sword5": 100}
 _SHIELD_DEF = {"shield1": 10, "shield2": 20, "shield3": 40, "shield4": 50, "shield5": 100}

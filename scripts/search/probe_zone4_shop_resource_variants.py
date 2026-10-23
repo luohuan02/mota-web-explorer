@@ -164,7 +164,7 @@ def main() -> int:
             "after": prep_after,
             "delta_dmg": prep_after["dmg"] - prep_before["dmg"],
             "delta_steps": len(game.steps) - prep_steps,
-            "stock_score": prep_after["hp"] + prep_after["yk"] * 50 + prep_after["bk"] * 200 + prep_after["gold"] * 0.5,
+            "stock_score": prep_after["hp"] + prep_after["yk"] * 100 + prep_after["bk"] * 500 + prep_after["gold"] * 1.0,
         })
     before = game.snapshot()
     before_steps = len(game.steps)
@@ -183,7 +183,7 @@ def main() -> int:
         "after": after,
         "delta_dmg": after["dmg"] - before["dmg"],
         "delta_steps": len(game.steps) - before_steps,
-        "stock_score": after["hp"] + after["yk"] * 50 + after["bk"] * 200 + after["gold"] * 0.5,
+        "stock_score": after["hp"] + after["yk"] * 100 + after["bk"] * 500 + after["gold"] * 1.0,
     })
     payload = {
         "ok": not game.errors,

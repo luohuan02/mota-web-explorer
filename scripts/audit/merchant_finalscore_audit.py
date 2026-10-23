@@ -419,7 +419,7 @@ def write_outputs(data: dict[str, Any]) -> None:
         "",
         "## Score Model",
         "",
-        f"- final-score = HP/key stock + full-map remaining resources + current gold * 0.5. Key values: YK={rg.YK_VALUE}, BK={rg.BK_VALUE}.",
+        f"- final-score = HP/key stock + full-map remaining resources + current gold * 1.0. Key values: YK={rg.YK_VALUE}, BK={rg.BK_VALUE}.",
         "- Full-map remaining resources count uncollected monster gold and unused merchant net value as future zero-damage resources, while still subtracting unopened yellow/blue door key value.",
         "- 4F start money is 7. Enemy money is read from `core.material.enemys[*].money`.",
         "- Boss event gold is counted once; the original MT10 x6y4 captain block is excluded after the boss event.",

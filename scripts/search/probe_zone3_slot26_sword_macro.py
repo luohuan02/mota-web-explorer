@@ -426,7 +426,7 @@ def finish_after_2f(g: Any) -> Any | None:
                             cand.state.get("boss40", False) or cand.state.get("floor") == "MT40",
                             cand.state["atk"],
                             cand.state["def"],
-                            cand.state["hp"] + cand.state["gold"] * 0.5 + cand.state["yk"] * 50 + cand.state["bk"] * 200,
+                            cand.state["hp"] + cand.state["gold"] * 1.0 + cand.state["yk"] * 100 + cand.state["bk"] * 500,
                         )
                     if best is None or key > best[0]:
                         best = (key, f"sell={sell_n} order1={order1} guard={take_gold_guard} order2={order2}", len(cand.errors), cand)

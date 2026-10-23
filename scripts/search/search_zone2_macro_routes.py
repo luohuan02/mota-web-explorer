@@ -88,7 +88,7 @@ DEFAULT_OPTIONS = {
 
 
 def base_stock_score(final: dict[str, Any]) -> float:
-    return final["hp"] + final["yk"] * rg2.YK_VALUE + final["bk"] * rg2.BK_VALUE + final["gold"] * 0.5
+    return final["hp"] + final["yk"] * rg2.YK_VALUE + final["bk"] * rg2.BK_VALUE + final["gold"] * 1.0
 
 
 def shop_buy_count(options: dict[str, Any]) -> int:
@@ -242,10 +242,10 @@ def main() -> None:
     parser.add_argument("--full", action="store_true", help="Enumerate all shop and late-resource combinations.")
     parser.add_argument("--suffix", default="", help="Suffix for output filenames.")
     parser.add_argument("--progress-every", type=int, default=0, help="Print progress every N candidates per scenario.")
-    parser.add_argument("--yk-value", type=int, default=50, help="Score value of one yellow key in HP units.")
+    parser.add_argument("--yk-value", type=int, default=100, help="Score value of one yellow key in HP units.")
     args = parser.parse_args()
     rg2.YK_VALUE = args.yk_value
-    rg2.BK_VALUE = args.yk_value * 4
+    rg2.BK_VALUE = args.yk_value * 5
 
     floors, enemies = zone2.load_floors()
     options = option_space(full=args.full)

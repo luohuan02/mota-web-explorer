@@ -61,6 +61,10 @@ description: 用于魔塔/h5mota 本地路线搜索、最优寻路、攻略-vs-�
 - 42F `x10y8` checkBlock 之后如果不再经过半血夹击，后续血瓶原则上可随手吃；这主要影响步数和批处理，不应改变最终 HP。
 - 3区末接 4区半血陷阱时，血瓶不要只按“顺路就吃”处理；应把它们视作可开关的 `support_resource`，先固定动作序列，再做一次“最低存活 HP 压缩”：从后往前枚举/DP 删除晚段血瓶，约束是每一步 `after.hp > 0` 且动作序列不变。这样得到的是“当前路线骨架下的最小存活 HP”，可用于压低半血陷阱损失；它是路线内优化，不等于全局最优路线证明。
 - 46F 蓝门路线需要比较从 `x3y1` 进入的替代方案；若终局金币无处可花，少量额外金币未必转化为 HP。
+- **终局 2420G 生命商店不总是值得买出**（38624 vs 39003 同骨架对照）：MT46 `x6y1` 生命商店 2420G→+1600HP（0.66 HP/G）。38624 买出后 `G 3579→1159→159`（2420 商店 + 1000 hp2000），最终 HP=38624 G=159；39003 不买商店改买 MT31 keyBundle（1000G→4YK+1BK）解锁散落蓝瓶，收 5 蓝瓶(+800 各)+3 红瓶，最终 HP=39003 G=1707，**反超 379 HP**。教训：不要默认"买出 2420 商店最优"；把等量金币投到蓝钥匙（MT31 keyBundle）+收散落 +800 蓝瓶（3.2 HP/G）通常更优。
+  - **真正的约束是金币预算，不是蓝钥匙够不够**。39003 证明：只要买得起 keyBundle（1000G），拿到的 4YK+1BK 蓝钥匙**足够**收完全部散落 +800 蓝瓶（MT31 x8y8、MT20 x11y4 各需开一扇黄/蓝门，keyBundle 全解锁）。38624 之所以没收这些蓝瓶，是 `G 3579` 被 2420 商店 + 1000 hp2000 吃掉只剩 159G、**买不起 keyBundle 才没蓝钥匙**——不是"买出后蓝钥匙不够"。不要把根因写成"蓝钥匙被商店吃掉"。
+  - **买出的条件（何时该买 2420 商店）**：① 已先把 keyBundle+收散落蓝瓶这条更高价值路径（3.2 HP/G）的资金留足，之后仍有 ≥2420G 富余 → 用富余买出（纯 +1600HP 叠加）；② 或散落 +800 蓝瓶已收完/不可达，keyBundle 不再与商店抢资金 → 用剩余金币买出。**只要买出会挤掉 keyBundle（金币耗尽买不起 1000G keyBundle→丢蓝瓶），就不该买出**，因为那会损失 ~3.2 HP/G 的血瓶换取 0.66 HP/G 的商店。
+  - **后续优化方向**：买出与收蓝瓶不是互斥的，只是 38624 当时金币不够。若某线在 MT49 附近能凑到 `≥2420(商店)+1000(hp2000)+1000(keyBundle)=4420G`，就能**既买出商店又收齐散落蓝瓶**，得到 +1600 商店 + +800×5 蓝瓶双重收益，会同时压过 38624 与 39003。这是值得往"多凑 ~850G（38624 3579→4420）"方向优化的目标。
 - 拿地震卷轴前如果顺路先清若干前置怪，可能改善金币/购物节奏；必须和双倍金币后的收益损失一起算。
 - 41F 右上 `x10y2 redWizard` 后的楼层传送可达性要特别小心：若 `MT41 x8y7 slimelord` 未清，实机可能提示“无法到达任何一个楼梯边”，不能把脚本侧飞行器可用当成合法。
 - 45F 拿上楼飞行器时，路线可按 `x6y2 -> x6y3 -> x7y3 -> x7y4 -> x7y5 -> x6y5 -> x5y6` 附近杀怪拿道具；拿完回来仅 `x6y3` 掉 100 血，可节省少量 HP。
@@ -89,7 +93,7 @@ description: 用于魔塔/h5mota 本地路线搜索、最优寻路、攻略-vs-�
 ## 1区 / 4F-10F Boss 探索规范
 
 - 从 4F 存档继续探索时，当前 1区/2区缺血实机复现优先注明 live 自动设置：`__auto__.battle=true`、`__auto__.item=true`、`__auto__.wall=true`。进入 3区或需要保留血瓶时再切到 `__auto__.item="nopotion"`。walk 打印应反映自动清 0 伤怪、自动拾取物品、自动吃血瓶、暗墙/岩浆设置口径。
-- 自动 BFS 不会在开门后立即结算；搜索回放和 walk 生成要等下一次移动、战斗、拾取或事件触发后，再把门后资源记为自动处理。典型例子：4F 开 `x8y8` 黄门后，打 `x8y9` 法师才会自动吃 `x7y10` 红宝石和 `x9y10` 红血瓶；6F 从 `x4y4` 打 `x4y3` 红史莱姆后，周围 4 把黄钥匙会自动拾取。
+- **auto sweep 归属语义（2026-08-31 定稿，推翻旧「开门不立即结算」表述）**：web 的 `control.prototype.moveOneStep` 补丁在 hero 每移动一格后触发 `core.auto()`——开门的 route-resume 让 hero 踏上**刚开的门格**，那一刻 sweep 从门格起跑（deep 通常=∞；但 2026-09-05 40145 修正：未拿盾时 special 15/16 法术场/夹击**入 checkBlock.damage 图**——damage 格不扩展 BFS、其上道具不可远程拾取、hero 站 damage 格 deep=0，MT47 damage=[] 仅因已魔免。详见 `recording_seed_converter_experience.md`「40145 复验两大根因」）。搜索回放/walk 生成按 `Game._apply_door_live` 把门后可达资源记入**门步本身**；具体例子的资源落点不变（4F 开 `x8y8` 黄门后打 `x8y9` 法师吃 `x7y10` 红宝石等），变的只是归属步的判定规则。verifier 对开门步确定性补一次「走进门格」点击使 live 归属与 walk 一致。
 - 4F-10F boss 探索至少保留三类候选：攻略线 seed、之前延后/当前最优线 seed、围绕 9F 蓝门/蓝门绕法的替代线。若搜索发现 9F 蓝门相关候选，即使暂时不是最优，也要保存到 `outputs/` 并在报告里单列。
 - 1区目标不只是最小伤害：需要同时比较 boss 后 HP、ATK/DEF、黄/蓝/红钥匙、金币、剩余资源组价值、商人可用性和后续二区接续友好度。旧 `1482.5` 非法结果不能作为候选基线。
 - 输出 walk 时要列出关键分支说明：是否走 9F 蓝门、是否提前/延后拿 7F 红宝石、是否使用 6F/7F 商人、是否保留血瓶、是否漏掉顺路 0 伤怪/非血瓶物品。
@@ -102,11 +106,23 @@ description: 用于魔塔/h5mota 本地路线搜索、最优寻路、攻略-vs-�
 搜索找不到最优时（如 seg2 搜索止 932，最优 754），用「经验 + walk + 对比」补充：walk 是 ground truth（网页 0 mismatch），经验是策略知识，搜索降为 hypothesis 探索器。和 `two_attack_line_search_lessons`（replay-as-baseline）一致：walk 不骗人，搜索模型会。
 
 ### 经验文件
+- **纯净版-TE HP 最优宏观经验（当前探索目标总纲）**：路线族/当前最优 + 通向 41477 的已封闭结构性杠杆（别再撞）+ 伤害归因 + 剩余「降低钥匙消耗」微优化方向：`skills/mota-route-search/te_hp_optimization_experience.md`。
+- **钥匙-掉血决策逻辑（2攻全防，按区）**：
+  - zone1（11 条）：`skills/mota-route-search/te_hp_zone1_decisions.md`
+  - zone2（MT11-20，金币-掉血：2攻/红钥匙/BK）：`skills/mota-route-search/te_hp_zone2_decisions.md`
+  - zone4（MT31-40，防商店+凑4000G地震）：`skills/mota-route-search/te_hp_zone4_decisions.md`
+  - zone5（MT41-50，防商店funding+魔龙+终局）：`skills/mota-route-search/te_hp_zone5_decisions.md`
+  - 各区决策共同点 = **金币/钥匙机会成本由终局防商店 funding 阶梯决定（不连续）**，详见 te_hp_optimization_experience.md「Game 建模优化」。
+- **路线族差异（同族 walk 结构性对比 + 各自可优化点）**：`skills/mota-route-search/te_hp_route_families.md`（39944 全防 vs 4区2攻 的 +415 HP 纯分配对照；38624 弱 body 换 2420 反例；2攻800红钥匙/镐挖炸弹 fallback）。
+- **2420 生命商店资金上限推导（39944 族冲 41477 的结论）**：`skills/mota-route-search/te_hp_2420_funding_analysis.md`（**2420 已证明不可凑**：乐观资金上界 1345<2420；微优化封顶 +336→40280，因 MT33 soldier 骑士剑硬挡板；39944 族无路到 41477）。
 - zone1 完整经验（思路 + 抉择 + 对比，seg1-3 合并）：`skills/mota-route-search/zone1_experience.md`。经验少时合并成一个文件放 skill，不放 best。
 - zone2 完整经验（2攻线，思路 + 抉择 + 事件机制，seg1-4）：`skills/mota-route-search/zone2_experience.md`。
 - zone1-2 KILL 线经验（2atk0def，杀 zKnight 不买红钥匙，vampire 固定伤害 + 三类资源 drop 教训）：`skills/mota-route-search/zone12_kill_line_experience.md`。
+- zone2 **2攻录像**经验（2区2攻 + 买800G红钥匙 + 少开门停 31F，web 0 mismatch；与 39944 全防族 zone2 前缀对比：属性同 ATK76/DEF64 但 HP+13 YK+2 dmg−213，score +101.5 HP-equiv / funding +177G equiv，且属性路径不变不需 zone3/4 重搜；用户购买/宝石/少开门思路）：`skills/mota-route-search/zone2_2atk_recording_experience.md`。
 - recording_to_game converter 合并经验（.h5route 录像 -> Game walk 的 coalesce：fold move-waypoint 安全性论证 + 走门格移除 + 零效果 move 剪枝 + 楼梯 U 型折返提升 + 双验证）：`skills/mota-route-search/recording_converter_experience.md`。
-- recording_seed_to_game converter 经验（录像 statlog -> Game walk：三类 NPC 通用转换[shop/trader delta 检测 + oldman trigger_tile_event] + 激进 coalesce 删空地到达步[replayer 远点点击+重试] + centerFly·upFly·downFly 源位置依赖例外 + 100+槽无法录像改用普通槽）：`skills/mota-route-search/recording_seed_converter_experience.md`。
+- recording_seed_to_game converter 经验（录像 statlog -> Game walk：三类 NPC 通用转换[shop/trader delta 检测 + oldman trigger_tile_event] + 激进 coalesce 删空地到达步[replayer 远点点击+重试] + centerFly·upFly·downFly 源位置依赖例外 + 100+槽无法录像改用普通槽 + **automaticRoute 语义[go_to 目的地才 auto_sweep；path_cost 不折扣事件格、破坏性事件中断路线]**）：`skills/mota-route-search/recording_seed_converter_experience.md`。
+- **zone1-2 语义重放搜索经验（V-A 基建 + yk 贪婪吸收定律）**：`skills/mota-route-search/te_hp_zone12_semantic_search_experience.md`（录像 zone1-2 -> 可编辑语义 action 列表的完整基建[楼梯 :next/:before 转换/set_auto choices 须以 4 开头/statlog 金币='g'/商店组 delta 扫描] + 可跳过性插桩扫描[clone 写时复制污染坑] + 21 零损失门 skip 全部被即时吸收 + **yk 贪婪吸收定律：局部编辑搜索的钥匙流被 pathfinder 即时锁死，残余药瓶需拓扑级重排** + 手术脚本切片基准/索引冲突教训）。
+- walk 按楼层拆分 / 剩余资源对账经验（复用脚本 `scripts/audit/gen_recording_floor_breakdown.py`，一条命令自动读 provenance；口径：截点=MT50真魔王击杀前 / 打怪金=金币增量分类含事件生成怪 / **剩余怪金必须用共享Game重放 g.floors，walk-diff 会因 auto_sweep note 截断高估(41228 8277→385)** / 钥匙分离裸拾取与商人买 / 剩余商人·事件剔消费与纯剧情与 step-on 已触发）：`skills/mota-route-search/floor_breakdown_experience.md`。
 - 来源 = 已验证 walk：zone1 `best/current_best_boss_walk.md`（HP=122）+ zone1-2 KILL 线（当前最优）`best/zone12_2atk0def_recording_walk.md`（358 步 MT4-20，2攻0def 杀 zKnight，web 0 mismatch；zone1 末 625/30/30、zone2 末 MT20 HP=1215 ATK=76 DEF=66 YK=5）。旧买红钥匙 2 攻线（autoon）walk、drop753_774（HP=1241）已删，经验沉淀于 `zone2_experience.md` / `zone12_kill_line_experience.md`。
 - 每段可存 `variants/`（最优/搜索/攻略对照），供 `scripts/audit/compare_segment_walks.py`（待建）找分叉点 + HP 归因。
 
@@ -256,7 +272,7 @@ node scripts\build\prepend_40f_prefix_walk.js
 
 1. 枚举当前物品、战斗/事件新生成的 `event_groups`（尤其 49F 封印奖励），收取所有可达正 HP 血瓶和能提前减伤的攻防宝石。
 2. 清 0 伤/低净损怪，计算金币与门钥匙真实成本；新属性可能使更多怪变成 0 伤，因此要重新枚举。
-3. 对黄钥匙比较开门与 28F 售卖；对蓝/红钥匙探测门后资源组。把可消费金币投入 46F 生命商店后，再从第 1 步重跑。
+3. 对黄钥匙比较开门与 28F 售卖；对蓝/红钥匙探测门后资源组。把可消费金币投入 46F 生命商店后，再从第 1 步重跑。**不要无条件买出 46F 生命商店**：见「纯净版-TE / Post-40 探索经验」的 2420G 商店对照（38624 vs 39003）——同一骨架下买出商店（2420G→+1600HP）比把钱投 MT31 keyBundle+收散落 +800 蓝瓶 低 379 HP；先对比两条消费路径再决定。注意真正的约束是金币预算（凑齐 4420G 可商店+keyBundle+收蓝瓶三者兼得），不是蓝钥匙不够。
 4. 真魔王击杀后的 500G 不可回头消费，不得计入终战前可用资金。
 5. 收敛断言至少包括：可达正 HP 药水价值为 0；无盈利钥匙转换；`gold + sellable_yk*100 + 可恢复净金币` 仍不足下一次生命商店；49F 奖励逐件有拾取或保留说明。
 
@@ -308,9 +324,9 @@ auto、清扫和闭环是三件事：开启 `item=true` 不会主动飞遍全图
 
 使用项目约定评分：
 
-- `1YK = 50HP`
-- `1BK = 200HP`
-- `100G = 50HP`
+- `1YK = 100HP`
+- `1BK = 500HP`
+- `100G = 100HP`（同 1YK，支撑卖钥匙凑 2420G 商店）
 - 红血瓶 `50`，蓝血瓶 `200`
 - 红钥匙和宝石默认不计剩余分，除非脚本另有目标
 - `stock` 可包含保留圣水的下界价值

@@ -1,6 +1,6 @@
 {
   "schema": "mota.best.checkpoints.v1",
-  "updated": "2026-08-06",
+  "updated": "2026-08-23",
   "description": "阶段性存档注册表。每区 web 验证全过后导出，供后续会话 --from-checkpoint / --load-slot 恢复。save JSON 与 save1_current_snapshot.json 同格式。",
   "slots_in_use": {
     "save36": "zone2 end (MT20 vampire 后, 拾取 MT20 后奖励前) — 2区→3区桥起点",
@@ -15,7 +15,8 @@
     "save153": "zone3 2atk3atk5def seed (MT31 x6y2 HP=1215 ATK=76 DEF=66 YK=5 G=1320) - 录像 2区2攻3区3攻5防 zone3 起点; 【已弃用录像】100+ 槽无法录像, 改用 save33 (同状态 MT31)",
     "save33": "zone3 2atk3atk5def seed (MT31 x6y2 HP=1215 ATK=76 DEF=66 YK=5 G=1320) - 录像 2区2攻3区3攻5防 zone3 起点 (stage-2 converter load slot, 替代 save153 因 100+ 槽无法录像)",
     "save154": "zone3 2atk3atk5def end (MT41 x6y2 HP=13 ATK=166 DEF=214 YK=6 BK=1 RK=0 G=2954) - 录像 2区2攻3区3攻5防 zone3 终点, 4区 TE 起点 (匹配 save33 录像真终态)",
-    "save32": "zone2 2atk0def KILL end (MT20 x6y5 HP=1215 ATK=76 DEF=66 YK=5 BK=0 G=1298) - zone3 KILL 起点 (MT21-30 离线打通, 不需 live bridge)"
+    "save32": "zone2 2atk0def KILL end (MT20 x6y5 HP=1215 ATK=76 DEF=66 YK=5 BK=0 G=1298) - zone3 KILL 起点 (MT21-30 离线打通, 不需 live bridge)",
+    "save105": "zone4 门少开 all-def end (MT41 x6y2 HP=43 ATK=146 DEF=266 YK=10 BK=1 G=3031, nopotion) - 4区->5区 TE 起点, 40943 录像 5 区 converter load slot"
   },
   "checkpoints": [
     {
@@ -106,6 +107,19 @@
       "verified_date": "2026-07-16",
       "note": "zone2 2atk0def KILL 结束 (MT20 HP=1215 G=1298)。zone3 KILL 起点: MT21-30 离线 Game 类打通 (MT29 thief + MT30 六史莱姆), 不需 live bridge。",
       "resume_cmd": "python scripts/search/zone3_game_route.py --from-checkpoint best/checkpoints/zone2_2atk0def_kill_end_save.json --walk best/zone3_2atk0def_kill_walk.json --out-json outputs/results/zone3_kill_from_slot32_replay.json"
+    },
+    {
+      "id": "zone4_2atk2def_alldef_stop41_end",
+      "browser_slot": 103,
+      "status": "verified",
+      "boundary": "MT41 x6y2 HP=43 ATK=146 DEF=266 YK=10 BK=1 RK=0 G=3031（auto battle=true,item=nopotion,wall=true；nopotion 守恒，血瓶攒着留 5 区）",
+      "save_json": "best/checkpoints/save105_mt41_hp43_nopotion_snapshot.json",
+      "seed_from": "best/checkpoints/save103_mt31_1yk100hp_snapshot.json（zone2 门少开 2区2攻+800rk 录像 MT31 终点）",
+      "verified_date": "2026-08-22",
+      "source_walk": "outputs/results/zone4_alldef_stop41_walk.json（321 步 MT31->MT41，converter from 2区2攻+买800rk+1yk换100血的门少开+4区全防停41楼.h5route; action 由 recording_seed_to_game.py 生成）",
+      "web_verify": "outputs/results/zone4_alldef_stop41_live_verify.json（ok=true, goldMode exact, finalState 全等, 0 mismatch；SET_AUTO item=nopotion 在 MT20 步 13 正确下发）",
+      "resume_cmd": "python scripts/search/recording_seed_to_game.py --seed-save best/checkpoints/save105_mt41_hp43_nopotion_snapshot.json --capture <capture-v5.json> --stage mt41-mt50 --auto \"battle=true,item=nopotion,wall=true\" --out outputs/results/zone4_continue_walk.json",
+      "note": "门少开 2区2攻 前缀的 zone4 全防停41楼忠实终点。HP=43 是 nopotion 守恒的必然结果（血瓶攒留 5 区），非线路差。5 区接续起点。"
     },
     {
       "id": "zone3_2atk3atk5def_end",

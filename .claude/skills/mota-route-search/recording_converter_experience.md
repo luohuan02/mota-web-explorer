@@ -8,10 +8,74 @@
 - `zone12_recording_autoon.py`：auto ON + skip-if-cleared，内容驱动逐目标 `go_to`。
   旧录像路径恰好 Game 兼容时能用；用户手玩调整路径常不兼容（见
   `zone12_kill_line_experience.md`「Game 类无法 action-by-action 复现」）。
-- `recording_to_game.py`（本文件）：解码 route events + **逐格 captured path 精确
-  复现**录像路径（PRE-state statlog 0 mismatch），再 coalesce 成节点级直达目标步，
-  最后跑剪枝/折返提升。路径分歧不再是问题（逐格走录像 exact 路径），coalesce + 剪枝
-  是核心坑。
+- `recording_to_game.py`（本文件）：解码 route events -> 通用 `Game` 类 walk。**两条
+  模式**：
+  - **`--paths`（逐格 captured path）**：喂 web automaticRoute 抓的逐格路径精确复现
+    录像（PRE-state statlog 0 mismatch），再 coalesce 成节点级直达目标步，最后剪枝/
+    折返提升。路径分歧不再是问题（逐格走录像 exact 路径），coalesce + 剪枝是核心坑。
+    KILL（2攻0def）线即此模式：358 步 web 0 mismatch。
+  - **无 `--paths`（Game 自寻路，2026-08-09 突破）**：V1 买 rk 线 0 mismatch 跑通，
+    推翻旧"Game 寻路必发散、须喂 captured path"结论。根因是 4 个可修通用模型 bug
+    （见下「无需 captured path 的 4 个模型修复」），不是 go_to 寻路根本缺陷。**新录
+    像优先试无 `--paths`**（最简），发散才退回 `--paths`；发散点几乎都是某个可修模型
+    bug，先修模型再重试，不要写浏览器侧 path 捕获绕过根因（见 CLAUDE.md「根因优先约束」）。
+
+## 无需 captured path 的 4 个模型修复（2026-08-09，V1 买 rk 线 0 mismatch）
+
+V1（`best/2区2攻800买红钥匙V1.h5route`，买 rk 线）从 save1(MT4 slot1) 起，
+`recording_to_game.py` **无 `--paths`**，0 mismatch 到 MT31
+`HP=1232 ATK=76 DEF=64 YK=6 BK=0 RK=0 G=349`，web 复验
+（`live_zone3_mouse_replayer_cdp.js --load-slot 1 --target-click-only
+--set-auto battle=true,item=true,wall=true`）MT1-31 全过 0 mismatch/warning，
+final-score=1815.5（stock 1706.5 + residual 109）。
+
+4 个修复（`src/solver/game_route.py` + `scripts/search/recording_to_game.py`），都是
+"Game 静态规划/合并逻辑没建模某种 web 实机行为"的可修 bug：
+
+1. **事件 handler 要真开它开的墙/门**（`game_route.py` trigger_tile_event MT15 (9,1)
+   分支加 `set_ground((8,1))`）：thief 事件 `openDoor(8,1)` 把 (8,1)=330
+   `unbreakableWall` 开成空地，Game 必须 `set_ground` 移除墙 block。旧注释说
+   "(8,1)=330 不创建 block(已 None)"是**错的**--330 在 `WALL_IDS` 内，classify 返回
+   "wall"，是有 block 的墙。不 set_ground 则到 (5,1) 的唯一干净路径被封 ->
+   `move:5:1 unreachable`。**教训**：事件里 `openDoor` 的目标若在 `WALL_IDS` 内，handler
+   必须显式 `set_ground` 移除 block，不能信旧注释，用 `block_at` 核实。
+
+2. **`go_to_decomposed` 被事件门挡住时踩触发格再重规划**（`game_route.py`
+   `_reachable_event_triggers` + go_to_decomposed loose path=None 分支）：静态 BFS 规划
+   时看不到"踩 (9,1) thief 中途开 (8,1)"这种**事件门**（hero 移动中踩触发格才开路）。
+   loose `path_to` 返回 None 时，枚举可达 passable event-trigger 格，clone-test 只
+   commit 能开路到 target 的触发格，再重规划。**教训**：静态可达性算不出事件开路时，
+   不要断言 unreachable，要 clone-test 踩触发格后能否开路。
+
+3. **arrow no-op 检查排除 fakeWall/fakeWall2**（`recording_to_game.py` arrow 分支加
+   `not _tgt_breakable`）：`break_wall_stay`（破 fakeWall2 hero 停邻格）不改 pos 也不改
+   stat，被"pos+stat 全不变=转身 no-op"误判跳过 -> 漏破墙 + 漏 spawn 道具。**典型**：
+   MT19 (6,3) cross -- si652 `up` 破 fakeWall2 + spawn cross 被跳过 -> si653 踩上 cross
+   的 spawn 时机错 -> cross 没拿到 -> MT20 vampire 无 cross atk×2 爆伤 14809。**教训**：
+   no-op 判据（pos+stat 不变）要排除 trigger 型格（fakeWall/fakeWall2 破墙 spawn 道具），
+   它们的副作用在 spawn 而非 pos/stat。
+
+4. **coalesce `_fold_move_waypoint` 不折叠 shop/NPC 目标**（`recording_to_game.py` 加
+   `_is_shop_npc_target`，排除 action `商店`/`商人` 或 `事件`+`blueShop`/`trader`/
+   `shop`/`oldman`）："到达(6,10)" + adjacent"事件 blueShop(6,9)" 被折叠成一步，用"到达"
+   的 before(post-move 6,10) 当合并 before，丢 (8,11)->(6,10) 位移。replayer 从 (8,11) 远点
+   click (6,9) -> `repeatTargetClick` 误买 HP（blueShop 选项标准序
+   `[HP+500(0), ATK+4(1), DEF+8(2), 离开(3)]`，`choose("atk")=1` 本应买 atk，但远点寻路 +
+   repeat 命中 index 0 买 HP）。**教训**：shop/trader 需 hero 相邻 face-on 才交易，不能 fold
+   进 move-waypoint；保留"到达"独立步即可。同源 bug 见
+   `mt32_multitile_shop_approach`、`buy_shop_position_agnostic_needs_approach`。
+
+**诊断方法论**（新录像转 walk 发散时）：先 `recording_to_game.py` 无 `--paths` 跑，看首个
+mismatch 的录像 step。发散点几乎都指向上面 4 类之一：(a) 事件门/墙没开 ->
+查 `trigger_tile_event` 该格有没有 case + `set_ground`/`set_block`；(b) 静态到不了但
+实机能到 -> go_to_decomposed 要踩触发格；(c) arrow 步被误跳 -> 查 no-op 判据是否漏了
+spawn 型 trigger；(d) 数值对但远点寻路买错 -> 查 coalesce 是否把 shop/NPC fold 了。
+**不要**写浏览器侧 `setHeroLoc` hook 抓 automaticRoute paths 绕过--那是治标，根因是模型 bug
+（本次曾走过此弯路，被用户纠正"game 类的通用转换逻辑为什么不适配"，转向修模型才 0 mismatch）。
+
+**适用边界**：4 修复是通用 Game 模型 + converter 逻辑修复，理论上对所有录像都适用。但本次
+只对 V1（买 rk 线，auto ON，MT1-31）web 验证了无 `--paths` 0 mismatch；KILL（2攻0def）线仍用
+`--paths`（358 步产物未重测无 paths）。新录像先试无 `--paths`，发散再退 `--paths`。
 
 ## converter 输出的 step 分类（coalesce 合并的依据）
 
@@ -152,8 +216,14 @@ HP=1215 == exp。剩余 move_merge 仅 1 个（MT15 thief trigger，必要）。
   无效的转身/面墙 arrow，剪枝时一并跳过，否则从剪枝位置重放 arrow 会位移 hero。
 - **结构性变换靠断言保安全**：U 型折返提升靠"弹跳零效果 + 落回出发格 + mid 同层无
   换层/飞行"等断言，不是肉眼判断"看起来能提"。
-- 读后台任务输出用 `TaskOutput`（得 exit_code + final 状态），不要 Read/Grep
+- **读后台任务输出用 `TaskOutput`**（得 exit_code + final 状态），不要 Read/Grep
   `tasks/*.output` 临时路径（`check_read.py` 只拦 Read 工具，Grep 漏过弹窗）。
+- **录像转 walk 发散先修模型，别写浏览器 path 捕获**：`recording_to_game.py` 无
+  `--paths` 能跑通多数录像（V1 买 rk 线 0 mismatch）；发散点几乎都是可修通用模型 bug
+  （事件门没开/触发格没踩/no-op 误跳 spawn 型 trigger/coalesce 折了 shop 目标），见
+  「无需 captured path 的 4 个模型修复」。`--paths` 是退路不是默认；浏览器侧
+  `setHeroLoc` hook 抓 automaticRoute paths 是治标绕过根因，已被用户纠正并弃用。
+  关联 [[game_conversion_no_paths_needed]]。
 
 相关：[[recording_to_game_converter]]、`zone12_kill_line_experience.md`、
 `zone2_experience.md`「事件机制」、[[h5route_replay_mechanics]]。

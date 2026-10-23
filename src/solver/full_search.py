@@ -57,9 +57,33 @@ def load_data():
             raw = json.load(open(data_path(f'{fid}_map.json'), encoding='utf-8'))
         except:
             continue
+        # 2026-09-05 地图重导出后格式从 {W,H,m,bl} 变为
+        # {width,height,map,fgmap,events,...}。这里把新格式归一化成旧结构：
+        # 用 game_route.load_tiles() 的 tile 表把数字网格合成 bl。
+        # 坐标口径（对 git HEAD 旧 mt1..mt10 bl 逐块比对核实）：旧 bl 的
+        # (x,y) == 新 map 数组的 [y][x]（0-based，x=列 y=行），不做 +1。
+        raw_grid = raw.get('m')
+        bl_raw = raw.get('bl')
+        if raw_grid is None and raw.get('map') is not None:
+            from src.solver.game_route import load_tiles
+            tiles = load_tiles()
+            raw_grid = raw['map']
+            bl_raw = []
+            for gy, row in enumerate(raw_grid):
+                for gx, tile in enumerate(row):
+                    if tile == 0:
+                        continue
+                    info = tiles.get(tile)
+                    if not info:
+                        continue
+                    bl_raw.append({'x': gx, 'y': gy,
+                                   'id': info['id'], 'cls': info.get('cls', '')})
+        # 注：oldman/trader/blueShop/specialDoor 在新格式里归 events（事件驱动），
+        # 不再是静态块——legacy 商店审计不需要它们的块形态（specialDoor 变成
+        # 普通墙，保守且 run_merchant_fullmap_score_test 通过）。
         blocks = []
         special_door_pos = set()
-        for b in raw['bl']:
+        for b in bl_raw:
             if isinstance(b, dict):
                 x, y, eid = b['x'], b['y'], b['id']
                 cls = b.get('cls', '')
@@ -71,7 +95,7 @@ def load_data():
             # specialDoor: 记录位置后设为可通行(击杀周围怪后自动开)
             if eid == 'specialDoor':
                 special_door_pos.add((x, y))
-                raw['m'][y-1][x-1] = 0  # 设为可通行
+                raw_grid[y-1][x-1] = 0  # 设为可通行
                 continue
             if isinstance(b, dict):
                 x, y, eid = b['x'], b['y'], b['id']
@@ -94,9 +118,9 @@ def load_data():
                 t = 3
             if t > 0:
                 blocks.append((x, y, t, eid))
-        W = raw.get('W', raw.get('w', 13))
-        H = raw.get('H', raw.get('h', 13))
-        maps[fid.upper()] = {'W': W, 'H': H, 'm': raw['m'], 'bl': blocks,
+        W = raw.get('W', raw.get('width', raw.get('w', 13)))
+        H = raw.get('H', raw.get('height', raw.get('h', 13)))
+        maps[fid.upper()] = {'W': W, 'H': H, 'm': raw_grid, 'bl': blocks,
                              'special_doors': special_door_pos}
     return hero, maps
 

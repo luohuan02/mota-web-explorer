@@ -1,6 +1,6 @@
 {
   "schema": "mota.best.route_chains.v1",
-  "updated": "2026-08-06",
+  "updated": "2026-09-14",
   "game": {
     "name": "h5mota 51",
     "game_url": "https://h5mota.com/games/51/",
@@ -23,7 +23,9 @@
     "non_guide_chain": "stable through current-best Zone 1/2, the web-verified 2ATK1DEF preserve-pickaxe Zone 3 Game route, and an independently generated, residual-audited, and web-verified pure-TE Zone 4 tail ending at HP=23076.",
     "kill_line_2atk0def": "2攻0防 KILL line: zone1-2 recording web-verified (HP=1215 at MT20), bridge web-verified (slot151), zone3 web-verified 232 steps 0 stat mismatch (MT41 HP=609, +564 HP vs preserve_pickaxe, slot152). zone4 tail pending.",
     "known_gap": "20F-to-31F bridge currently comes from browser save checkpoints, not a tracked machine-readable walk in best/.",
-    "recording_line_2atk3atk5def": "2区2攻3区3攻5防录像线: zone3 (MT31->MT41) converter walk web-verified 278 steps (coalesce 451->278) 0 stat/gold mismatch (MT41 HP=13 ATK=166 DEF=214 YK=6 G=2954; 匹配 save33 录像真终态). 激进 coalesce: 空地到达/通过全删 (reachability matrix 直达目标, replayer 远点点击+maybeRetryAdjacentTarget 重试开门/击杀); 保留 event-trigger 格/auto_sweep/楼梯+换层/centerFly·upFly·downFly 前一个定位步 (飞目的地依赖源位置). MT40 (6,7) boss 事件建模 + path_cost item epsilon 0.1 + MT38 (5,2) 商人 200G->3yk statlog delta 检测. zone3 种子改用 save33 (MT31, 替代 save153, 因 100+ 槽无法录像). zone4 tail 待探索."
+    "recording_line_2atk3atk5def": "2区2攻3区3攻5防录像线: zone3 (MT31->MT41) converter walk web-verified 278 steps (coalesce 451->278) 0 stat/gold mismatch (MT41 HP=13 ATK=166 DEF=214 YK=6 G=2954; 匹配 save33 录像真终态). 激进 coalesce: 空地到达/通过全删 (reachability matrix 直达目标, replayer 远点点击+maybeRetryAdjacentTarget 重试开门/击杀); 保留 event-trigger 格/auto_sweep/楼梯+换层/centerFly·upFly·downFly 前一个定位步 (飞目的地依赖源位置). MT40 (6,7) boss 事件建模 + path_cost item epsilon 0.1 + MT38 (5,2) 商人 200G->3yk statlog delta 检测. zone3 种子改用 save33 (MT31, 替代 save153, 因 100+ 槽无法录像). zone4 tail 待探索.",
+    "recording_2atk_alldef_40943": "门少开 all-def line: 前缀 web 验证到 MT41 (save105); zone5 (MT41->MT50) converter web 0 mismatch HP=40943.",
+    "generative_zone12_campaign": "2026-09-12/13 生成式战役封闭：4F->MT21 全链 web 验证通过（1765@MT21），但 zone3-5 适配层（31G 资金缺口守恒封闭 + zone2 body 自带收集腿）使终局未能超 41301。41301 维持纯净版-TE 冠军。详见 route_chains.md「生成式 zone1-2 战役」节。"
   },
   "chains": [
     {
@@ -139,6 +141,110 @@
       "verified_live_json": "best/zone3_2atk3atk5def_recording_live_verify.json",
       "checkpoint": "best/checkpoints/zone3_2atk3atk5def_end_save.json",
       "checkpoint_slot": 154
+    },
+    {
+      "id": "recording_2atk_alldef_39944",
+      "label": "2区2攻+买800rk+全防 录像线 (MT4->MT50 全路线, 录像驱动 converter)",
+      "segments": [
+        "zone12.2atk_alldef_recording_mt4_to_mt50"
+      ],
+      "status": "full MT4->MT50 全防 recording web-verified 1061 target-click-only steps 0 value mismatch (incl gold) from save1 (converter from recording, auto base OFF then SET_AUTO toggles on). MT50 redKing reveal needs hero adjacent (5,5): recording move:5:5 was coalesced away, re-inserted 到达 MT50(6,7)->(5,5) step (documented game boundary). final HP=39944 ATK=374 DEF=607 YK=1 BK=0 RK=1 G=1707 dmg=13342 door=182/23/10 MT50 x6y5 won49 won50.",
+      "final_state": {
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 39944,
+        "atk": 374,
+        "def": 607,
+        "yk": 1,
+        "bk": 0,
+        "rk": 1,
+        "gold": 1707,
+        "dmg": 13342,
+        "yd": 182,
+        "bd": 23,
+        "rd": 10
+      },
+      "source_walk": "best/zone12_2atk6def_39944_walk.json",
+      "source_walk_md": "best/zone12_2atk6def_39944_walk.md",
+      "verified_live_json": "best/zone12_2atk6def_39944_live_verify.json",
+      "summary": "best/zone12_2atk6def_39944_summary.json",
+      "source_recording": "best/2区2攻+买800rk+全防 2120 + 纯净版TE-39944.h5route"
+    },
+    {
+      "id": "recording_2atk_alldef_40943",
+      "label": "2区2攻+买800rk+1yk换100血+门少开+全防 录像线 (MT4->MT50, 录像驱动 converter, 5区从 save105 接续)",
+      "segments": [
+        "zone5.40943_alldef_recording_mt41_to_mt50"
+      ],
+      "status": "门少开 all-def 前缀已 web 验证到 MT41 (save105); zone5 MT41->MT50 从 save105 converter 复现 web 0 mismatch (含金币). MT46 2420G 生命商店 +1600, superPotion +7260, MT45 hp2000, MT50 redKing reveal true-ending kill. final HP=40943 (优于 39944, +999).",
+      "final_state": {
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 40943,
+        "atk": 374,
+        "def": 607,
+        "yk": 0,
+        "bk": 0,
+        "rk": 0,
+        "gold": 640,
+        "dmg": 2860,
+        "snow": 1,
+        "magicImmune": true,
+        "won49": true,
+        "won50": true
+      },
+      "source_walk": "best/2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943_walk.json",
+      "source_walk_md": "best/2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943_walk.md",
+      "verified_live_json": "best/2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943_live_verify.json",
+      "source_recording": "best/2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943.h5route"
+    },
+    {
+      "id": "generative_zone12_campaign",
+      "label": "生成式 zone1-2 战役（2026-09-12/13，已封闭，非当前最优）",
+      "segments": [
+        "zone1.generative_fix162",
+        "bridge.gen_163_to_mt21"
+      ],
+      "status": "zone1 fix162 全链 web 0 mismatch（178 步，含收集段）；桥+v6b zone2 body 306 步 web 0 mismatch（含金币）到 MT21；4F->MT21 单次连续 484 步 web 0 mismatch。zone3-5 适配/重排/嫁接/金币腿/阶梯重排全部定量封闭，终局未能超 41301",
+      "final_state": {
+        "floor": "MT21",
+        "x": 6,
+        "y": 2,
+        "hp": 1765,
+        "atk": 76,
+        "def": 64,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 485,
+        "dmg": 7161
+      }
+    },
+    {
+      "id": "recording_lines_2026_09",
+      "label": "用户录像三线（2026-09，同 seed 1F 起）",
+      "segments": [
+        "zone1_2.recording_41301_full",
+        "zone1_2.recording_41206_full",
+        "zone1_2.recording_41127_full"
+      ],
+      "status": "full-chain web-verified 0 value mismatch (incl gold); all in-lineage levers closed (Game-replay level)",
+      "final_state": {
+        "floor": "MT45",
+        "x": 9,
+        "y": 4,
+        "hp": 41127,
+        "atk": 374,
+        "def": 611,
+        "yk": 0,
+        "bk": 0,
+        "rk": 0,
+        "gold": 140,
+        "dmg": 13563
+      },
+      "notes": "三线商店/属性曲线全同（times1=16，终态 374/611）；41127 zone1-2 = 已知最优混合血统（+266 vs 41301）但 zone5 付 MT43 时机税 −440；全部杠杆封闭详见记忆 mt41206-line-audit-and-mt36-graft-closure"
     }
   ],
   "segments": {
@@ -842,6 +948,141 @@
       "status": "pending independent Game search and web verification; do not reuse 2ATK1DEF zone4 tail (different start: HP=609 ATK=166 DEF=174 YK=9 G=2285 times1=10 vs preserve_pickaxe HP=45 DEF=166 YK=7 G=2423)",
       "source_checkpoint": "best/checkpoints/zone3_2atk0def_kill_end_save.json",
       "source_browser_slot": 152
+    },
+    "zone5.40943_alldef_recording_mt41_to_mt50": {
+      "zone": 5,
+      "floor_range": "41F-50F",
+      "variant": "recording_2atk_alldef_门少开",
+      "objective": "40943 recording zone5 (MT41->MT50) converter from save105 web-verified all-def line",
+      "artifacts": [
+        "2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943_walk.json",
+        "2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943_walk.md",
+        "2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943_live_verify.json"
+      ],
+      "start_state": {
+        "floor": "MT41",
+        "x": 6,
+        "y": 2,
+        "hp": 43,
+        "atk": 146,
+        "def": 266,
+        "yk": 10,
+        "bk": 1,
+        "rk": 0,
+        "gold": 3031,
+        "times1": 10,
+        "centerFly": 2,
+        "pickaxe": 1
+      },
+      "seed_checkpoint": "best/checkpoints/save105_mt41_hp43_nopotion_snapshot.json (slot 105)",
+      "end_state": {
+        "floor": "MT50",
+        "x": 6,
+        "y": 5,
+        "hp": 40943,
+        "atk": 374,
+        "def": 607,
+        "yk": 0,
+        "bk": 0,
+        "rk": 0,
+        "gold": 640,
+        "dmg": 2860,
+        "snow": 1,
+        "magicImmune": true,
+        "won49": true,
+        "won50": true
+      },
+      "steps": 349,
+      "errors": 0,
+      "connects_to": null
+    },
+    "zone1.generative_fix162": {
+      "zone": 1,
+      "floor_range": "4F-10F+收集段",
+      "variant": "generative (agentR/agentN 谱系, 2026-09-12 web 验证)",
+      "objective": "zone1 全收集拓扑：boss 后 wing supply + MT10 spawn sweep + fly MT6/MT1/MT3 收集腿；收集段含 (6,9) 事件门 once 语义修复步（踩过到 (6,10) 恢复 fly 谓词）",
+      "artifacts": [
+        "outputs/results/agentR_zone1_walk_fix162.json",
+        "outputs/results/agentR_fix162_live_tail.json",
+        "best/checkpoints/save163_agentR_zone1_exit.json"
+      ],
+      "end_state": {
+        "floor": "MT3",
+        "x": 11,
+        "y": 7,
+        "hp": 916,
+        "atk": 30,
+        "def": 30,
+        "yk": 4,
+        "bk": 1,
+        "rk": 0,
+        "gold": 258,
+        "dmg": 2660
+      },
+      "note": "[1]-[178] web 0 mismatch（含金币）。出口与血统 zone1 出口 (618/308) 同 yk/bk/atk/def，差 hp+298/G-50——agentG 已证该差为时序假象（血统 zone2 body #300/#401-410/#518-522 自带同批资源回收）。checkpoint 槽 163。",
+      "connects_to": "bridge.gen_163_to_mt21"
+    },
+    "bridge.gen_163_to_mt21": {
+      "zone": "1-2",
+      "floor_range": "MT3->MT21",
+      "variant": "generative (agentU v6b zone2 body, 2026-09-12 web 验证)",
+      "objective": "MT3 (11,7) fly MT10 -> row10 -> (6,11) 下 MT11 桥 + v6b zone2 body（step182-483）",
+      "artifacts": [
+        "outputs/results/main_v6b_zone2_from163_walk.json",
+        "outputs/results/main_full_4f_to_mt21_1765_walk.json",
+        "outputs/results/main_full_4f_to_mt21_live_verify.json",
+        "best/checkpoints/save164_v6b_zone2_exit_mt21.json"
+      ],
+      "end_state": {
+        "floor": "MT21",
+        "x": 6,
+        "y": 2,
+        "hp": 1765,
+        "atk": 76,
+        "def": 64,
+        "yk": 4,
+        "bk": 0,
+        "rk": 0,
+        "gold": 485,
+        "dmg": 7161,
+        "times1": 2
+      },
+      "note": "4F->MT21 单次连续 484 步 web 0 mismatch（458 entries 含金币，117 pos 已知边界）。zone3-5 适配层全部封闭（见 route_chains.md 生成式战役节），终局未能超 41301。checkpoint 槽 164。",
+      "connects_to": null
+    },
+    "zone1_2.recording_41301_full": {
+      "zone": "1-2",
+      "floor_range": "1F-45F",
+      "variant": "recording 41301",
+      "artifacts": [
+        "outputs/results/41301_walk.json"
+      ],
+      "status": "web-verified (historical)",
+      "final_hp": 41301
+    },
+    "zone1_2.recording_41206_full": {
+      "zone": "1-2",
+      "floor_range": "1F-45F",
+      "variant": "recording 41206",
+      "artifacts": [
+        "best/41206_walk.json",
+        "best/41206_live_verify_tail.json",
+        "best/41206_checkpoint_report.xlsx"
+      ],
+      "status": "web-verified 2026-09-13, 588 entries 0 mismatch incl gold",
+      "final_hp": 41206
+    },
+    "zone1_2.recording_41127_full": {
+      "zone": "1-2",
+      "floor_range": "1F-45F",
+      "variant": "recording 41127",
+      "artifacts": [
+        "best/41127_walk.json",
+        "best/41127_live_verify.json",
+        "best/41127_checkpoint_report.xlsx"
+      ],
+      "status": "web-verified 2026-09-13, 1075 entries 0 mismatch incl gold",
+      "final_hp": 41127
     }
   }
 }

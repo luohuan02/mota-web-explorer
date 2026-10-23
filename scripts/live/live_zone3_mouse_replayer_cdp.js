@@ -89,6 +89,7 @@ function parseArgs(argv) {
     outJson: null,
     recordOnly: false,
     allowNotOk: false,
+    debugDoor: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -110,8 +111,10 @@ function parseArgs(argv) {
     else if (arg === "--set-auto") out.setAuto = parseAutoSpec(argv[++i]);
     else if (arg === "--expect-auto") out.expectAuto = parseAutoSpec(argv[++i]);
     else if (arg === "--out-json") out.outJson = path.resolve(argv[++i]);
+    else if (arg === "--save-h5route") out.saveH5route = path.resolve(argv[++i]);
     else if (arg === "--record-only") out.recordOnly = true;
     else if (arg === "--allow-not-ok") out.allowNotOk = true;
+    else if (arg === "--debug-door") out.debugDoor = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return out;
@@ -224,10 +227,13 @@ async function evalValue(cdp, expression, awaitPromise = true) {
       "core.moveHero(",
       "core.setHeroLoc(",
       "core.changeFloor(",
-      "core.control.saveData(",
     ];
     if (RUNTIME.strictHumanInput) {
+      // saveData writes a save slot; --strict-human-input forbids checkpoint
+      // saves entirely (parseArgs), so ban it there. Under --target-click-only
+      // the --checkpoint-start chain (slots 101+) legitimately needs saveData.
       forbidden.push(
+        "core.control.saveData(",
         "core.status.heroMoving=",
         "core.unlockControl(",
         "core.stopAutomaticRoute(",
@@ -337,6 +343,147 @@ async function setAutoState(cdp, spec) {
       return true;
     })()`
   );
+  return autoState(cdp);
+}
+
+// Focus choices selection `index` via real keyboard (ArrowDown/Up + Space) so the
+// pick is recorded into route as choices:N (matches how a human navigates menus).
+async function chooseByIndex(cdp, index) {
+  let info = await choiceInfo(cdp);
+  if (!info.choices.length || info.choices[index] == null) {
+    throw new Error(`chooseByIndex ${index} failed: ${JSON.stringify(info)}`);
+  }
+  let guard = 0;
+  while (info.selection !== index && guard < 24) {
+    await pressKey(cdp, info.selection < index ? "ArrowDown" : "ArrowUp");
+    await sleep(90);
+    info = await choiceInfo(cdp);
+    guard += 1;
+  }
+  if (info.selection !== index) {
+    throw new Error(`chooseByIndex ${index} focus failed: sel=${info.selection}`);
+  }
+  await pressKey(cdp, "Space");
+  return { ok: true, index, text: info.choices[index] };
+}
+
+// Find a choices option by substring and select it. Needed because the auto menu
+// option order is dynamic ([on]/[off] depends on current __auto__ state).
+async function chooseMenuByText(cdp, needle) {
+  const info = await choiceInfo(cdp);
+  let idx = -1;
+  for (let i = 0; i < info.choices.length; i += 1) {
+    if (String(info.choices[i]).indexOf(needle) >= 0) { idx = i; break; }
+  }
+  if (idx < 0) throw new Error(`menu choice "${needle}" not found: ${JSON.stringify(info.choices)}`);
+  return chooseByIndex(cdp, idx);
+}
+
+// Toggle __auto__ via the 游戏说明 commonEvent menu -- the same path a human takes
+// when clicking the 游戏辅助设置 toolbar button (toolbarAction[0][2] =
+// core.insertAction([{type:"insert",name:"游戏说明"}])). The 游戏说明 action chain
+// pushes "help" into route and opens a choices menu containing 自动操作, whose
+// sub-menu toggles battle/item/wall. Going through this menu (vs setAutoState, which
+// mutates flags.__auto__ directly) records help+choices:N into route, so .h5route
+// replay reproduces the auto switch (doAction consumes choices:N while the
+// action-chain choices dialog is open; a bare choices:N with no dialog is skipped by
+// ignoreInput). Verified: replay of ["help","choices:4","choices:0",...] toggles auto.
+async function setAutoStateViaMenu(cdp, spec) {
+  if (!spec) return autoState(cdp);
+  // 1. open 游戏说明 menu (pushes "help" + shows choices incl 自动操作)
+  await evalValue(
+    cdp,
+    `(function(){ try{if(core.status.event)core.ui.closePanel();}catch(e){} core.insertAction([{type:"insert",name:"游戏说明"}]); return true; })()`
+  );
+  await waitForChoices(cdp, 10000);
+  // 2. enter 自动操作 sub-menu. If the entry is missing, the 额外功能 gate is
+  // off (recordings whose opening choices enabled it are invisible to the
+  // converter) -- toggle 开启额外功能 in this same menu, then re-open 游戏说明
+  // (generic fallback; the toggle adds the 自动操作 entry).
+  let autoEntryOpened = false;
+  try {
+    await chooseMenuByText(cdp, "自动操作");
+    autoEntryOpened = true;
+  } catch (e) {
+    if (!/not found/.test(String((e && e.message) || e))) throw e;
+  }
+  if (!autoEntryOpened) {
+    // 额外功能门控：仅在确认 flag 未开启时切换（盲切会把已开启的门控关掉，
+    // 导致重试时 自动操作 永远不出现 —— 2026-09-13 41206 复验实证）。
+    const gateOn = await evalValue(cdp, `!!core.getFlag("额外功能开关")`);
+    if (!gateOn) {
+      await chooseMenuByText(cdp, "开启额外功能");
+      // 该分支先播「功能列表」文本，之后才是确认子对话框「确定要开启吗？」
+      // （2026-09-13 41206 复验 step37 两次实证：waitForChoices 直接等确认框
+      // 会被文本堵死超时）。先真实 Space 推进文本直到 choices 出现，再选
+      // 我太需要了（必须确认才置 flag:额外功能开关）。
+      for (let k = 0; k < 20; k += 1) {
+        const hasChoices = await evalValue(
+          cdp,
+          `(function(){ var ev = core.status.event; return !!(ev && ev.data && ev.data.type === "choices"); })()`
+        );
+        if (hasChoices) break;
+        await pressKey(cdp, "Space");
+        await sleep(300);
+      }
+      await chooseMenuByText(cdp, "我太需要了");
+      // 随后 action 链 = setValue(I333) -> 作者文本 -> setValue(flag)。
+      // 以 flag:额外功能开关 真值为完成信号轮询：链未结束（有事件）时用真实
+      // Space 推进文本（closePanel 会吞掉末尾的 flag setValue——2026-09-13
+      // 41206 复验 step37 二次实证）。
+      for (let k = 0; k < 30; k += 1) {
+        const st2 = await evalValue(
+          cdp,
+          `(function(){ var ev = core.status.event; return JSON.stringify({flag: !!core.getFlag("额外功能开关"), busy: !!(ev && (ev.id || ev.ui))}); })()`
+        );
+        let s2 = {};
+        try { s2 = JSON.parse(st2); } catch (e) { s2 = {}; }
+        if (s2.flag) break;
+        if (s2.busy) { await pressKey(cdp, "Space"); }
+        await sleep(300);
+      }
+      await evalValue(
+        cdp,
+        `(function(){ try{if(core.status.event)core.ui.closePanel();}catch(e){} core.insertAction([{type:"insert",name:"游戏说明"}]); return true; })()`
+      );
+      await waitForChoices(cdp, 10000);
+    }
+    await chooseMenuByText(cdp, "自动操作");
+  }
+  await waitForChoices(cdp, 5000);
+  // 3. toggle each key to match spec (while-loop menu reappears after each toggle)
+  for (let iter = 0; iter < 12; iter += 1) {
+    const auto = await autoState(cdp);
+    const pending = ["battle", "item", "wall"].filter(
+      (k) => Object.prototype.hasOwnProperty.call(spec, k) && auto[k] !== spec[k]
+    );
+    if (pending.length === 0) break;
+    const key = pending[0];
+    const cur = auto[key];
+    const tgt = spec[key];
+    let needle;
+    if (key === "battle") needle = `自动清零伤怪 [${cur === true ? "on" : "off"}]`;
+    else if (key === "wall") needle = `自动开暗墙岩浆 [${cur === true ? "on" : "off"}]`;
+    else {
+      // item: true / false / "nopotion". [on]=currently on(click off), [off]=off(click on).
+      // choices:0/1/2 toggle battle/item/wall; choices:4 (拾取血瓶) toggles item true<->nopotion.
+      if (cur === true && tgt === "nopotion") needle = "拾取血瓶 [on]";
+      else if (cur === "nopotion" && tgt === true) needle = "拾取血瓶 [off]";
+      else if (cur === false && tgt === true) needle = "自动拾取物品 [off]";
+      else if (cur === true && tgt === false) needle = "自动拾取物品 [on]";
+      else if (cur === "nopotion" && tgt === false) needle = "拾取血瓶 [off]";
+      else if (cur === false && tgt === "nopotion") needle = "自动拾取物品 [off]";
+      else throw new Error(`unhandled item toggle ${cur} -> ${tgt}`);
+    }
+    await chooseMenuByText(cdp, needle);
+    await waitForChoices(cdp, 5000);
+  }
+  // 4. exit 自动操作 sub-menu -> back to 游戏说明 menu
+  await chooseMenuByText(cdp, "退出设置");
+  await waitForChoices(cdp, 5000);
+  // 5. return to game
+  await chooseMenuByText(cdp, "返回游戏");
+  await waitIdle(cdp, 5000);
   return autoState(cdp);
 }
 
@@ -756,6 +903,42 @@ async function maybeRetryAdjacentTarget(cdp, step) {
   // back to directional movement.
 }
 
+// Fire (fgmap 103) is a decorative animation the bfs judge blocks
+// (getFgNumber===103 -> canGoThrough false), so automaticRoute cannot route
+// onto it. But moveOneStep (arrow key) still steps onto fire -- the recording
+// uses arrow keys for fire tiles (e.g. MT47 (8,3) to reach the redWizard at
+// (8,2)). When a click only routes the hero adjacent to a fire target, finish
+// the last step with an arrow key so the post-step auto_sweep fires from the
+// fire tile. This is a targeted exception to the click-only rule: automaticRoute
+// fundamentally cannot reach fire, and a human would press the arrow key too.
+async function isFireTile(cdp, floor, x, y) {
+  try {
+    const v = await evalValue(cdp, `core.getFgNumber(${x},${y},${JSON.stringify(floor)})`);
+    return v === 103;
+  } catch (_) {
+    return false;
+  }
+}
+
+async function arrowStepOntoFire(cdp, x, y, st) {
+  // h5mota arrow = turn-then-move: if the hero faces the wrong way the first
+  // press only turns. Press toward (x,y) until the hero lands on it (max 4).
+  let cur = st;
+  for (let i = 0; i < 4; i += 1) {
+    const dx = x - cur.x, dy = y - cur.y;
+    if (dx === 0 && dy === 0) return cur;
+    if (Math.abs(dx) + Math.abs(dy) !== 1) return cur; // not adjacent, give up
+    if (cur.lock || cur.eventId || cur.hasChoices || cur.moving) return cur;
+    const key = dx > 0 ? "ArrowRight" : dx < 0 ? "ArrowLeft" : dy > 0 ? "ArrowDown" : "ArrowUp";
+    await pressKey(cdp, key);
+    await waitMovementSettled(cdp);
+    cur = await state(cdp);
+    if (cur.floor !== st.floor) return cur; // floor changed, abort
+    if (cur.x === x && cur.y === y) return cur; // landed on fire
+  }
+  return cur;
+}
+
 async function assertAutoSweepSideEffects(cdp, step) {
   const note = String(step.note || "");
   const marker = note.indexOf("auto_sweep:");
@@ -770,9 +953,78 @@ async function assertAutoSweepSideEffects(cdp, step) {
   }
 }
 
+// --debug-door: 40ms 轮询 hero 状态 + 目标门块存在性，抓取开门点击前后的真实时序
+// （mouseClickTile 内部 second-click 判定 / maybeRetryAdjacentTarget 重试 / 自动 sweep
+// 各自在哪一拍发生）。仅诊断用，不加此 flag 零开销。
+async function doorClickWithTrace(cdp, step, x, y) {
+  const samples = [];
+  let polling = true;
+  const poller = (async () => {
+    const expr = `(function(){
+      var h=core.status.hero, t=h.items.tools||{};
+      var m=core.status.maps[core.status.floorId]||{};
+      var blk=null;
+      for (var i=0;i<m.blocks.length;i++){
+        var b=m.blocks[i];
+        if(b.x===${x}&&b.y===${y}&&!b.disable){ blk=(b.event&&(b.event.id||b.event.cls))||"blk"; break; }
+      }
+      return JSON.stringify({x:h.loc.x,y:h.loc.y,yk:t.yellowKey||0,g:h.money||0,
+        moving:!!(core.status.automaticRoute&&core.status.automaticRoute.length),
+        aa:core.animateFrame?Object.keys(core.animateFrame.asyncId||{}).length:0,
+        ev:core.status.event&&core.status.event.id||null, blk:blk});
+    })()`;
+    const t0 = Date.now();
+    while (polling) {
+      try {
+        const v = JSON.parse(await evalValue(cdp, expr));
+        v.t = Date.now() - t0;
+        samples.push(v);
+      } catch (_) { /* page busy */ }
+      await sleep(40);
+    }
+  })();
+  try {
+    await mouseClickTile(cdp, x, y);
+    await maybeRetryAdjacentTarget(cdp, step);
+  } finally {
+    polling = false;
+    await poller;
+  }
+  // 压缩：只打印变化的采样
+  let prev = null;
+  for (const s of samples) {
+    if (!prev || s.x !== prev.x || s.y !== prev.y || s.yk !== prev.yk || s.g !== prev.g
+        || s.blk !== prev.blk || s.moving !== prev.moving || s.aa !== prev.aa || s.ev !== prev.ev) {
+      console.log(`        [door-trace ${s.t}ms] x${s.x}y${s.y} yk${s.yk} g${s.g} moving=${s.moving} aa=${s.aa} ev=${s.ev} blk=${s.blk}`);
+    }
+    prev = s;
+  }
+}
+
 async function mouseClickTile(cdp, x, y) {
   if (RUNTIME.strictHumanInput || RUNTIME.targetClickOnly) {
     let before = await state(cdp);
+    // Hero may still be mid-automaticRoute (moving=true) from a prior click --
+    // e.g. a damage/checkBlock tile doesn't stop the ongoing route. Wait for the
+    // walk animation to settle before clicking (a human waits too). Only throw
+    // if a non-transient busy flag (lock/eventId/hasChoices) remains afterward.
+    if (before.moving && !before.lock && !before.eventId && !before.hasChoices) {
+      before = await waitMovementSettled(cdp);
+    }
+    // Transient event shells (e.g. action:_label markers fired by a floor
+    // transition that is still settling) self-advance -- wait them out instead
+    // of throwing. Real dialogues/choices (text/confirm/wait) stay fatal.
+    if (before.lock && !before.hasChoices && before.eventId === "action"
+        && (before.eventType === "_label" || before.eventType == null)) {
+      const end = Date.now() + 5000;
+      while (Date.now() < end) {
+        await sleep(250);
+        before = await state(cdp);
+        if (!before.lock && !before.moving && !before.eventId) break;
+        if (!(before.lock && before.eventId === "action"
+              && (before.eventType === "_label" || before.eventType == null))) break;
+      }
+    }
     if (before.lock || before.moving || before.eventId || before.hasChoices) {
       throw new Error(`strict mode cannot click while busy: ${stateText(before)}`);
     }
@@ -926,6 +1178,7 @@ function expectedState(step) {
 }
 
 function stateFromSnapshot(snapshot) {
+  if (!snapshot) return null;
   return {
     floor: snapshot.floor,
     x: snapshot.x,
@@ -1051,6 +1304,23 @@ function buildStrictWalkFromLog(walk, entries) {
   };
 }
 
+// --save-h5route：终点立即把 core.status.route（录像缓冲）编码落盘为 .h5route。
+// 必须在 run 结束、页面回标题/重载之前做——重载后 route 缓冲清空，手动下载拿到
+// 的是空录像（"无效的录像"/回放报错，2026-09-07 41354 复验实证）。
+// 格式与游戏自带下载一致：LZString.compressToBase64(JSON.stringify(
+//   {name, version, hard, seed, route: core.encodeRoute(core.status.route)}))
+async function saveH5routeFile(cdp, args) {
+  if (!args.saveH5route) return;
+  const expr = 'JSON.stringify(LZString.compressToBase64(JSON.stringify({' +
+    'name: core.firstData.name, version: core.firstData.version,' +
+    'hard: (core.status.hard||""), seed: (core.status.seed||0),' +
+    'route: core.encodeRoute(core.status.route)})))';
+  const b64 = JSON.parse(await evalValue(cdp, expr));
+  fs.mkdirSync(path.dirname(args.saveH5route), { recursive: true });
+  fs.writeFileSync(args.saveH5route, b64, "utf8");
+  console.log(`wrote h5route (${b64.length} bytes) -> ${path.relative(ROOT, args.saveH5route)}`);
+}
+
 function writeRunLog(args, walk, entries, finalState) {
   if (!args.outJson) return;
   const strictWalk = buildStrictWalkFromLog(walk, entries);
@@ -1091,6 +1361,7 @@ function loosePositionAction(action) {
 }
 
 function valuesMatch(live, expected) {
+  if (!expected) return false;
   return live.floor === expected.floor &&
     live.hp === expected.hp &&
     live.atk === expected.atk &&
@@ -1172,9 +1443,9 @@ function matchesStep(live, step) {
 }
 
 async function targetClearedMatch(cdp, live, step) {
-  const expected = expectedState(step);
-  if (!valuesMatch(live, expected) || live.floor !== expected.floor) return false;
   if (![ACT.KILL, ACT.PICKUP, ACT.PASS, ACT.OPEN_DOOR].includes(step.action)) return false;
+  const expected = expectedState(step);
+  if (!expected || !valuesMatch(live, expected) || live.floor !== expected.floor) return false;
   const postKillText = step.action === ACT.KILL &&
     live.lock && live.eventId === "action" && live.eventType === "text" &&
     !live.moving && !live.hasChoices;
@@ -1281,6 +1552,19 @@ async function sideEffectSatisfied(cdp, live, step) {
     return !!up && up.id === "upFloor";
   }
   if (step.action === ACT.EVENT && step.floor === "MT2" && step.eid === "thief") {
+    // 2F 监狱小偷 (3,7)（41206 1F 新游戏线）：侧效应 = 越狱暗道 (2,7) 已开
+    // （openDoor 后块消失）。与旧 MT2 (10,11)->35F 小偷事件按 pos 区分。
+    if (step.pos && step.pos[0] === 3 && step.pos[1] === 7) {
+      const door = await targetEvent(cdp, "MT2", 2, 7);
+      return !door;
+    }
+    // 2F 越狱小偷 farewell (1,9)（41206）：侧效应 = 驻留小偷块消失
+    // （告别对话后 move down:2 + hide）。小偷 hide 前后续 (1,11) 楼梯
+    // 点击会被 (1,9) noPass 块挡住，必须等它完全消失。
+    if (step.pos && step.pos[0] === 1 && step.pos[1] === 9) {
+      const thief = await targetEvent(cdp, "MT2", 1, 9);
+      return !thief;
+    }
     const tunnel = await targetEvent(cdp, "MT35", 4, 9);
     const thief = await targetEvent(cdp, "MT35", 5, 10);
     return !tunnel && !!thief && thief.id === "thief";
@@ -1306,6 +1590,15 @@ async function sideEffectSatisfied(cdp, live, step) {
       `(function(){ return JSON.stringify({ok: !!(core.itemCount&&core.itemCount("superPotion")>0)}); })()`
     );
     return item.ok;
+  }
+  if (step.action === ACT.OPEN_DOOR) {
+    // 2026-09-04 41218 修复：开门步的 side effect 必须验证门块真的消失。
+    // 旧实现落到通用 return true——当开门(-1yk)与 sweep 拾取(+1yk)数值恰好
+    // 抵消时（41218 MT9 (5,9) 门 + x5y7 yellowKey），数值匹配会误接受未点击
+    // 的开门步，门保持关闭、后续路由全部失败。
+    const [dx, dy] = step.pos;
+    const ev = await targetEvent(cdp, step.floor, dx, dy);
+    return !ev || ev.trigger !== "openDoor";
   }
   return true;
 }
@@ -1799,6 +2092,14 @@ async function settleAlreadyCompletedStep(cdp, step) {
     const wall = await targetEvent(cdp, "MT15", 8, 2);
     if (wall) return null;
   }
+  // MT16 superPotion: the fakeWall2 at (11,11) is broken in a prior step, but
+  // the oldman's superPotion grant is a separate face-on event. State-match
+  // would falsely skip it (target cleared) before the superPotion is given.
+  // If the hero doesn't have the superPotion yet, the event must execute.
+  if (step.floor === "MT16" && step.eid === "superPotion" && step.action === ACT.EVENT) {
+    const hasSP = await evalValue(cdp, `!!(core.status.hero.items.tools.superPotion)`);
+    if (!hasSP) return null;
+  }
   // MT20 vampire event: hero steps on [6,8] to spawn vampire at [6,6]. Side-
   // effect-only (no HP/key/gold change; hero pos changes [6,9]->[6,8]). State-
   // match on HP/keys would falsely skip it before the vampire spawns, then the
@@ -1831,7 +2132,10 @@ async function settleAlreadyCompletedStep(cdp, step) {
   // mark them done. Always execute them.
   if (step.action === ACT.EARTHQUAKE || step.action === ACT.BOMB || step.action === ACT.BIG_KEY || step.action === ACT.USE) return null;
   if (step.action === ACT.SET_AUTO) {
-    return await stepMatches(cdp, st, step) ? st : null;
+    // SET_AUTO step may lack before/after snapshot (generated walk JSON without
+    // Game-class state). Use sideEffectSatisfied (checks live auto vs spec) instead
+    // of stepMatches (which needs step.after).
+    return await sideEffectSatisfied(cdp, st, step) ? st : null;
   }
   // ARRIVE means "walk onto this tile". It must always execute even if the
   // hero is adjacent (e.g. stepping onto an opened-door tile to reach the
@@ -2315,9 +2619,11 @@ async function executeStep(cdp, step) {
   if (step.action === ACT.SET_AUTO) {
     const spec = stepAutoSpec(step);
     if (!spec) throw new Error("SET_AUTO step requires auto/setAuto/autoSpec");
-    const liveAuto = await setAutoState(cdp, spec);
+    // Use the 游戏说明 menu path (help+choices:N) so the toggle is recorded into
+    // route and replays correctly. setAutoState would mutate memory invisibly.
+    const liveAuto = await setAutoStateViaMenu(cdp, spec);
     await expectAutoState(cdp, spec);
-    console.log(`      auto ${autoSpecText(spec)} -> ${autoSpecText(liveAuto)}`);
+    console.log(`      auto ${autoSpecText(spec)} -> ${autoSpecText(liveAuto)} (via 游戏说明 menu)`);
     return;
   }
   if (step.action === ACT.PICKUP && step.eid) {
@@ -2346,7 +2652,42 @@ async function executeStep(cdp, step) {
       }
     }
   }
-  if (step.action === ACT.CHECK || step.action === ACT.CHANGE_FLOOR) {
+  if (step.action === ACT.CHECK) {
+    return;
+  }
+  if (step.action === ACT.CHANGE_FLOOR) {
+    // 换层依赖前一步点击楼梯时的 arrival 触发。但 moveDirectly 直线瞬移到达
+    // 楼梯格不触发 changeFloor（hero 已站楼梯、floor 未变）。回退 = 点相邻
+    // 可走格走下楼梯，再点楼梯格走上去（真实 arrival 触发换层），镜像真人
+    // 「走下来再走上去」操作；仅真实点击，不强制移动。
+    const live = await state(cdp);
+    if (live.floor !== step.floor && !live.moving && !live.lock && !live.eventId) {
+      const stairInfo = await evalJson(
+        cdp,
+        String.raw`(function(){
+          var x = core.status.hero.loc.x, y = core.status.hero.loc.y;
+          var cf = (core.floors[core.status.floorId].changeFloor || {})[x + "," + y];
+          var adj = null;
+          var dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+          for (var i = 0; i < dirs.length && !adj; i++) {
+            var nx = x + dirs[i][0], ny = y + dirs[i][1];
+            if (nx < 0 || ny < 0 || nx >= core.floors[core.status.floorId].width
+              || ny >= core.floors[core.status.floorId].height) continue;
+            var bl = core.getBlock(nx, ny);
+            var cf2 = (core.floors[core.status.floorId].changeFloor || {})[nx + "," + ny];
+            if (!bl && !cf2 && !core.noPass(nx, ny)) adj = [nx, ny];
+          }
+          return JSON.stringify({onStair: !!cf, x: x, y: y, adj: adj});
+        })()`
+      );
+      if (stairInfo.onStair && stairInfo.adj) {
+        console.log(`      [stair nudge] hero stuck on changeFloor x${stairInfo.x}y${stairInfo.y}; step off/on via x${stairInfo.adj[0]}y${stairInfo.adj[1]}`);
+        await mouseClickTile(cdp, stairInfo.adj[0], stairInfo.adj[1]);
+        await waitIdle(cdp, 10000);
+        await mouseClickTile(cdp, stairInfo.x, stairInfo.y);
+        await waitIdle(cdp, 10000);
+      }
+    }
     return;
   }
   if (step.action === "auto_sweep") {
@@ -2448,25 +2789,46 @@ async function executeStep(cdp, step) {
     // Pickaxe breaks adjacent breakable walls by item effect; it does not open
     // a target selection UI in this game. The recorded pos is the wall expected
     // to disappear, not a tile to click after using the item.
-    await useItem(cdp, "pickaxe");
-    // useItem inserts an async openDoor + waitAsync action. It may still look
-    // idle for a short tick before that queue starts, so waiting for generic
-    // idle alone can race into the next route click and interrupt the break.
-    const deadline = Date.now() + 20000;
+    // The pickaxe (破墙镐) useItemEffect breaks the adjacent breakable walls
+    // around the hero via core.useItem("pickaxe"). In target-click mode the
+    // Digit1 keyboard shortcut consumes the pickaxe but does NOT break the
+    // walls, so call core.useItem directly. Crucially the hero must be fully
+    // idle first: the previous 到达's auto_sweep may still be processing, and a
+    // core.useItem issued mid-settle is swallowed (verified live: with the hero
+    // idle, core.useItem("pickaxe") at MT48(7,7) breaks (6,7); right after the
+    // arrival step it does not).
+    // core.useItem("pickaxe") breaks the adjacent breakable walls only when the
+    // hero is genuinely idle AND standing at the position the recording used it
+    // from (verified live: at MT48(7,7) idle it breaks (6,7), but right after
+    // the arrival automaticRoute the hero is mid-move and a core.useItem is
+    // swallowed / targets the wrong tile). So first wait for the hero to settle
+    // at the walk's before position, then use the pickaxe. Do NOT stop the
+    // automaticRoute -- that can freeze the hero before it reaches the position.
+    const __hb = step.before || {};
+    for (let __i = 0; __i < 40; __i++) {
+      await waitMovementSettled(cdp);
+      const __st = await state(cdp);
+      if (__st.floor === step.floor && __st.x === __hb.x && __st.y === __hb.y && !__st.moving) break;
+      await sleep(300);
+    }
+    await waitIdle(cdp, 20000);
     await sleep(250);
-    // Hidden-tool use can enqueue an empty waitAsync shell without immediately
-    // starting it. Advance that shell through the real canvas input path; never
-    // call core.doAction or mutate the map directly.
-    await mouseClickCanvas(cdp);
-    await sleep(250);
+    const deadline = Date.now() + 30000;
+    let ev = null;
     while (Date.now() < deadline) {
-      const ev = await targetEvent(cdp, step.floor, x, y);
+      ev = await targetEvent(cdp, step.floor, x, y);
       if (!ev) return;
-      const live = await state(cdp);
-      if (live.lock || live.eventId || live.moving || (live.animateAsyncCount || 0) > 0) {
-        await waitIdle(cdp, 20000);
-      } else {
-        await sleep(150);
+      await evalValue(cdp, `(function(){return core.useItem("pickaxe")})()`);
+      const settled = Date.now() + 4000;
+      while (Date.now() < settled) {
+        ev = await targetEvent(cdp, step.floor, x, y);
+        if (!ev) return;
+        const live = await state(cdp);
+        if (live.lock || live.eventId || live.moving || (live.animateAsyncCount || 0) > 0) {
+          await waitIdle(cdp, 20000);
+        } else {
+          await sleep(150);
+        }
       }
     }
     throw new Error(`pickaxe target did not disappear at ${step.floor} x${x}y${y}`);
@@ -2500,6 +2862,18 @@ async function executeStep(cdp, step) {
       const dy = y - st.y;
       if (Math.abs(dx) + Math.abs(dy) !== 1) {
         throw new Error(`MT50 redKing must be adjacent before keyboard trigger: ${stateText(st)}`);
+      }
+      await pressKey(cdp, dx > 0 ? "ArrowRight" : dx < 0 ? "ArrowLeft" : dy > 0 ? "ArrowDown" : "ArrowUp");
+      return;
+    }
+    if (step.note && String(step.note).indexOf("facing-trigger") >= 0) {
+      // 2F 监狱小偷类 facing 触发（41206）：hero 必须以「面向按键」触发，
+      // 点击会产生 automaticRoute + 事件后 route-resume 乱走（hero 被带到
+      // (1,2)）。与 MT50 redKing 同款：hero 相邻 + 真实方向键。
+      const dx = x - st.x;
+      const dy = y - st.y;
+      if (Math.abs(dx) + Math.abs(dy) !== 1) {
+        throw new Error(`facing-trigger must be adjacent before keyboard trigger: ${stateText(st)}`);
       }
       await pressKey(cdp, dx > 0 ? "ArrowRight" : dx < 0 ? "ArrowLeft" : dy > 0 ? "ArrowDown" : "ArrowUp");
       return;
@@ -2677,8 +3051,30 @@ async function executeStep(cdp, step) {
         throw new Error(`single target click did not reach stair x${x}y${y}: ${stateText(after)}`);
       }
     } else {
-      await mouseClickTile(cdp, x, y);
-      await maybeRetryAdjacentTarget(cdp, step);
+      if (step.action === ACT.OPEN_DOOR && RUNTIME.debugDoor) {
+        await doorClickWithTrace(cdp, step, x, y);
+      } else {
+        await mouseClickTile(cdp, x, y);
+        await maybeRetryAdjacentTarget(cdp, step);
+      }
+      if (step.action === ACT.OPEN_DOOR) {
+        // 2026-08-30 41200：游戏自身对开门的 route-resume（hero 续走上门格 ->
+        // control.moveOneStep 补丁插入 core.auto() -> 从门格跑 auto BFS）时机不确定
+        // （0.3s 内或随下一次移动才发生）。这里确定性地走一趟刚开的门格：hero 踏上
+        // 门格那一拍触发 auto sweep，与 Game._apply_door_live 的
+        // 「踏上门格后立即自动BFS」模型逐字段一致。门块已消失才走，避免打断开门动画。
+        await sleep(150);
+        const doorGone = !(await targetEvent(cdp, step.floor, x, y));
+        if (doorGone) {
+          const dState = await state(cdp);
+          if (dState.floor === step.floor && !dState.lock && !dState.eventId
+              && !dState.hasChoices && !dState.moving
+              && (dState.x !== x || dState.y !== y)) {
+            await mouseClickTile(cdp, x, y);
+            await waitMovementSettled(cdp);
+          }
+        }
+      }
       let after = await state(cdp);
       if (after.moving) { await waitMovementSettled(cdp); after = await state(cdp); }
       // boss (skeletonCaptain/vampire 等): 从远处点击怪格 hero 走到相邻触发 boss
@@ -2765,6 +3161,14 @@ async function executeStep(cdp, step) {
         !after.hasChoices &&
         !after.moving
       ) {
+        // Fire tile (fgmap 103): automaticRoute routed the hero adjacent but
+        // cannot step onto fire. Finish the last step with an arrow key so the
+        // post-step auto_sweep fires from the fire tile (matches the recording,
+        // which uses arrow keys for fire tiles like MT47 (8,3)).
+        if (await isFireTile(cdp, step.floor, x, y)) {
+          const fireSt = await arrowStepOntoFire(cdp, x, y, after);
+          if (fireSt.x === x && fireSt.y === y) return;
+        }
         const changed = after.hp !== st.hp || after.atk !== st.atk || after.def !== st.def ||
           after.money !== st.money || after.yk !== st.yk || after.bk !== st.bk || after.rk !== st.rk;
         if (changed) return;
@@ -3006,6 +3410,7 @@ async function runRecordOnly(cdp, walk, steps, args, stop) {
   }
   const finalState = await state(cdp);
   writeRunLog(args, walk, entries, finalState);
+  await saveH5routeFile(cdp, args);
   return finalState;
 }
 
@@ -3013,6 +3418,7 @@ async function run() {
   const args = parseArgs(process.argv);
   RUNTIME.targetClickOnly = !!args.targetClickOnly;
   RUNTIME.strictHumanInput = !!args.strictHumanInput;
+  RUNTIME.debugDoor = !!args.debugDoor;
   if (RUNTIME.strictHumanInput) {
     if (args.loadSlot != null) throw new Error("--strict-human-input forbids --load-slot; load the save through the UI before starting proof replay");
     if (args.checkpointStart != null) throw new Error("--strict-human-input forbids checkpoint saves");
@@ -3028,6 +3434,25 @@ async function run() {
   const steps = walk.steps;
   const stop = args.stopStep || steps.length;
   const cdp = await connectGameTarget();
+  if (RUNTIME.debugDoor) {
+    // 诊断：60ms 金币/位置追踪，打印每次变化（抓瞬变落在哪个窗口）。
+    const t0 = Date.now();
+    (async () => {
+      const expr = `(function(){var h=core.status.hero;var m=core.status.maps[core.status.floorId]||{};function has(bx,by){var r=null;(m.blocks||[]).forEach(function(b){if(b.x===bx&&b.y===by&&!b.disable)r=b.event?(b.event.id||b.event.cls):'?'});return r}return JSON.stringify({g:h.money,x:h.loc.x,y:h.loc.y,f:core.status.floorId,b116:has(11,6),b35:has(3,5),b65:has(6,5)})})()`;
+      let prev = null;
+      for (;;) {
+        try {
+          const v = JSON.parse(await evalValue(cdp, expr));
+          const cur = `${v.f}:${v.x},${v.y}:g${v.g}:(11,6)=${v.b116} (3,5)=${v.b35} (6,5)=${v.b65}`;
+          if (cur !== prev) {
+            console.log(`      [gold-trace +${Date.now() - t0}ms] ${cur}`);
+            prev = cur;
+          }
+        } catch (_) { /* page busy */ }
+        await sleep(60);
+      }
+    })();
+  }
   try {
     await ensurePageActive(cdp);
     if (args.loadSlot != null) {
@@ -3113,6 +3538,11 @@ async function run() {
       oneBased = stepResult.consumed + 1;
     }
     writeRunLog(args, walk, entries, st);
+    await saveH5routeFile(cdp, args);
+  } catch (err) {
+    // 失败路径也要落盘已积累的录像（若 route 缓冲仍在），便于定位断点。
+    try { await saveH5routeFile(cdp, args); } catch (e2) { /* 忽略落盘失败 */ }
+    throw err;
   } finally {
     cdp.close();
   }

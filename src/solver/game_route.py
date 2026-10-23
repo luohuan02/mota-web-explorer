@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
-"""Replay and probe the guide-style route after the 40F boss.
+"""通用 Game 模型（1-4 区 / 4-50 层唯一管线的共享基类）+ post-40 主流程脚本。
 
-The script starts from a live-browser snapshot exported by export_current_cdp.js
-and uses local floor JSON plus a small set of real high-floor event rules.
-It is intentionally conservative: when a guide step is not currently legal it
-stops with the exact checkpoint rather than inventing a shortcut.
+本文件双重身份（历史债务，未拆分）：
+- ``Game`` 类：离线通用状态机，被 recording_seed_to_game / zoneN_game_route /
+  各搜索与审计脚本共享。live 对齐语义（auto_sweep BFS、开门步 sweep、
+  automaticRoute go_to、checkBlock.damage 阻挡、火格撤退等）都收敛在这里；
+  楼层事件建模集中在 ``TRIGGER_EVENT_DESC`` / ``_after_action_impl`` /
+  ``trigger_tile_event``——这是「1-50F 唯一管线共用一个 Game」架构下的
+  适配层位置（CLAUDE.md 根因优先约束：楼层事件不得打补丁到 walk）。
+- 文件尾 ``main()``：save37/post-40 生命榜单路线的主流程（STAGE_NAMES/
+  STAGE_LABELS 是它的专用概念），与 ``scripts/build/prepend_40f_prefix_walk.js``
+  配套，命令见 CLAUDE.md「常用命令」。
+
+行为口径：以 web 实机为准（web 0 mismatch 含金币是唯一验收标准）；
+guide/post40 主流程的步序约定保守、不合法即停在确切 checkpoint。
 """
 
 from __future__ import annotations
@@ -14,7 +23,7 @@ import argparse
 import heapq
 import json
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -58,6 +67,13 @@ WALL_IDS = {
     "water",
     "blueWater",
 }
+
+# Subset of WALL_IDS whose tile event has canBreak=true (project.min.js maps_90f36752
+# tile defs: only yellowWall and fakeWall set canBreak=true; fakeWall2 is false).
+# The pickaxe (破墙镐) useItemEffect iterates core.utils.scan (4 dirs) and openDoor's
+# every adjacent wall with block.event.canBreak, so it breaks ALL of these around
+# the hero, not a single facing wall.
+BREAKABLE_WALL_IDS = {"yellowWall", "fakeWall"}
 DOORS = {"yellowDoor", "blueDoor", "redDoor", "specialDoor", "steelDoor"}
 STAIRS = {"upFloor", "downFloor"}
 
@@ -165,6 +181,12 @@ class Floor:
     events: dict[str, Any]
     after_battle: set[str]
     after_battle_auto: set[str]
+    # Foreground map (fgmap): decorative/animated overlays (e.g. fire=103). The
+    # web's bfs judge treats getFgNumber(tx,ty)===103 as canGoThrough=false, so
+    # auto_sweep must skip fire tiles. The hero can still moveOneStep onto fire
+    # (the recording does), so go_to does NOT block fire -- only auto_sweep bfs.
+    # Default empty (no fgmap); only MT47 uses fire currently.
+    fgmap: list[list[int]] = field(default_factory=list)
 
     @property
     def width(self) -> int:
@@ -173,6 +195,16 @@ class Floor:
     @property
     def height(self) -> int:
         return len(self.grid)
+
+    def fg_at(self, x: int, y: int) -> int:
+        """Foreground value at (x,y), 0 if out of bounds or no fgmap (web getFgNumber)."""
+        fg = self.fgmap
+        if not fg or y < 0 or y >= len(fg):
+            return 0
+        row = fg[y]
+        if x < 0 or x >= len(row):
+            return 0
+        return int(row[x] or 0)
 
 
 def read_json(path: Path) -> Any:
@@ -183,6 +215,55 @@ def floor_no(fid: str) -> int:
     return int(fid[2:])
 
 
+# Floors with isHide=true in the game (core.floors[fid].isHide). The game's
+# _changeFloor_getInfo resolves ":next"/":before" via findValidFloor which SKIPS
+# hidden floors, so a stair with floorId=":next" from MT43 lands on MT45 (not
+# MT44). MT44 is only reachable via the upFly item (floor_no+1, no skip).
+# upFly/downFly do NOT skip hidden floors (item-based, floor_no±1).
+HIDDEN_FLOORS = {"MT44"}
+
+
+# NPC eids that are passable step-on event triggers (hero routes through them
+# and trigger_tile_event fires). In practice NO NPC is passable in live: all
+# npc blocks default to noPass=true (cls!=items rule in maps.initBlock), so the
+# hero always stops adjacent and the event fires on FACING (turn-then-move
+# toward the NPC = a pure turn; trigger="action"). This includes the thief
+# (MT2 (10,11)/MT15 (9,1)/MT29 (6,2)/MT35 (5,10)) and the princess (MT26 6,6):
+# the recording never steps on them -- e.g. MT29 (6,2) thief: hero at (5,2)
+# turns right toward (6,2), stays at (5,2), the "action" event fires (opens
+# (6,3) 暗道). MT10 (6,9) "thief event" is an empty step-on floor-event tile
+# (post-boss (6,9) is ground 0), NOT a thief block, so unaffected. The
+# converter's arrow handler fires noPass NPCs via _reach_event_trigger
+# (move_adjacent + trigger_tile_event). Kept as an empty set (not removed) so
+# the can_enter/is_intermediate/_reachable_event_triggers branches stay
+# explicit if a truly passable NPC is ever added.
+PASSABLE_NPC_EIDS: set[str] = set()
+# Story-only NPCs live treats as passable ground (enable:false, noPass unset),
+# NOT step-on trigger events (those stay noPass). The recording walks straight
+# through them -- e.g. MT35 (5,10) thief says goodbye and leaves; the route then
+# passes through to reach MT35 (5,11), with no event fired. Respecting the
+# noPass in is_wall/can_enter lets the hero route through these decor NPCs.
+PASSABLE_NPC_TILES: set[tuple[str, tuple[int, int]]] = {
+    ("MT35", (5, 10)),
+}
+
+
+def next_floor(fid: str) -> str:
+    """Resolve ":next" from fid, skipping hidden floors (matches findValidFloor)."""
+    n = floor_no(fid) + 1
+    while f"MT{n}" in HIDDEN_FLOORS:
+        n += 1
+    return f"MT{n}"
+
+
+def prev_floor(fid: str) -> str:
+    """Resolve ":before" from fid, skipping hidden floors."""
+    n = floor_no(fid) - 1
+    while f"MT{n}" in HIDDEN_FLOORS:
+        n -= 1
+    return f"MT{n}"
+
+
 def state_line(s: dict[str, Any]) -> str:
     return (
         f"HP={s['hp']} ATK={s['atk']} DEF={s['def']} "
@@ -191,7 +272,7 @@ def state_line(s: dict[str, Any]) -> str:
 
 
 def stock_score(s: dict[str, Any]) -> float:
-    return s["hp"] + s["yk"] * 50 + s["bk"] * 200 + s["gold"] * 0.5
+    return s["hp"] + s["yk"] * 100 + s["bk"] * 500 + s["gold"] * 1.0
 
 
 def stage_resource_text(s: dict[str, Any]) -> str:
@@ -247,6 +328,15 @@ def load_tiles() -> dict[int, dict[str, Any]]:
     return {int(k): v for k, v in raw["tiles"].items()}
 
 
+# Reverse lookup eid -> tile id. Used to scan a floor's grid for decor blocks
+# that classify() returns None for (e.g. whiteWall2 is passable decor, not in
+# .blocks), so trigger_tile_event can count them for conditional events like
+# MT29 thief (whiteWall2@MT23 gates whether the 暗道 opens).
+_EID_TO_TILE: dict[str, int] = {
+    info.get("id", ""): tid for tid, info in load_tiles().items()
+}
+
+
 def load_enemies() -> dict[str, dict[str, Any]]:
     return read_json(ROOT / "data" / "maps" / "enemy_stats.json")["enemys"]
 
@@ -256,8 +346,16 @@ def load_fly_points() -> dict[str, dict[str, Any]]:
 
 
 def decode_snapshot_grid(fid: str, base_grid: list[list[int]], snapshot: dict[str, Any]) -> list[list[int]]:
+    """Merge the save's runtime map over the refreshed base grid.
+
+    2026-08-31 41218 修复：快照覆盖只对 **save 已访问楼层** 生效。未访问楼层的
+    save.map 是导出存档当时的运行时提取——游戏数据此后更新时（如 MT40 (6,1)
+    从 yellowKnight 改为 upFloor 楼梯）旧提取就成了陈旧数据，模型与录像所玩的
+    当前游戏分歧。已访问楼层的快照状态（门/拾取/击杀进度）仍必须保留。
+    """
     saved = snapshot.get("maps", {}).get(fid)
-    if not saved:
+    visited = ((snapshot.get("hero") or {}).get("flags") or {}).get("__visited__") or {}
+    if not saved or not visited.get(fid):
         return copy.deepcopy(base_grid)
     saved_grid = saved.get("map")
     if not saved_grid:
@@ -353,8 +451,17 @@ def load_floor(fid: str, snapshot: dict[str, Any], tiles: dict[int, dict[str, An
     for loc in list(events):
         if hero_flags.get(f"R{fid},{loc}"):
             events.pop(loc, None)
+    # Foreground map (fgmap): decorative overlays like fire (103) that the web's
+    # bfs judge blocks (getFgNumber(tx,ty)===103 -> canGoThrough false). Default to
+    # all-zeros when the floor has no fgmap; only MT47 uses fire currently.
+    fgmap_raw = raw.get("fgmap") or []
+    fgmap: list[list[int]] = []
+    for gy in range(len(grid)):
+        src_row = fgmap_raw[gy] if gy < len(fgmap_raw) else []
+        fgmap.append([int(src_row[gx]) if gx < len(src_row) else 0 for gx in range(len(grid[0]))])
     floor = Floor(fid=fid, ratio=ratio, grid=grid, blocks=blocks,
                  change_floor=raw.get("changeFloor", {}), events=events,
+                 fgmap=fgmap,
                  after_battle=set((raw.get("afterBattle") or {}).keys()),
                  after_battle_auto={
                      key for key, actions in (raw.get("afterBattle") or {}).items()
@@ -397,8 +504,29 @@ class RouteError(Exception):
     pass
 
 
+# 攻略线（guide/post40 主流程）搜索时代的语义：这些 boss 在 guide 关键阶段
+# （49F 屠龙匕首/祝福/封印）拿到属性后变 0 伤，若不禁止 auto，搜索/sweep 顺路
+# 会把它们提前农掉、破坏脚本化的 boss 事件边界。**不是 live 语义**——live 的
+# auto 只碰 0 伤怪，boss 变 0 伤后 live 也会 auto 杀；录像转换管线不需要它，
+# 只有 guide 基线搜索/骨架交换类脚本依赖。需要不同集合时用 Game(..., no_auto_farm=...)
+# 注入（传空 set 即关闭该保护）。
+GUIDE_NO_AUTO_FARM: set[tuple[str, int, int]] = {
+    ("MT35", 6, 7),   # magicDragon (after 49F knife, guide step 11a)
+    ("MT25", 6, 6),   # blackMagician (after bless, guide step 11f)
+    ("MT49", 6, 3),   # redKing 49F (seal sequence, guide step 10)
+    ("MT50", 6, 5),   # redKing 50F (final boss)
+}
+# MT47 撤退红巫师初始位（(1,9) 走廊入口；base 图静态红巫师，与 (8,2) 同机制）。
+# (8,2) 不在种子里：41218/40145 实证它的标记由 _check_fire_retreat 在 hero 踩
+# 相邻火格时迁移补上（初始种子只有 (1,9) 即与 live 一致）；动态恢复用
+# sync_mt47_retreat_wizards。需要覆盖时用 Game(..., retreat_wizards=...) 注入。
+MT47_RETREAT_WIZARD_SEED: set[tuple[str, int, int]] = {("MT47", 1, 9)}
+
+
 class Game:
-    def __init__(self, snapshot: dict[str, Any]) -> None:
+    def __init__(self, snapshot: dict[str, Any],
+                 *, no_auto_farm: set[tuple[str, int, int]] | None = None,
+                 retreat_wizards: set[tuple[str, int, int]] | None = None) -> None:
         self.snapshot_raw = snapshot
         self.enemies = load_enemies()
         self.floors = load_floors(snapshot, self.enemies)
@@ -448,6 +576,41 @@ class Game:
         self.errors: list[str] = []
         self.segment = "start"
         self.flags: dict[str, Any] = dict(flags)
+        # Auto-load autoEvent "already triggered" flags from the save state.
+        # The save does not store these custom flags, so a floor whose autoEvent
+        # condition is ALREADY met at load time (center cleared / puzzle doors
+        # open) would otherwise re-fire the autoEvent and re-spawn its reward on
+        # the next visit (e.g. slot34 MT34 center cleared in zone1-3 -> zone4
+        # re-visit must not re-spawn the 4YK+1RK that was already picked up).
+        if "MT34" in self.floors:
+            center = {(5, 4), (7, 4), (9, 4), (11, 4), (5, 8), (7, 8), (9, 8), (11, 8)}
+            if all(not (self.floors["MT34"].blocks.get(p)
+                        and self.floors["MT34"].blocks[p].kind == "enemy")
+                   for p in center):
+                self.flags["mt34_center_reward"] = 1
+        if "MT39" in self.floors:
+            puzzle_open = {(4, 2), (6, 4)}
+            if all(self.floors["MT39"].blocks.get(p) is None for p in puzzle_open):
+                self.flags["mt39_centerfly3"] = 1
+        # MT32 (6,10) yellowKnight one-time event: the web sets flag "32" and
+        # removes events["6,10"] when it fires. The save stores "32" (not our
+        # internal mt32_yellowknight name) and does not persist the popped
+        # event, so a zone4 re-visit would otherwise re-fire the +100G event.
+        if self.flags.get("32"):
+            self.flags["mt32_yellowknight"] = 1
+            if "MT32" in self.floors:
+                self.floors["MT32"].events.pop("6,10", None)
+        # MT10 (6,11) upFloor is SHOWN only by the skeletonCaptain afterBattle
+        # ("show [6,11]" in web mt10_map.json afterBattle["6,1"]; the base map's
+        # events["6,11"] has enable:false so live has NO block there until the
+        # captain dies). Before the captain kill the stair must not exist --
+        # otherwise pre-boss climbs MT10->MT11 pass offline but are impossible
+        # in live (2026-09-18 41898 detour false positive, web verifier caught
+        # it: core.getBlock(6,11) == null on live).
+        if "MT10" in self.floors and not self.flags.get("10f战胜骷髅队长"):
+            cap_stair = self.floors["MT10"].blocks.get((6, 11))
+            if cap_stair is not None and cap_stair.kind == "terrain" and cap_stair.eid == "upFloor":
+                self.floors["MT10"].blocks[(6, 11)] = None
         auto = flags.get("__auto__", {}) if isinstance(flags.get("__auto__", {}), dict) else {}
         self.auto_flags: dict[str, Any] = {
             "battle": auto.get("battle", False) is True,
@@ -484,17 +647,15 @@ class Game:
         self._former_doors: dict[str, set[tuple[int, int]]] = {}
         # RedWizards that retreat one tile away from the hero when approached
         # (until blocked by wall/door). They need a corner-trap route, not a
-        # direct go_to, so auto-farming/sweeping must skip them.
-        self.retreat_wizards: set[tuple[str, int, int]] = {("MT47", 1, 9)}
-        # Bosses that the guide kills at specific stages (with higher stats after
-        # shop/bless) must NOT be auto-farmed earlier when their damage is high.
-        # Only the hand-written sections deal with them.
-        self.no_auto_farm: set[tuple[str, int, int]] = {
-            ("MT35", 6, 7),   # magicDragon (after 49F knife, guide step 11a)
-            ("MT25", 6, 6),   # blackMagician (after bless, guide step 11f)
-            ("MT49", 6, 3),   # redKing 49F (seal sequence, guide step 10)
-            ("MT50", 6, 5),   # redKing 50F (final boss)
-        }
+        # direct go_to, so auto-farming/sweeping must skip them. Seed + 注入
+        # 语义见 MT47_RETREAT_WIZARD_SEED。
+        self.retreat_wizards: set[tuple[str, int, int]] = set(
+            MT47_RETREAT_WIZARD_SEED if retreat_wizards is None else retreat_wizards)
+        # guide 基线搜索的 boss 保护（guide/post40 主流程需要，录像转换不需要），
+        # 见 GUIDE_NO_AUTO_FARM。
+        self.no_auto_farm: set[tuple[str, int, int]] = set(
+            GUIDE_NO_AUTO_FARM if no_auto_farm is None else no_auto_farm)
+
     def clone(self) -> "Game":
         # Search probes clone thousands of times; copy.deepcopy of the full game
         # (incl. 10 floors' blocks dicts) was 74% of runtime (acquire_resource
@@ -684,7 +845,7 @@ class Game:
         block = f.blocks.get(pos)
         if block and block.kind == "door" and block.eid in {"specialDoor", "steelDoor"}:
             return True
-        if block and block.kind == "npc":
+        if block and block.kind == "npc" and block.eid not in PASSABLE_NPC_EIDS and (fid, pos) not in PASSABLE_NPC_TILES:
             return True
         if block and block.eid in WALL_IDS:
             return True
@@ -757,7 +918,18 @@ class Game:
         x, y = pos
         total = 0
         f = self.floors[fid]
-        for (ex, ey) in getattr(f, "_spell_enemies", None) or ():
+        spell = getattr(f, "_spell_enemies", None)
+        if spell is None:
+            # 合成 Floor（测试/探针直接构造，绕过 load 阶段）没有 _spell_enemies
+            # 预计算；按同规则惰性算一次。加载器路径总会 set，不影响运行时性能。
+            spell = f._spell_enemies = []
+            for _pos, _blk in f.blocks.items():
+                if _blk.kind != "enemy":
+                    continue
+                _sp = (self.enemies.get(_blk.eid, {}) or {}).get("special", 0)
+                if 15 in (_sp if isinstance(_sp, list) else {_sp}):
+                    spell.append(_pos)
+        for (ex, ey) in spell:
             block = f.blocks.get((ex, ey))
             if not block or block.kind != "enemy":
                 continue
@@ -785,7 +957,13 @@ class Game:
             specials = set(special if isinstance(special, list) else [special])
             if 16 in specials:
                 total += self.state["hp"] // 2
-        return total
+        # A dead hero (hp <= 0, only possible after a swallowed battle-death
+        # RouteError) must not produce a NEGATIVE tile cost: path_cost feeds
+        # Dijkstra, and a negative special-16 halving edge makes path_to
+        # re-push nodes forever (2026-08-18 skeleton-swap candidate hang).
+        # For a live hero hp > 0 this clamp is a no-op; for a dead one any
+        # value is fiction, so clamp at 0 rather than poison the search.
+        return max(total, 0)
 
     def apply_check_damage(self, fid: str, pos: tuple[int, int], note: str = "") -> None:
         damage = self.check_damage_at(fid, pos)
@@ -843,6 +1021,15 @@ class Game:
         if block.kind == "door":
             kk = DOOR_KEY.get(block.eid)
             return kk is not None and self.state[kk[0]] > 0
+        if block.kind == "npc":
+            # Passable NPCs (princess, thief) are step-on event triggers: the
+            # hero routes through them and trigger_tile_event fires (e.g. MT26
+            # (6,6) princess rescue). Other NPCs (shop/trader/oldman) are noPass
+            # in live (face-on commonEvent): the hero stops adjacent, so they
+            # block pathing. tile_mapping marks all NPCs noPass=false, but live
+            # maps.initBlock defaults non-item cls to noPass=true unless the NPC
+            # is a step-on trigger.
+            return block.eid in PASSABLE_NPC_EIDS or (fid, pos) in PASSABLE_NPC_TILES
         return False
 
     def can_enter_click_path(self, fid: str, pos: tuple[int, int], target: tuple[int, int]) -> bool:
@@ -867,6 +1054,10 @@ class Game:
             return True
         if block.kind == "item":
             return (fid, pos[0], pos[1]) not in self.blocked_items
+        if block.kind == "npc":
+            # Passable NPCs (princess, thief) can be routed through as an
+            # intermediate tile (step-on event fires via trigger_tile_event).
+            return block.eid in PASSABLE_NPC_EIDS or (fid, pos) in PASSABLE_NPC_TILES
         return False
 
     @staticmethod
@@ -874,10 +1065,13 @@ class Game:
         if item_mode is True:
             return True
         if item_mode == "nopotion":
-            # Live item=nopotion excludes only HP potions. Equipment and tools
-            # are still auto-collected (verified with MT37 bomb and MT44
-            # shield5); using a tool remains an explicit action.
-            return eid not in {"redPotion", "bluePotion"}
+            # web potionIds (project.min.js 自动操作): redPotion/bluePotion/
+            # greenPotion/yellowPotion/superPotion。本塔 50 层只有红/蓝血瓶
+            # 落地（扫描核实），但排除集按 web 全集对齐防未来分歧。装备和
+            # 工具仍自动收（MT37 bomb / MT44 shield5 实证）；用工具是显式动作。
+            return eid not in {
+                "redPotion", "bluePotion", "greenPotion", "yellowPotion", "superPotion",
+            }
         return False
 
     def _retreat_wizard_trapped_for_auto(self, fid: str, pos: tuple[int, int]) -> bool:
@@ -886,6 +1080,13 @@ class Game:
         Direct target routing still treats these special enemies as retreating.
         The live auto plugin, however, battles one once its corridor endpoint is
         blocked (MT47 x8y3 by the closed x8y4 door, or either outer wall).
+
+        格位来源（MT47 两条撤退走廊，2026-08-31 41218 实证）：右走廊 x8y1-y3
+        （web 撤退链 8,2→8,1 / 8,2→8,3，(8,3) 可被 x8y4 门封死），左走廊
+        x1y9-y11（撤退链 1,9→1,10→1,11，(1,11) 下缘是边界墙）。向任意方向
+        撤退一步的通用实现需要 web moveOneStep 的方向参数化，当前按两条
+        已知走廊的端点判定——超出 MT47 的撤退怪本塔不存在（special 15 怪
+        仅 41-49 层，撤退机制仅 MT47 实测）。
         """
         if (fid, pos[0], pos[1]) not in self.retreat_wizards or fid != "MT47":
             return False
@@ -898,159 +1099,6 @@ class Game:
             return self.is_wall(fid, (1, 12))
         return False
 
-    def _auto_cell_passable(
-        self,
-        fid: str,
-        pos: tuple[int, int],
-        *,
-        battle: bool,
-        item_mode: Any,
-        wall: bool,
-    ) -> bool:
-        f = self.floors[fid]
-        x, y = pos
-        if x < 0 or y < 0 or x >= f.width or y >= f.height:
-            return False
-        block = self.block_at(fid, pos)
-        if not block:
-            return True
-        if block.eid == "lava":
-            return wall and bool(self.state.get("snow"))
-        if block.kind == "terrain":
-            return wall and (
-                block.eid in {"fakeWall", "fakeWall2", "flower"}
-                or (block.eid == "lava" and bool(self.state.get("snow")))
-            )
-        if block.kind == "item":
-            if (fid, pos[0], pos[1]) in self.blocked_items:
-                return False
-            return self._auto_item_allowed(block.eid, item_mode)
-        if block.kind == "enemy" and battle:
-            if (
-                (fid, pos[0], pos[1]) in self.retreat_wizards
-                and not self._retreat_wizard_trapped_for_auto(fid, pos)
-            ):
-                return False
-            if (fid, pos[0], pos[1]) in self.no_auto_farm:
-                return False
-            return self.enemy_damage(block.eid) == 0
-        return False
-
-    def _auto_reachable(
-        self,
-        fid: str,
-        *,
-        battle: bool,
-        item_mode: Any,
-        wall: bool,
-    ) -> dict[tuple[int, int], int]:
-        start = (self.state["x"], self.state["y"])
-        f = self.floors[fid]
-        if start[0] < 0 or start[1] < 0 or start[0] >= f.width or start[1] >= f.height:
-            return {}
-        seen = {start: 0}
-        queue = [start]
-        for cur in queue:
-            cx, cy = cur
-            for nxt in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
-                if nxt in seen:
-                    continue
-                block = self.block_at(fid, nxt)
-                if (
-                    block
-                    and block.kind == "terrain"
-                    and block.eid == "flower"
-                    and not self.can_enter_flower(fid, cur, nxt)
-                ):
-                    continue
-                if not self._auto_cell_passable(fid, nxt, battle=battle, item_mode=item_mode, wall=wall):
-                    continue
-                seen[nxt] = seen[cur] + 1
-                queue.append(nxt)
-        return seen
-
-    def _auto_item_candidates(
-        self,
-        fid: str,
-        *,
-        battle: bool,
-        item_mode: Any,
-        wall: bool,
-    ) -> list[tuple[int, int, tuple[int, int], Block]]:
-        reach = self._auto_reachable(fid, battle=battle, item_mode=item_mode, wall=wall)
-        out: list[tuple[int, int, tuple[int, int], Block]] = []
-        for pos, block in self.floors[fid].blocks.items():
-            if block.kind != "item":
-                continue
-            if pos not in reach:
-                continue
-            if not self._auto_item_allowed(block.eid, item_mode):
-                continue
-            if (fid, pos[0], pos[1]) in self.blocked_items:
-                continue
-            out.append((reach[pos], pos[1], pos, block))
-        out.sort()
-        return out
-
-    def _auto_enemy_candidates(
-        self,
-        fid: str,
-        *,
-        battle: bool,
-        item_mode: Any,
-        wall: bool,
-    ) -> list[tuple[int, int, tuple[int, int], Block]]:
-        reach = self._auto_reachable(fid, battle=battle, item_mode=item_mode, wall=wall)
-        out: list[tuple[int, int, tuple[int, int], Block]] = []
-        for pos, block in self.floors[fid].blocks.items():
-            if block.kind != "enemy":
-                continue
-            if (
-                (fid, pos[0], pos[1]) in self.retreat_wizards
-                and not self._retreat_wizard_trapped_for_auto(fid, pos)
-            ):
-                continue
-            if (fid, pos[0], pos[1]) in self.no_auto_farm:
-                continue
-            dmg = self.enemy_damage(block.eid)
-            if dmg != 0:
-                continue
-            x, y = pos
-            adjacent = [
-                reach[(x + dx, y + dy)]
-                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
-                if (x + dx, y + dy) in reach
-            ]
-            if not adjacent:
-                continue
-            out.append((min(adjacent) + 1, pos[1], pos, block))
-        out.sort()
-        return out
-
-    def _auto_wall_candidates(
-        self,
-        fid: str,
-        *,
-        battle: bool,
-        item_mode: Any,
-        wall: bool,
-    ) -> list[tuple[int, int, tuple[int, int], Block]]:
-        # Reachable fakeWall (live core.plugin.auto with wall=true BFSes through
-        # and breaks it). fakeWall2 (暗墙) noPass=false 可穿但 trigger openDoor 需显式
-        # step，不 auto 破 (见 auto_sweep)。_auto_cell_passable 仍把两者当 passable。
-        if not wall:
-            return []
-        reach = self._auto_reachable(fid, battle=battle, item_mode=item_mode, wall=wall)
-        out: list[tuple[int, int, tuple[int, int], Block]] = []
-        for pos, block in self.floors[fid].blocks.items():
-            if block.kind != "terrain" or block.eid != "fakeWall":
-                continue
-            if pos not in reach:
-                continue
-            out.append((reach[pos], pos[1], pos, block))
-        out.sort()
-        return out
-
     def auto_sweep(
         self,
         fid: str | None = None,
@@ -1058,7 +1106,6 @@ class Game:
         battle: bool | None = None,
         item: Any = None,
         wall: bool | None = None,
-        max_rounds: int = 200,
         exclude: set[tuple[int, int]] | None = None,
     ) -> list[str]:
         """Apply h5mota-style automatic pickup / zero-damage cleanup on one floor.
@@ -1097,17 +1144,29 @@ class Game:
         # 英雄站在事件格（如拾取后停在事件格）不触发自动清扫。
         if f"{start[0]},{start[1]}" in f.events:
             return []
-        # web: deep=Infinity 除非英雄当前格 hasBlockDamage；enableGentleClick false → deep=0。
-        if self.check_damage_at(fid, start) > 0:
-            deep = 0
-        else:
-            deep = 10 ** 9
+        # web: deep=Infinity 除非英雄当前格 hasBlockDamage（checkBlock 的
+        # damage/ambush/repulse/chase 四图，enableGentleClick false → deep=0）。
+        # 2026-09-05 40145 修复（推翻 2026-08-30 41200 的"本塔四图恒空"结论）：
+        # updateCheckBlock（project/functions.js）对 special 15 领域/16 夹击
+        # **会**写入 damage 图，仅受 '!core.hasFlag("魔法免疫")' 限制——MT47
+        # damage=[] 是因为该线已拿神圣盾（magicImmune），不是法术场不入图。
+        # MT42（未拿盾）实测 damage 有 11 格。check_damage_at 与 updateCheckBlock
+        # 同源（special 15/16 + magicImmune 全免 + 怪死场消），故可直接用它的
+        # 起点值判 deep：hero 站在法术场/夹击格时 live sweep 完全不跑。
+        deep = 0 if self.check_damage_at(fid, start) > 0 else 10 ** 9
         DIRS = ((0, -1), (-1, 0), (0, 1), (1, 0))  # up, left, down, right (core.utils.scan)
         mapped: dict[tuple[int, int], bool] = {start: True}
         queue: list[tuple[int, int]] = [start]
         rounds = 0
         while queue and rounds < deep:
             cur = queue.pop(0)
+            # live 实证（2026-09-07 combo16 web 复验 + 9222 手动 core.auto()）：
+            # auto BFS 不可从花丛格向外扩展——站 MT38 (2,5) 花丛手动触发 core.auto()
+            # 也不拾取相邻可达的 (2,7) shield3。花丛对 auto BFS 是吸收格：可走入
+            # （go_to 寻路按 can_enter_flower 单向合法），但 BFS 到达即止。
+            cur_block = self.block_at(fid, cur)
+            if cur_block and cur_block.kind == "terrain" and cur_block.eid == "flower":
+                continue
             for dx, dy in DIRS:
                 nxt = (cur[0] + dx, cur[1] + dy)
                 if nxt in mapped:
@@ -1127,8 +1186,16 @@ class Game:
                 # web judge (project.min.js) 可达性前置检查（在 empty/enemy/item 之前）：
                 # 事件格/changeFloor/fire 在 web 中带 block（extractBlocks），非 empty，直接阻断。
                 loc_key = f"{nx},{ny}"
-                if f.grid[ny][nx] == 103:
-                    continue  # fire (animates): canGoThrough false
+                if f.grid[ny][nx] == 103 or f.fg_at(nx, ny) == 103:
+                    # fire (animates): canGoThrough false. web's getFgNumber
+                    # checks the fgmap; the main grid may also carry 103. The hero can
+                    # still moveOneStep onto fire (recording does), so this only blocks
+                    # auto_sweep bfs, not go_to.
+                    # 2026-08-30 实证保持阻挡：41200 一访 (7,1) 门步 walk-through 时
+                    # live 未穿 (8,1)/(8,3) 火收集 x11 资源（曾经二访 (1,6) 窗口的
+                    # +50 疑似穿火，后被商人/事件源排查否定，见 walk [888] MT47 (5,2)
+                    # -4000G 兑换商人）。
+                    continue
                 if loc_key in f.change_floor:
                     cf = f.change_floor[loc_key] or {}
                     ignore_cf = cf.get("ignoreChangeFloor", self.flags.get("ignoreChangeFloor", False))
@@ -1148,8 +1215,14 @@ class Game:
                         # step (arrow 破+stay / move:x:y 破+move)，和门统一 (门也不 auto 开)。
                         pass  # 可穿，不破不 after_action
                     else:
+                        # web judge (project.min.js): only isWall(block.id===2),
+                        # isLava(snow), isEnemy, isItem are auto-passable. flower is
+                        # a terrain tile that is NOT canGoThrough in the auto bfs, so
+                        # it must NOT be crossed -- crossing it over-reaches (e.g. MT38
+                        # (3,1) reaching (2,7) shield3 through the (2,5) flower that web
+                        # never reaches). 2026-08-16 fixed (39944 全防 line).
                         auto_terrain = wall and (
-                            block.eid in {"fakeWall", "flower"}
+                            block.eid == "fakeWall"
                             or (block.eid == "lava" and bool(self.state.get("snow")))
                         )
                         if not auto_terrain:
@@ -1162,8 +1235,14 @@ class Game:
                         continue
                     if not self._auto_item_allowed(block.eid, item):
                         continue  # nopotion 血瓶：performGetItem false → 不拾不通过
+                    # web canGetItem = !hasBlockDamage(loc)（enableGentleClick=false）：
+                    # damage 格（法术场/夹击）上的道具**不能远程拾取**（英雄必须
+                    # 真走过去）。2026-09-05 40145 修复（推翻 2026-08-30 41200
+                    # "四图不含法术场"结论——MT47 damage=[] 是 magicImmune 所致，
+                    # 未拿盾的 MT42 damage 图非空）。magicImmune 下
+                    # check_damage_at 恒 0，41200 (11,6) redBat 行为不变。
                     if self.check_damage_at(fid, nxt) > 0:
-                        continue  # canGetItem: 该格无伤害（或 gentleClick）
+                        continue
                     self.apply_item(fid, block.eid)
                     self.set_ground(fid, nxt)
                     self.after_action(fid, nxt, block)
@@ -1195,7 +1274,17 @@ class Game:
                     handled.append(f"x{nx}y{ny} {block.eid}")
                 else:
                     continue  # 墙/门/非 auto 敌人/未知：canGoThrough false
-                # 清/拾/拆后 hasBlockDamage → 不扩展（web: if(hasBlockDamage(loc)) return）
+                # web bfs 每个 tile visit 后：if (hasBlockDamage(loc)) return
+                # —— checkBlock 格（法术场/夹击等）可被访问（战斗/拾取/破墙照常
+                # 结算）但**绝不扩展**（damage 格挡 BFS 前进）。
+                # 2026-09-05 40145 修复（推翻 2026-08-30 41200"四图不含法术场"
+                # 结论）：MT42 未拿盾时 damage 图非空（special 15/16 都入图，
+                # project/functions.js updateCheckBlock），(8,5) 门步 BFS 被
+                # (9,5) 法术场格挡住收不到顶部钥匙房；MT47 damage=[] 仅因
+                # 已拿神圣盾（magicImmune → check_damage_at 恒 0，两侧行为
+                # 一致）。41200 的 (11,6) redBat 场景在 magicImmune 下不受影响。
+                # web 每次战斗/拾取/破墙后 updateCheckBlock 重算 → 怪死场消，
+                # check_damage_at 从当前 blocks 实时计算，语义等价。
                 if self.check_damage_at(fid, nxt) > 0:
                     continue
                 queue.append(nxt)
@@ -1280,7 +1369,28 @@ class Game:
             self.fail(f"negative key after door {block.eid} at {fid} {pos}")
         self.set_ground(fid, pos)
         self.after_action(fid, pos, block)
-        door_note = "到门前开门，不触发自动BFS"
+        # 2026-08-30 41200 修复：开门时 hero 会经 walk-through/箭头踩上门格
+        # （live #3671 箭头踩上带火的 (8,4) 门格），moveOneStep 火处理会清掉
+        # 门格的火（(8,4) 的三步传播火由此消失，二访 (1,6) 到达 sweep 才能穿
+        # (8,4) 进右下口袋）。旧的门分支跳过了火处理，模型火格持久残留 →
+        # auto BFS 可达性与 live 分歧。同时按 _check_fire_retreat 语义处理
+        # 门格相邻的撤退法师（一般无）。
+        self._check_fire_retreat(fid, pos)
+        # 2026-08-30 41200 录像修复：web 开门后 control.moveOneStep 补丁在 hero
+        # 续走（continueAutomaticRoute）踏上**门格**的那一刻插入 core.auto()，
+        # auto BFS 从门格起跑——门格通常无相邻伤害（hasBlockDamage=false → deep=∞），
+        # 能穿过刚开的门远程收集 0 伤怪 + 道具（41200 MT47 (8,4) 实证）。旧约定
+        # 「开门不触发自动BFS」的验证线（23076 等）只是竞态恰好把这次 sweep 计入
+        # 下一步。verifier 对开门步确定性补一次「走进门格」点击触发同一 sweep。
+        # hero 状态位置保持录像语义（箭头开门 hero 停邻格）——后续 arrow 序列的
+        # 落点依赖它；sweep 临时以门格为起点跑（deep 判定与 live 一致），跑完还原。
+        door_note = "到门前开门，开门后以门格为起点自动BFS"
+        hx, hy = self.state["x"], self.state["y"]
+        self.state["x"], self.state["y"] = pos
+        handled = self.auto_sweep(fid)
+        self.state["x"], self.state["y"] = hx, hy
+        if handled:
+            door_note += "; auto_sweep: " + ", ".join(handled)
         full_note = f"{note}; {door_note}" if note else door_note
         self.record("开门", pos, block.eid, before, full_note)
 
@@ -1301,6 +1411,17 @@ class Game:
             elif block.kind == "enemy":
                 dmg = self.enemy_damage(block.eid)
                 base = 3 if dmg == 0 else 1000 + (99999 if dmg == float("inf") else int(dmg))
+        # Removed (2026-08-11): a strict_live_model discount that used to give
+        # event tiles cost 0.9 to "prefer routing through event triggers" (the
+        # MT26 (6,6) princess case). That is not what live's automaticRoute
+        # does: it does NOT discount event tiles, and a disruptive event tile
+        # (e.g. the 40F boss (6,7)) interrupts the route, so automaticRoute can
+        # never pass straight through it. The discount made go_to(MT40,5,7)
+        # from (6,1) route through (6,7) and fire the 40F boss early, diverging
+        # from the recording (see tmp/trace_mt40.py). Passable step-on NPCs
+        # (princess/thief) are already walkable ground (cost 1.0) and their
+        # events fire via trigger_tile_event / move_adjacent, so no discount is
+        # needed to route through them.
         return base + self.check_damage_at(fid, pos) * 100
 
     def path_to(self, fid: str, target: tuple[int, int], *, strict_click: bool = False) -> list[tuple[int, int]] | None:
@@ -1340,6 +1461,37 @@ class Game:
             cur = parent[cur]
         return list(reversed(out))
 
+    def _reachable_event_triggers(self, fid: str, target: tuple[int, int]) -> list[tuple[int, int]]:
+        """Passable step-on event-trigger tiles reachable from the hero (loose
+        path). Used by go_to_decomposed when the static BFS finds no path to the
+        target because an event-opened door/wall blocks it: the recording's
+        automaticRoute fires such triggers mid-move (e.g. MT15 (9,1) thief opens
+        (8,1) unbreakableWall), and stepping on the trigger here fires its event
+        (opening the door) so a re-plan can complete.
+
+        Only passable step-on triggers: empty tiles or passable NPCs (thief).
+        Doors/walls/enemies/shops are not step-on triggers (blockers handled by
+        the normal decompose path, or noPass face-on NPCs). Excludes the hero's
+        own tile and the target.
+        """
+        hx, hy = self.state["x"], self.state["y"]
+        out: list[tuple[int, int]] = []
+        for pos_str in list(self.floors[fid].events.keys()):
+            parts = pos_str.split(",")
+            if len(parts) != 2:
+                continue
+            tx, ty = int(parts[0]), int(parts[1])
+            if (tx, ty) == (hx, hy) or (tx, ty) == target:
+                continue
+            blk = self.block_at(fid, (tx, ty))
+            if blk is not None:
+                # only passable NPCs (thief) are step-on triggers among blocks
+                if not (blk.kind == "npc" and blk.eid in PASSABLE_NPC_EIDS):
+                    continue
+            if self.path_to(fid, (tx, ty), strict_click=False):
+                out.append((tx, ty))
+        return out
+
     def go_to(self, fid: str, x: int, y: int, note: str = "") -> None:
         # go_to 包装：最外层结束（= 一次 hero 行动结束）检查 h5mota autoEvent。
         # 实机 autoEvent 在 auto BFS 之后触发，生成的道具下次行动才拾取，
@@ -1362,6 +1514,50 @@ class Game:
             # not start auto BFS.  In particular, already standing beside an
             # NPC must not manufacture an auto_sweep before the NPC click.
             return
+        # Live: when the hero is idle at the move's start, core.plugin.auto
+        # fires once from the CURRENT position before automaticRoute moves. This
+        # is normally a no-op (the previous action's destination sweep already
+        # cleared everything reachable from here) -- EXCEPT when that previous
+        # action's auto was blocked (target_after_battle_blocks_auto): e.g. MT25
+        # blackMagician dies at (6,6), afterBattle spawns 4 redKeys at (4,8)(5,8)
+        # (7,8)(8,8) but auto is skipped at the kill; the next move (e.g.
+        # move:1:10) fires auto from (6,6), which CAN reach the redKeys, while
+        # its destination (1,10) cannot. _pending_after_battle_sweep is set only
+        # by that blocked-afterBattle kill, so we sweep the current position just
+        # for the move that immediately follows it (and not for every go_to).
+        if self.strict_live_model and getattr(self, "_pending_after_battle_sweep", False):
+            self._pending_after_battle_sweep = False
+            # The afterBattle-spawned/revealed reward AT this move's destination
+            # (e.g. MT15 octopus -> pickaxe at x6y5) is picked up by STEP-ON in
+            # live (apply_block -> PICKUP step), NOT by the move-start auto: the
+            # afterBattle event is still processing so core.plugin.auto returns
+            # early, and the hero simply walks onto the item tile. If this sweep
+            # picked it up here, the pickup would have no step (kill after.pickaxe
+            # =0 because auto was skipped; destination step before.pickaxe=1
+            # because the sweep already took it -> stat_same -> coalesce drops the
+            # step -> web never clicks the tile -> MT48 pickaxe use fails). Exclude
+            # the destination tile from this sweep so step-on owns the pickup and
+            # the walk emits a PICKUP step with the tool 0->1 transition. Distant
+            # afterBattle rewards (e.g. MT25 blackMagician 4 redKeys) are still
+            # swept here. blocked_items is restored after the sweep.
+            dest_key = (fid, x, y)
+            # This move-start auto is a side effect of the SAME click that routes
+            # to the destination (live fires auto from the current position, then
+            # automaticRoute moves). Its pickup (e.g. MT32 (1,10) sweeps +4yk+1bk
+            # that its destination (3,8) cannot reach) must land on the arrival
+            # step's before (pre-sweep) + note, else the arrival step is stat_same
+            # with no auto_sweep note and coalesce drops it, losing the key gain
+            # from the walk. Capture the pre-sweep state and the handled items here
+            # and fold them into the arrival step below.
+            pending_click_before = self.snapshot()
+            self.blocked_items.add(dest_key)
+            try:
+                pending_sweep_handled = self.auto_sweep(fid)
+            finally:
+                self.blocked_items.discard(dest_key)
+        else:
+            pending_click_before = None
+            pending_sweep_handled = []
         path_target = target
         target_block = self.block_at(fid, target)
         target_is_stair = bool(target_block and target_block.eid in STAIRS)
@@ -1479,6 +1675,22 @@ class Game:
             # the origin of the post-battle auto BFS (for example MT14 x1y9
             # redPriest then auto-pick MT14 x1y11 blueKey).
             self.state["x"], self.state["y"] = pos
+            # Empty event-trigger tile (no block): step-on events on cleared
+            # tiles (e.g. MT24 (6,2) princess pathway, whose wall was cleared
+            # by the MT26 rescue) aren't handled by apply_block (it only runs
+            # for blocks). Fire the event explicitly; if it transitions floor
+            # (e.g. 24F->50F), the remaining path is on the old floor, so stop.
+            if not block and f"{pos[0]},{pos[1]}" in self.floors[fid].events:
+                # Record arrival at the event tile before the transition/event
+                # fires, so the verifier can click it (paired with the 换层 step
+                # for changeFloor events like MT24 (6,2) -> MT50).
+                if pos == path_target and note:
+                    before_arrive = self.snapshot()
+                    self.record("通过", pos, None, before_arrive, note)
+                if self.trigger_tile_event(fid, pos):
+                    if pos != target:
+                        self.go_to(fid, x, y, note)
+                    return
             if block:
                 # Defer after_action's block mutations (mechanism door opens /
                 # item spawns) for enemy kills: in live the post-battle auto-BFS
@@ -1548,6 +1760,12 @@ class Game:
                     damage_step = len(self.steps)
                     damage_recorded = False
                 self.trigger_tile_event(fid, pos)
+                # Web moveOneStep fire-retreat (project.min.js): stepping on a
+                # fire tile (fgmap 103) makes adjacent redWizards retreat to the
+                # 2-step tile (if empty), propagating fire. MT47 only. Must fire
+                # before auto_sweep so the retreated wizard is at its new pos.
+                is_fire_step = self.floors[fid].fg_at(pos[0], pos[1]) == 103
+                self._check_fire_retreat(fid, pos)
                 if damage_recorded and self.strict_live_model:
                     # checkBlock, its tile event, and auto settle are one live
                     # movement action. Fold event records into the damage atom
@@ -1564,12 +1782,39 @@ class Game:
                     if extras:
                         step["note"] = "; ".join(filter(None, [step.get("note", ""), *extras]))
                 if pos == path_target and note:
-                    before = self.snapshot()
-                    self.record("到达", pos, None, before, note)
-                # auto ON: hero 每移动一步，auto_sweep 清相邻 0-dmg enemy（battle only）。
-                # item/wall 只在 go_to 末尾 auto_sweep，避免提前拾取显式 take step 的道具。
-                if self.strict_live_model:
-                    path_auto_handled.extend(self.auto_sweep(fid, exclude=path_kill_reserved))
+                    # If this click's move-start auto (pending_after_battle_sweep)
+                    # picked rewards that the destination itself cannot reach, the
+                    # arrival step must show the PRE-sweep state as before and fold
+                    # the pickup into its note. Otherwise before==after (stat_same,
+                    # no auto_sweep note) and coalesce drops the step, losing the
+                    # pickup (e.g. MT32 keys) from the walk.
+                    if pending_sweep_handled:
+                        before = pending_click_before
+                        auto_note = "; auto_sweep: " + ", ".join(pending_sweep_handled)
+                    else:
+                        before = self.snapshot()
+                        auto_note = ""
+                    # Mark fire-tile steps so the converter coalesce keeps them
+                    # (automaticRoute can't route through fire; the verifier
+                    # steps onto fire via arrow key).
+                    rec_note = note + ("; 火格" if is_fire_step else "") + auto_note
+                    self.record("到达", pos, None, before, rec_note)
+                # Live automaticRoute (move:x:y) does NOT run core.plugin.auto at
+                # intermediate path tiles -- the auto BFS fires once, AFTER the
+                # hero settles at the destination (core.plugin.autoNextStep is
+                # gated on the hero being idle, which it is not mid-route). Running
+                # auto_sweep at each intermediate tile over-predicts: e.g. MT14
+                # move:2:3 paths (2,5)->(2,4)->(2,3); an intermediate sweep at
+                # (2,4) kills the 3 zombieKnight guards and spawns the (1,3)
+                # redKey, then the destination sweep at (2,3) picks that just-
+                # spawned redKey (rk 0->1). Live's single destination sweep kills
+                # the guards + spawns the redKey in one single-pass BFS, so (1,3)
+                # -- a wall when the BFS first reached it -- is NOT picked (rk=0);
+                # the redKey needs the next explicit move (rec#997 up to (2,2)) to
+                # be collected. Action blockers (door/enemy/item) on the path
+                # still settle auto_sweep at their own branches above before
+                # re-planning, so only the empty-tile intermediate sweep is
+                # suppressed here. The destination sweep runs below (line ~1802).
         target_auto_handled = bool(
             strict_auto_enemy_target
             and self.block_at(fid, target) is None
@@ -1599,9 +1844,28 @@ class Game:
             # target. The live auto plugin does not get a final source-floor
             # sweep between stepping on the stair and changeFloor (MT48
             # downFloor must not farm a distant source-floor slimelord).
+            # A 0-dmg target enemy with an afterBattle event: live auto fires
+            # from the post-battle moveOneStep, but the afterBattle event is
+            # already processing (event.id=="action"), so core.plugin.auto
+            # returns early and never runs its BFS. The event's rewards (e.g.
+            # MT15 octopus -> reveal pickaxe at x6y5) must be picked up by the
+            # next EXPLICIT move (step-on getItem), not by auto. Skipping
+            # auto_sweep here matches that timing; the after_battle_auto
+            # restart below still handles events that genuinely re-enable auto.
+            target_after_battle_blocks_auto = (
+                strict_auto_enemy_target
+                and f"{x},{y}" in self.floors[fid].after_battle
+                and f"{x},{y}" not in self.floors[fid].after_battle_auto
+            )
+            if target_after_battle_blocks_auto:
+                # The kill's auto was skipped, so the afterBattle-spawned
+                # rewards (e.g. MT25 blackMagician 4 redKeys) stay reachable
+                # from the current position. The next move must sweep from here
+                # (its destination may not reach them) -- see _go_to_body start.
+                self._pending_after_battle_sweep = True
             handled = (
                 []
-                if target_is_stair
+                if target_is_stair or target_after_battle_blocks_auto
                 else self.auto_sweep(fid, exclude=path_kill_reserved)
             )
             # 合并路径中每步 battle-only auto 清的零伤怪（之前被丢弃，金币计入但 note 漏）。
@@ -1684,6 +1948,29 @@ class Game:
         if block.kind != "terrain" or block.eid in {"fakeWall", "fakeWall2"}:
             self.set_ground(fid, pos)
         self.after_action(fid, pos, block)
+        # A fakeWall/fakeWall2 break may spawn an item at the broken tile via
+        # after_action (e.g. MT19 (6,3) fakeWall2 -> cross). go_to for a
+        # fakeWall2 target stops the hero ADJACENT (it breaks the wall from the
+        # neighbouring tile, matching live automaticRoute), so the hero is NOT on
+        # pos -- but the recording's net effect is "break wall + pick up the
+        # spawned item" (it breaks in one action, then steps onto the item in the
+        # next; the converter coalesces both into one target click when the
+        # break action is a before==after no-op). auto_sweep does not process the
+        # hero's own tile and never reaches the item under an adjacent break, so
+        # pick up the spawned item here. This only fires when after_action
+        # actually spawned an item at pos (otherwise block_at is None), so plain
+        # fakeWall2 breaks that reveal nothing are unaffected. The live verifier
+        # re-clicks the tile (maybeRetryAdjacentTarget) to step onto the spawned
+        # item, so the walk's after (item picked up) matches live after retry.
+        if block.kind == "terrain" and block.eid in {"fakeWall", "fakeWall2"}:
+            spawned = self.block_at(fid, pos)
+            if (spawned and spawned.kind == "item" and spawned.eid != block.eid
+                    and (fid, pos[0], pos[1]) not in self.blocked_items
+                    and self._auto_item_allowed(spawned.eid, self.auto_flags.get("item"))):
+                self.apply_item(fid, spawned.eid)
+                self.set_ground(fid, pos)
+                self.after_action(fid, pos, spawned)
+                self.refresh_last_step(before, f"拾取 {spawned.eid} (破墙后生成)")
         self.apply_check_damage(fid, pos, note)
         return self.trigger_tile_event(fid, pos)
 
@@ -1807,6 +2094,12 @@ class Game:
             self._captured = []
 
     def _after_action_impl(self, fid: str, pos: tuple[int, int], block: Block, *, auto: bool = False) -> None:
+        # MT40 (6,1) 骑士队长踩在 upFloor 楼梯块上（live 实证 2026-08-31：骑士死后
+        # 该格变为 upFloor（tile 87），hero 踩上即换层到 MT41——41218 录像四连 up）。
+        # 旧模型数据里 knight 块覆盖了楼梯块，换层判定失效。
+        if fid == "MT40" and block.kind == "enemy" and block.eid == "yellowKnight" and pos == (6, 1):
+            self.set_block(fid, pos, "terrain", "upFloor", 87)
+            self.floors[fid].change_floor["6,1"] = {"floorId": ":next", "stair": "downFloor", "time": 0}
         if fid == "MT8" and block.kind == "enemy" and pos in {(9, 5), (11, 5)}:
             self.flags["8redKeyGuards"] = self.flags.get("8redKeyGuards", 0) + 1
             if self.flags["8redKeyGuards"] >= 2:
@@ -1829,7 +2122,28 @@ class Game:
                 self.set_ground(fid, (6, 7))
                 self.set_ground(fid, (8, 4))
                 self.set_ground(fid, (6, 9))
+                # web afterBattle["6,1"]: "show [6,11]" — 上 MT11 的楼梯在 captain
+                # 死后才出现（base map events["6,11"] enable:false, 加载时已按此
+                # 移除该块）。
+                self.set_block(fid, (6, 11), "terrain", "upFloor", 87)
                 self.flags["10f战胜骷髅队长"] = True
+        # MT10 (6,3) autoEvent（web MT10.events["6,3"]）：
+        # flag:10f机关 && 8 个竞技场格 (5,4)(6,4)(7,4)(5,5)(7,5)(5,6)(6,6)(7,6) 全空
+        # -> openDoor (6,3)。captain 可达的硬门槛：竞技场必须全清。镜像 web 时序：
+        # (6,5) spawn 事件重新 specialDoor 封 (6,3)，每只竞技场怪死后检查一次。
+        if (
+            fid == "MT10"
+            and self.flags.get("mt10_boss_spawned")
+            and not self.flags.get("mt10_arena_open")
+        ):
+            door63 = self.block_at("MT10", (6, 3))
+            if door63 is not None and door63.kind == "door" and door63.eid == "specialDoor":
+                if all(
+                    (b := self.block_at("MT10", p)) is None or b.kind != "enemy"
+                    for p in [(5, 4), (6, 4), (7, 4), (5, 5), (7, 5), (5, 6), (6, 6), (7, 6)]
+                ):
+                    self.set_ground("MT10", (6, 3))
+                    self.flags["mt10_arena_open"] = True
         if fid == "MT11" and block.kind == "enemy" and block.eid == "redPriest" and pos in {(1, 5), (3, 5)}:
             self.flags["11shieldPriests"] = self.flags.get("11shieldPriests", 0) + 1
             if self.flags["11shieldPriests"] >= 2:
@@ -1898,6 +2212,14 @@ class Game:
             guards = {(1, 10), (3, 10)}
             if not any(self.block_at(fid, p) for p in guards):
                 self.set_ground(fid, (2, 9))
+        # MT44 specialDoor (6,8) (afterBattle flag:44，web mt44_map.json):
+        # kill (5,9)+(7,9) redGuard -> open (6,8)（通往 shield5 口袋的唯一入口）。
+        # 炸弹击杀同样触发 afterBattle（41301 walk [970] 炸弹双杀 -> [971] 过门
+        # web-verified），use_bomb 走同一 after_action 钩子，无需单独处理。
+        if fid == "MT44" and block.kind == "enemy" and block.eid == "redGuard" and pos in {(5, 9), (7, 9)}:
+            guards = {(5, 9), (7, 9)}
+            if not any(self.block_at(fid, p) for p in guards):
+                self.set_ground(fid, (6, 8))
         if fid == "MT19" and pos == (6, 3) and block.eid in {"fakeWall2", "cross"}:
             if not self.state.get("cross"):
                 self.set_block(fid, (6, 3), "item", "cross", 55)
@@ -1941,6 +2263,11 @@ class Game:
             for p in [(4, 8), (5, 8), (7, 8), (8, 8)]:
                 self.set_block(fid, p, "item", "redKey", 23)
             self.set_ground(fid, (6, 9))
+            # These redKeys spawn after the kill's destination auto_sweep ran, so
+            # they are not picked at the kill. They ARE reachable from the hero's
+            # current position (6,6); the next move must sweep from here (its
+            # destination (1,10) cannot reach them). See _go_to_body start.
+            self._pending_after_battle_sweep = True
         if fid == "MT35" and block.kind == "enemy" and pos == (6, 7):
             for p in [(6, 3), (5, 7), (7, 7)]:
                 self.set_ground(fid, p)
@@ -1966,6 +2293,13 @@ class Game:
                 self.flags["49cardinal"] = self.flags.get("49cardinal", 0) + 1
                 if self.flags["49cardinal"] >= 4:
                     self.flags["49sealed"] = True
+                    # TE late-49: 50F thief set 50final (boost redKing to
+                    # 5000/1580/190); the 49F seal drops it back to 49sealed
+                    # stats (500/158/19 via 50thief). Clear 50final here so
+                    # both the 49F fake and the 50F true redKing use sealed
+                    # stats -- matches guide clear_mt49_from_center (50final=False)
+                    # and the game quirk that the seal also seals the 50F boss.
+                    self.flags["50final"] = False
             if pos in {(5, 10), (7, 10)}:
                 self.flags["491"] = self.flags.get("491", 0) + 1
                 if self.flags["491"] >= 2:
@@ -1976,6 +2310,14 @@ class Game:
                     self.set_ground(fid, (6, 7))
             if pos == (6, 3):
                 self.state["won49"] = True
+                # 真实 afterBattle["6,3"]（杀 49F redKing）最后 openDoor (6,7)+(6,9)：
+                # 录像在杀 redKing 后立即下到 (6,8) 杀 (5,8)/(7,8) darkKnight 与
+                # (5,10)/(7,10) redWizard。若不开这两扇门，conv 到不了 (6,8)，
+                # 拿不到 +420 金 -> 买不起 MT45 (9,3) hp2000 商人(缺 420 G)。
+                # 下方 491/492 flag 分支(杀两组怪后开门)仍是真实地图语义，但录像
+                # 顺序是 redKing 先开(两门)，故两处都须成立。
+                self.set_ground(fid, (6, 7))
+                self.set_ground(fid, (6, 9))
                 for p in [(5, 2), (6, 2), (7, 2), (5, 3), (6, 3), (7, 3), (5, 4), (6, 4), (7, 4)]:
                     self.set_ground(fid, p)
                 self.set_block(fid, (5, 2), "item", "redKey", 23)
@@ -2006,6 +2348,9 @@ class Game:
     # trigger_tile_event 的事件分支一一对应（新增事件点须同步两处）。gen_zone_walk_md
     # 导入此映射，在 walk .md 的 trigger-event pass 步加 (触发: ...) 备注，避免 gen
     # 手写映射分叉。gen 无 runtime flags 不能自动推断完整原因，此处简短事件名即可。
+    # 架构定位：这张表就是「1-50F 唯一管线」的楼层事件适配层——不拆到各 zone
+    # 脚本的原因：一条 4-50 层录像跨全部楼层，适配层跟随共享 Game 才能让
+    # converter/verifier/审计读到同一套事件边界（拆散会重现"为单线打补丁"）。
     TRIGGER_EVENT_DESC = {
         ("MT10", (6, 5)): "10F boss spawn",
         ("MT10", (6, 2)): "队长剧情对话",
@@ -2016,6 +2361,11 @@ class Game:
         ("MT47", (8, 1)): "红巫师下移",
         ("MT41", (9, 2)): "撞墙出红巫师",
         ("MT40", (6, 7)): "40F 骑士队长 boss 事件",
+        ("MT49", (6, 6)): "49F 假魔王封印事件",
+        ("MT50", (6, 5)): "50F 小偷现身真魔王",
+        ("MT26", (6, 6)): "26F 营救公主",
+        ("MT24", (6, 2)): "24F 公主通路到50F",
+        ("MT16", (11, 11)): "16F 圣水老人",
     }
 
     def trigger_tile_event(self, fid: str, pos: tuple[int, int]) -> bool:
@@ -2024,27 +2374,69 @@ class Game:
         walk emit 时触发事件的 pass step 须单独保留(v2 不合并):web automaticRoute
         中途踩事件格会中断寻路(如 MT10 (6,5) boss spawn 后 6,6 变怪挡路,hero 卡 6,5)。"""
         triggered = False
-        # 47F: walking onto x8y1 (adjacent to the x8y2 redWizard) triggers the
-        # redWizard to move down to x8y3. The spell-field damage for x8y1 is
-        # applied BEFORE this move (redWizard still at x8y2, range 1 -> 200 dmg),
-        # so on the return pass x8y1 is out of range (redWizard now at x8y3,
-        # distance 2) and takes no damage. Verified against the live game.
-        if fid == "MT47" and pos == (8, 1) and not self.flags.get("47wizardMoved"):
-            block = self.block_at(fid, (8, 2))
-            if block and block.eid == "redWizard":
-                before = self.snapshot()
-                self.set_ground(fid, (8, 2))
-                self.set_block(fid, (8, 3), "enemy", "redWizard", block.tile)
-                self.flags["47wizardMoved"] = True
-                # The retreated wizard (now x8y3) also retreats when approached,
-                # so it must be corner-trapped (from x8y2, with x8y4 door closed
-                # blocking its retreat) -- not path-killed by auto-farming.
-                self.retreat_wizards.add(("MT47", 8, 3))
-                self.record("事件", (8, 3), "redWizard", before, "47F 右上红巫师下移")
-                triggered = True
+        # COW 必须先于任何 events 突变: clone 共享 Floor 对象(_owned=False),
+        # 下面的 events.pop 直接改共享字典会泄漏到 clone(实锤: MT50(6,5) 小偷
+        # 事件在原体先触发后, clone 里 "6,5" 已被 pop, 事件永不再触发,
+        # [1198] 红魔王不 spawn)。set_block/set_ground 内部自带 _cow,
+        # 但裸 events.pop 没有, 统一在入口补齐。
+        self._cow(fid)
+        # 3F (5,9) 魔王布阵剧情（1F 新游戏线专用，41206 转换实证）。门控 =
+        # 塔旗标 flag:03（事件 [0] 置位）：4F 种子线 flag:03 已置 → 永不触发
+        # （agentH 回归教训：用自造 flag 门控会让 41231 基线转换踩格即削弱）。
+        # 事件尾部
+        # setValue 绝对赋值 hp=400/atk=10/def=10（非 delta）、清 nowWeapon/
+        # nowShield/魔法免疫，hide remove:true 移除召唤怪 (5,7)/(5,8)/(4,9)/
+        # (6,9)/(5,10) + 事件格 (5,9) 自身（一次性），changeFloor MT2 (3,8)。
+        # statlog 双帧：[16] after=MT3 (5,9) 削弱态（事件中），[17] before=
+        # MT2 (3,8)（传送后）——walk 单 事件 step 记传送后净态（同 MT24 公主
+        # changeFloor 模式）。4F 种子线 flag:03 已置、事件已被 live 移除再武装
+        # 的语义由 memory「加载存档重新武装」覆盖：4F 线踩上仍会触发（旧建模
+        # 语义=召唤无收益，搜索绕开），本分支用 mt3_demon_arrange flag 保证
+        # 一次会话只触发一次剧情削弱。
+        if fid == "MT3" and pos == (5, 9) and not self.flags.get("03"):
+            before = self.steps[-1]["before"] if self.steps else self.snapshot()
+            self.state["hp"] = 400
+            self.state["atk"] = 10
+            self.state["def"] = 10
+            self.state["magicImmune"] = False
+            for p in [(5, 7), (5, 8), (4, 9), (6, 9), (5, 10), (5, 9)]:
+                self.set_ground(fid, p)
+            self.floors[fid].events.pop("5,9", None)
+            self.flags["03"] = 1
+            self.flags["mt3_demon_arrange_story"] = 1
+            # 监狱跳跃：传 MT2 (3,8) 后 hero 的出狱移动 (3,8)->(1,8)->(1,10)
+            # 是点击瞬移（(2,8) 墙/(1,9) unbreakableWall 之间，statlog 19-22
+            # 位移实证；live automaticRoute 对这两段无逐格动画）。静态网格
+            # 保持原状（墙不开），跳跃由 converter 的 jail-jump 特例执行。
+            self.state["floor"] = "MT2"
+            self.state["x"], self.state["y"] = 3, 8
+            self.visited.add("MT2")
+            # 净态并入踩格步（MT32 (6,10) 模式）：live 踩上 (5,9) 事件立即
+            # 削弱+传送，walk 的踩格步 after 必须是事件后态（MT2 (3,8)），
+            # 否则 verifier 在踩格步就 mismatch。**保持踩格步身份**（pos=(5,9)、
+            # action=通过/到达）：verifier 对 换层 步不点击，改标换层会让 hero
+            # 永远踩不上事件格（2026-09-13 41206 复验实证）。
+            self.refresh_last_step(before, "3F 魔王布阵剧情：削弱 hp=400/atk=10/def=10，传 MT2 (3,8)")
+            triggered = True
+        # 47F x8y1 (adjacent to the x8y2 redWizard): the wizard's (8,2)->(8,3)
+        # retreat is NOT a floor event -- it is the generic moveOneStep
+        # fire-retreat (the hero steps the x8y1 fire tile), fully modeled by
+        # _check_fire_retreat including the fgmap updates (fire set at the old
+        # pos (8,2) + 3-step (8,4), cleared at the new pos (8,3)). The
+        # spell-field damage for x8y1 is applied before the retreat either way
+        # (apply_check_damage runs before _check_fire_retreat in _go_to_body).
+        # Verified live: web auto later kills the corner-trapped wizard at
+        # (8,3) remotely via the eastern row1 path once it is 0-damage.
         if fid == "MT42" and pos == (5, 10) and self.block_at(fid, (6, 10)):
             before = self.snapshot()
             self.set_ground(fid, (6, 10))
+            # 2026-09-10 39547/40520 修复：逃跑事件触发后必须消费 events——
+            # live 事件脚本跑完即从 events 表移除；模型残留 "5,10"/"6,10" 会让
+            # 后续 auto BFS 把这两格当事件格阻断（auto_sweep L1193），MT42
+            # (5,11)/(6,11) 方向的 sweep 够不到 (7,1) redKey → MT25 (6,10)
+            # 红门开不出 → 公主救援/24F 通路全断（39547 转换死于 MT24）。
+            self.floors[fid].events.pop("5,10", None)
+            self.floors[fid].events.pop("6,10", None)
             self.record("事件", pos, "yellowKnightEscape", before, "42F 骑士队长剧情逃跑")
             triggered = True
         if fid == "MT32" and pos == (6, 10) and not self.flags.get("mt32_yellowknight"):
@@ -2087,21 +2479,71 @@ class Game:
             self.record("事件", (10, 2), "redWizard", before, "41F 右上撞墙出现红巫师")
             triggered = True
         if fid == "MT15" and pos == (9, 1) and not self.flags.get("mt15_thief"):
-            # 15F thief x9y1: hero 踩 (9,1) 触发 thief 对话 -> openDoor (8,1) + thief 离开
-            # (move left:3 走)。event 触发后 (9,1) 变普通格（web 可穿），auto_sweep 才能穿
-            # 过 (9,1) 打到 (1,10)/(3,10) bigBat 与 (3,3) blackSlime。Game (9,1)=123 / (8,1)=330
-            # 是 NPC/decor 不创建 block（已 None），openDoor (8,1) 对 Game 无影响；thief move
-            # 到 (6,1) 楼梯无 block。故只需 pop events 解除 auto/path 永久阻断。
+            # 15F thief x9y1: noPass NPC (trigger="action"). hero 停相邻格 (9,2)
+            # 面朝 (9,1) 触发 thief 对话 -> openDoor (8,1) + thief 离开 (move left:3
+            # 走到 (6,1)）(events["9,1"] move loc (9,1) steps left:3)。录像 [370]
+            # `up` (9,2)->(9,2) 纯转身 face-on。converter _reach_event_trigger
+            # move_adjacent(9,2) + 本方法（pos=(9,1)）+ record 事件 at (9,1)。
+            # event 触发后 (9,1) 变普通格（web 可穿），auto_sweep 才能穿
+            # 过 (9,1) 打到 (1,10)/(3,10) bigBat 与 (3,3) blackSlime。
+            # (8,1)=330=unbreakableWall 在 WALL_IDS 内 -> classify "wall"，Game 创建墙 block
+            # （非 None，旧注释"已 None"错误）。live openDoor(8,1) 把它开成空地，Game 必须
+            # set_ground 移除墙，否则到 (5,1) 的唯一干净路径（无怪/门）被 (8,1) 墙封死，
+            # move:5:1 unreachable（thief 在移动中途踩 (9,1) 才开 (8,1)，静态 BFS 规划时
+            # (8,1) 仍是墙 -> go_to_decomposed 需先踩 (9,1) 触发再重规划，见 go_to_decomposed）。
+            # thief move 到 (6,1) 楼梯无 block（thief 已被下方 set_ground(9,1) 移除）。
+            self.set_ground(fid, (8, 1))
+            # thief 离开 (9,1)（events["9,1"] move loc (9,1) steps left:3 走到 (6,1)）。
+            # 必须移除 (9,1) thief block，否则 hero 在 (9,2) 被 noPass thief 挡住，
+            # 无法穿 (9,1)->(8,1) 到 (5,1)（旧 passable-thief 模型踩上 (9,1) 掩盖此 bug）。
+            self.set_ground(fid, (9, 1))
             self.floors["MT15"].events.pop("9,1", None)
             self.flags["mt15_thief"] = 1
             triggered = True
+        if fid == "MT2" and pos == (3, 7) and not self.flags.get("mt2_jail_thief"):
+            # 2F 监狱小偷（41206 1F 新游戏线实证）：布阵剧情把 hero 传进监狱
+            # (3,8) 后，向上面向 (3,7) 小偷触发越狱对话——openDoor (2,7) 打开
+            # 监狱暗道、小偷 left:2/down:2 离开并 hide。之后出狱步行
+            # (3,8)->(3,7)->(2,7)->(1,7)->(1,8)->(1,9)->(1,10)->(1,11) 楼梯
+            # 全部按静态网格可达（(1,9)=0 不是墙；第一次读格错列误判 330）。
+            # 4F 种子线 thief 事件已被消费且 hero 不再进监狱，flag 门控兜底。
+            self.set_ground(fid, (2, 7))   # openDoor (2,7) 越狱暗道
+            self.set_ground(fid, (3, 7))   # 小偷离开 (3,7)
+            # 小偷 left:2/down:2 走到 (1,9) 驻留（live 实证 2026-09-13：越狱事件
+            # 后 (1,9) thief noPass=true 阻挡 col-1 出狱路；录像 statlog 21 的
+            # move:1:10 是小偷 walk 未完成时的时序运气点击）。walk 侧出狱 =
+            # 到达 (1,8) 后显式触发 (1,9) 告别事件（见 mt2_jail_farewell 分支），
+            # hero 停留 (1,8)、小偷 hide，之后 (1,9) 永久通行（NPC 运行时移动
+            # 不跨楼层持久化，后续 fly:MT2 回访 (1,9) 为空）。
+            self.set_block(fid, (1, 9), "npc", "thief", 0)
+            # 注意 (2,8) 是静态 yellowWall（live runtime 实证 noPass=true），
+            # 越狱事件不开它——出狱路走 (3,7)->(2,7)->(1,7)->(1,8)。
+            self.floors[fid].events.pop("3,7", None)
+            self.flags["mt2_jail_thief"] = 1
+            triggered = True
+        if (fid == "MT2" and pos == (1, 9) and self.flags.get("mt2_jail_thief")
+                and not self.flags.get("mt2_jail_farewell")):
+            # 越狱小偷告别（41206）：hero 站 (1,8) 相邻面向驻留小偷（点击会
+            # 被 noPass 挡住只触发交互），触发 farewell 对话后小偷 move down:2
+            # + hide——hero 不移动，(1,9) 变空地永久通行。由 converter 的
+            # 监狱出狱特例在 hero (1,8) 时显式调用。
+            self.set_ground(fid, (1, 9))
+            self.flags["mt2_jail_farewell"] = 1
+            triggered = True
         if fid == "MT33" and pos == (10, 5) and not self.flags.get("mt33_sword_trap"):
-            # 33F 骑士剑机关：踩 x10y5 后先封 x11y4 黄墙，再在四守卫房两端
-            # 生成机关门 x10y4/x10y8。四守卫全灭由 after_action 开两门；在此
-            # 之前 sword3 房必须不可达，避免 auto_sweep 在第一只守卫后提前拿剑。
-            self.set_block(fid, (11, 4), "door", "yellowDoor")
-            self.set_block(fid, (10, 4), "door", "specialDoor")
-            self.set_block(fid, (10, 8), "door", "specialDoor")
+            # 33F 骑士剑机关（2026-09-26 40935 录像修正，实机 mt33_map.json 事件全解码）：
+            # 踩 x10y5 后【无条件】x11y4 = yellowWall（黄墙不可开——旧模型建成
+            # yellowDoor 导致 go_to 穿门顺路误拾 (11,3) 蓝瓶，+800 假增益）；
+            # 再按实机 if 条件分叉：四守卫 (9,5)(11,5)(9,7)(11,7) 仍有存活 →
+            # 两端 spawn specialDoor x10y4/x10y8（四守卫全灭由 after_action 开
+            # 两门）；已全灭（如 40935 录像先 auto 清 0 伤守卫再踩机关）→ 不
+            # spawn，机关只封 x11y4 即隐没。在此之前 sword3 房必须不可达，避免
+            # auto_sweep 在第一只守卫后提前拿剑。
+            self.set_block(fid, (11, 4), "wall", "yellowWall")
+            _mt33_trap_guards = {(9, 5), (11, 5), (9, 7), (11, 7)}
+            if any(self.block_at(fid, p) for p in _mt33_trap_guards):
+                self.set_block(fid, (10, 4), "door", "specialDoor")
+                self.set_block(fid, (10, 8), "door", "specialDoor")
             self.floors[fid].events.pop("10,5", None)
             self.flags["mt33_sword_trap"] = 1
             triggered = True
@@ -2124,6 +2566,14 @@ class Game:
             self.set_ground("MT35", (4, 9))
             self.floors[fid].events.pop("10,11", None)
             self.flags["mt2_thief_mt35"] = 1
+            triggered = True
+        if fid == "MT2" and pos == (11, 7) and not self.flags.get("mt2_bless"):
+            # 2F (11,7) specialTrader 祝福：免费 +3% 攻击力和 +3% 防御力
+            # (Math.round)，一次性。录像在终局 stats 高时用(atk267->275,
+            # def543->559)。specialTrader 可通行(noPass=false)，hero 踩上触发。
+            self.state["atk"] += int(self.state["atk"] * 0.03 + 0.5)
+            self.state["def"] += int(self.state["def"] * 0.03 + 0.5)
+            self.flags["mt2_bless"] = 1
             triggered = True
         if fid == "MT20" and pos == (6, 8) and not self.flags.get("mt20_vampire") and "6,8" in self.floors[fid].events:
             # 20F vampire: stepping onto (6,8) triggers the boss entrance -- 8
@@ -2156,6 +2606,14 @@ class Game:
             self.set_ground("MT10", (6, 3))
             for (sx, sy), eid in MT10_BOSS_SPAWN.items():
                 self.set_block("MT10", (sx, sy), "enemy", eid)
+            # web (6,5) event: setBlock 0 clears (6,3) mid-event (captain 的 up:3
+            # 通道)，但 closeDoor specialDoor (6,3) 在怪物入场后**重新封门**；
+            # (6,3) 只能由 MT10 autoEvent["6,3"] 在 8 只竞技场怪全死后 openDoor
+            # （条件 flag:10f机关 && (5,4)(6,4)(7,4)(5,5)(7,5)(5,6)(6,6)(7,6)
+            # 全空）。只建"清 (6,3)"不建"重封门"会让 go_to 在竞技场未清空时
+            # 非法穿 (6,3) 直达 (6,2)/(6,1) captain（2026-08-20 骨架延后变体
+            # web 卡死实测，见 _after_action_impl 的 autoEvent 镜像）。
+            self.set_block("MT10", (6, 3), "door", "specialDoor")
             self.flags["mt10_boss_spawned"] = True
             triggered = True
         if fid == "MT10" and pos == (6, 2) and self.flags.get("mt10_boss_spawned") and not self.flags.get("mt10_captain_text"):
@@ -2177,12 +2635,31 @@ class Game:
             self.flags["mt10_thief"] = True
             triggered = True
         if fid == "MT29" and pos == (6, 2) and not self.flags.get("mt29_thief"):
-            # 29F thief (6,2): hero 踩 (6,2) 触发 thief 事件,挖通中心暗道 (6,2)(6,3),
-            # 否则 (6,11) 上楼梯不可达。参考 zone3_game_route.thief_mt29_open_passage。
-            # web automaticRoute 经 (6,2) 中断(hero 停 (6,2) 触发),converter 标
-            # trigger-event 拆 step,replayer 先点 (6,2) 触发再点 (6,11) stair。
-            self.set_ground("MT29", (6, 2))
-            self.set_ground("MT29", (6, 3))
+            # 29F thief (6,2): noPass NPC (trigger="action"). hero 停相邻格 (5,2)
+            # 面朝 (6,2) 触发 thief 对话（录像 [705] `right` (5,2)->(5,2) 纯转身
+            # face-on）。converter _reach_event_trigger move_adjacent(5,2) + 本方法
+            # （pos=(6,2)）+ record 事件 at (6,2)；verifier 点 (6,2)，live hero
+            # noPass 停 (5,2)，对话触发。
+            #
+            # 事件条件分支（events["6,2"] 双层 if）：
+            #   whiteWall2@MT23 == 0  -> 开 (6,3) + thief 离开 (6,2)（move down:9）-> MT2 (10,11)
+            #   whiteWall2@MT23 > 0 且 额外功能开关 -> 同上（thief 开玩笑说"还在挖"然后开暗道）
+            #   whiteWall2@MT23 > 0 且 非 额外功能开关（纯净版-TE）-> thief 说"还在挖"，
+            #       **什么都不做**（thief 留 (6,2)，(6,3) 仍 unbreakableWall 330）。
+            # 实机本路线确认（hero 在 MT50 后查）：(6,2) thief id=123 仍在，(6,3) 仍是 330。
+            # whiteWall2 (tile 321) 是可穿装饰（classify None），不在 .blocks，须数 MT23 grid。
+            # 本路线不还原 MT23 墙（live count=43 恒定），所以走"什么都不做"分支。
+            ww2_tile = _EID_TO_TILE.get("whiteWall2")
+            ww2_count = (sum(1 for row in self.floors["MT23"].grid for c in row if c == ww2_tile)
+                         if ww2_tile is not None else 0)
+            extra_features = self.flags.get("额外功能开关", False)  # 纯净版-TE: false
+            if not (ww2_count > 0 and not extra_features):
+                # 暗道完成分支：开 (6,3) + thief 离开 (6,2)（move down:9 走到 (6,11)）。
+                # thief 走到 (6,11) 楼梯无 block（thief 已被 set_ground(6,2) 移除）。
+                # show MT2 (10,11) 由后续 MT2 (10,11) 事件建模（thief 出现）。
+                self.set_ground("MT29", (6, 3))
+                self.set_ground("MT29", (6, 2))  # thief leaves
+            # else (ww2_count > 0 且 非额外功能): thief 留 (6,2)，(6,3) 仍墙，什么都不做。
             self.flags["mt29_thief"] = 1
             triggered = True
         if fid == "MT40" and pos == (6, 7) and not self.flags.get("402") and "6,7" in self.floors[fid].events:
@@ -2229,6 +2706,84 @@ class Game:
             self.set_ground(fid, (6, 7))
             self.flags["402"] = True
             triggered = True
+        if fid == "MT49" and pos == (6, 6) and "6,6" in self.floors[fid].events:
+            # 49F (6,6) 假魔王封印事件 (events["6,6"], step-on list): setBlock
+            # specialDoor (6,7) + redKing (6,3) + 8 whiteKing 守卫 ((5,2)(5,3)(5,4)
+            # (6,4)(7,4)(7,3)(7,2)(6,2)), 清 4 cardinal ((5,3)(6,2)(7,3)(6,4)) 后
+            # setBlock whiteKing 覆盖。web 踩 (6,6) 触发;hero 停 (6,6)。后续点击杀
+            # 4 cardinal -> 49cardinal 计数 -> 49sealed + 清 50final (见 after_action)。
+            # 然后杀 4 corner + 假魔王 (6,3, 49sealed stats)。事件只 spawn,不杀。
+            before = self.snapshot()
+            self.floors[fid].events.pop("6,6", None)
+            self.set_block(fid, (6, 7), "door", "specialDoor", 85)
+            self.set_block(fid, (6, 3), "enemy", "redKing", 245)
+            for p in [(5, 2), (5, 3), (5, 4), (6, 4), (7, 4), (7, 3), (7, 2), (6, 2)]:
+                self.set_block(fid, p, "enemy", "whiteKing", 246)
+            self.record("事件", (6, 6), "redKing", before, "49F 假魔王封印事件")
+            triggered = True
+        if fid == "MT50" and pos == (6, 5) and "6,5" in self.floors[fid].events:
+            # 50F (6,5) 小偷=真魔王揭示事件 (events["6,5"], step-on list): 小偷对话
+            # -> hide 小偷 -> setEnemy redKing (5000/1580/190) + setBlock redKing (6,5)
+            # -> 对话"我就是魔王" -> set flag:与50层小偷对话 (49F 封印前置)。
+            # 设 50final + 50thief: enemy_damage 用 50final stats (5000/1580/190)。
+            # TE 后续 downFly 到 49F 封印 -> 49sealed 清 50final -> redKing 降为
+            # 500/158/19 (50thief 分支)。事件只 spawn redKing,不杀;hero 踩 (6,5)
+            # (thief tile 123 passable) 触发后 (6,5) 变 redKing (noPass)。
+            before = self.snapshot()
+            self.flags["50final"] = True
+            self.flags["50thief"] = True
+            self.flags["与50层小偷对话"] = True
+            self.floors[fid].events.pop("6,5", None)
+            self.set_block(fid, (6, 5), "enemy", "redKing", 245)
+            self.record("事件", (6, 5), "redKing", before, "50F 小偷现身真魔王")
+            triggered = True
+        if fid == "MT26" and pos == (6, 6) and "6,6" in self.floors[fid].events:
+            # 26F (6,6) 公主 (princess tile 132, passable step-on event): rescue
+            # sets flag:营救公主, clears MT26 (6,6), and on MT24 sets (6,1)=
+            # whiteWall2, (5,1)/(7,1)=yellowWall, clears (6,2)/(6,3)/(6,4) --
+            # the walls blocking the 24F->50F path. The recording's move:5:6
+            # from (6,8) routes through (6,6), triggering this. MT24 (6,2)
+            # event then changeFloor to MT50 (6,7) when flag:营救公主 is set.
+            before = self.snapshot()
+            self.flags["营救公主"] = True
+            self.set_ground(fid, (6, 6))
+            self.set_block("MT24", (6, 1), "wall", "whiteWall2", 1)
+            self.set_block("MT24", (5, 1), "wall", "yellowWall")
+            self.set_block("MT24", (7, 1), "wall", "yellowWall")
+            for p in [(6, 2), (6, 3), (6, 4)]:
+                self.set_ground("MT24", p)
+            self.floors[fid].events.pop("6,6", None)
+            self.record("事件", (6, 6), "princess", before, "26F 营救公主")
+            triggered = True
+        if fid == "MT24" and pos == (6, 2) and "6,2" in self.floors[fid].events:
+            # 24F (6,2) 公主通路事件: if flag:营救公主, changeFloor to MT50 (6,7).
+            # The tile is cleared by the MT26 princess rescue, so the hero steps
+            # on it (e.g. recording #4892 'up' from (6,3) -> (6,2) -> MT50).
+            # This is the TE 24F->50F transition (after rescuing the princess).
+            if self.flags.get("营救公主"):
+                before = self.snapshot()
+                # Do NOT pop "6,2": this is a persistent changeFloor event
+                # (if flag:营救公主 -> MT50), triggered each time the hero steps
+                # on (6,2). The recording triggers it twice (#4892 first MT50
+                # entry for the thief reveal + downFly to 49F, then #5060 after
+                # the 49F boss for the final fight).
+                self.state["floor"] = "MT50"
+                self.state["x"], self.state["y"] = 6, 7
+                self.visited.add("MT50")
+                self.record("换层", (6, 7), None, before, "24F 公主通路到50F")
+                triggered = True
+        if fid == "MT16" and pos == (11, 11) and "11,11" in self.floors[fid].events:
+            # 16F (11,11) 圣水老人 (fakeWall2 trigger="action"): facing it opens
+            # the wall and the oldman gives superPotion (item:superPotion += 1).
+            # The recording faces (11,11) from (10,11) (6x 'right', no stat
+            # change). Net effect: superPotion += 1, wall cleared. Simplify to
+            # give superPotion on the trigger (the recording's net result).
+            before = self.snapshot()
+            self.state["superPotion"] += 1
+            self.set_ground(fid, (11, 11))
+            self.floors[fid].events.pop("11,11", None)
+            self.record("事件", (11, 11), "superPotion", before, "16F 圣水老人")
+            triggered = True
         return triggered
 
     def _move_retreat_wizard(self, fid: str, old_pos: tuple[int, int], new_pos: tuple[int, int]) -> None:
@@ -2247,9 +2802,87 @@ class Game:
             self.retreat_wizards.add((fid, new_pos[0], new_pos[1]))
         self.record("事件", new_pos, "redWizard", before, f"47F 法师后退 {old_pos}->{new_pos}")
 
+    def _check_fire_retreat(self, fid: str, pos: tuple[int, int]) -> None:
+        """Web moveOneStep fire-retreat (project.min.js): when the hero steps on
+        a fire tile (fgmap 103), clear fire at the hero pos, and for each
+        direction, if the adjacent tile has a redWizard and the 2-step tile is
+        empty (no block), retreat the wizard to the 2-step tile, set fire at
+        the old pos (and 3-step if the 2-step was fire), and clear fire at the
+        new pos. MT47 only (only floor with fire). Folded into the hero's
+        movement step -- no separate step record; auto_sweep battles the
+        corner-trapped wizard at its new pos (e.g. (1,9)->(1,10)->(1,11),
+        killed at (1,11); (8,2)->(8,1) killed at (8,1))."""
+        f = self.floors.get(fid)
+        if f is None or f.fg_at(pos[0], pos[1]) != 103:
+            return
+        f.fgmap[pos[1]][pos[0]] = 0  # clear fire at hero pos
+        DIRS = ((0, -1), (-1, 0), (0, 1), (1, 0))  # up, left, down, right (core.utils.scan)
+        for dx, dy in DIRS:
+            adj = (pos[0] + dx, pos[1] + dy)
+            two = (pos[0] + 2 * dx, pos[1] + 2 * dy)
+            if not (0 <= two[0] < f.width and 0 <= two[1] < f.height):
+                continue
+            block = self.block_at(fid, adj)
+            if not block or block.eid != "redWizard":
+                continue
+            if self.block_at(fid, two) is not None:
+                continue  # 2-step not empty -> wizard stays
+            two_was_fire = f.fg_at(two[0], two[1]) == 103
+            # Retreat wizard adj -> two.
+            self.set_ground(fid, adj)
+            self.set_block(fid, two, "enemy", "redWizard", block.tile)
+            # A fire-retreated wizard keeps live flee-on-approach semantics:
+            # mark it retreating (migrate the marker if already marked) so it
+            # is not path-killed / auto-farmed unless corner-trapped.
+            self.retreat_wizards.discard((fid, adj[0], adj[1]))
+            self.retreat_wizards.add((fid, two[0], two[1]))
+            # adj 铺火条件与 web 源码逐字一致（project.min.js moveOneStep）：
+            # 「if (core.getFgNumber(nnx,nny)===103) { setBgFgBlock fg103 三步格;
+            #    setBgFgBlock fg103 让出格 }」——只在 two 原本是火（连锁撤退）时，
+            # 让出格与三步格才同时铺火。2026-08-30 曾误改为无条件铺 adj 火，
+            # 与 web 源码相悖，已回退。
+            if two_was_fire:
+                three = (pos[0] + 3 * dx, pos[1] + 3 * dy)
+                # Web isValidPosition bounds the whole scan to the inner
+                # 11x11 playfield (1..11), so the propagated fire never lands
+                # on the border ring (e.g. hero (1,9): 3-step (1,12) gets NO
+                # fire in live).
+                if 1 <= three[0] <= f.width - 2 and 1 <= three[1] <= f.height - 2:
+                    # Web sets the propagated fire unless the 3-step block
+                    # carries event data (project.min.js: nnnb.event.data).
+                    # Doors/terrain/items carry none -- verified live: the
+                    # (8,4) yellowDoor tile DOES receive fire on MT47.
+                    three_block = self.block_at(fid, three)
+                    if three_block is None or three_block.kind != "npc":
+                        f.fgmap[three[1]][three[0]] = 103
+                f.fgmap[adj[1]][adj[0]] = 103
+            f.fgmap[two[1]][two[0]] = 0
+
     def transition(self, to_fid: str, note: str = "", *, landing: tuple[int, int] | None = None) -> None:
         before = self.snapshot()
         from_fid = self.state["floor"]
+        # Live changeFloor 语义对齐 (2026-09-12 agentV b2r1 web 复验打回): 相邻层的
+        # transition 在实机只能由「踩楼梯格」触发 —— hero 必须站在 from 层对应方向
+        # 的楼梯格上, 否则是不可点击的传送 (verifier 对换层步零动作, 真实转层完全
+        # 依赖前一步楼梯点击)。事件转层 (landing 显式给出, 如 24F->MT50) 与非相邻
+        # 层跳转不受此约束。
+        if (
+            landing is None
+            and self.strict_live_model
+            and abs(floor_no(to_fid) - floor_no(from_fid)) == 1
+        ):
+            stair_eid = "upFloor" if floor_no(to_fid) > floor_no(from_fid) else "downFloor"
+            stairs = [
+                pos
+                for pos, b in self.floors[from_fid].blocks.items()
+                if b is not None and b.kind == "terrain" and b.eid == stair_eid
+            ]
+            if (self.state["x"], self.state["y"]) not in stairs:
+                self.fail(
+                    f"transition {from_fid}->{to_fid} without hero on {stair_eid} stair "
+                    f"(hero at x{self.state['x']}y{self.state['y']}; live changeFloor "
+                    f"requires the stair click)"
+                )
         point_key = "downFloor" if floor_no(to_fid) > floor_no(from_fid) else "upFloor"
         resolved_landing = list(landing) if landing is not None else self.fly_points[to_fid][point_key]
         if resolved_landing is None and to_fid == "MT44":
@@ -2258,10 +2891,11 @@ class Game:
             self.fail(f"no landing {from_fid}->{to_fid}")
         self.state["floor"] = to_fid
         self.state["x"], self.state["y"] = resolved_landing
-        # 49F/50F are special endgame floors excluded from the ordinary floor
-        # teleporter even after a real stair/event entry.
-        if to_fid not in {"MT49", "MT50"}:
-            self.visited.add(to_fid)
+        # The hero has entered this floor (stair/event/fly); add it to visited
+        # so the ordinary floor teleporter can fly back to it. The recording
+        # flies back to MT49 (e.g. #5045 fly:MT49 MT8->MT49 after the 49F boss),
+        # so MT49/MT50 must be in visited after a real entry.
+        self.visited.add(to_fid)
         self.record("换层", tuple(resolved_landing), None, before, note or f"{from_fid}->{to_fid}")
         self.apply_check_damage(to_fid, tuple(resolved_landing), "换层落点")
 
@@ -2370,19 +3004,53 @@ class Game:
         self.record("炸弹", (self.state["x"], self.state["y"]), "bomb", before, f"{note}; killed={[(p,b.eid) for p,b in killed]}")
 
     def use_pickaxe(self, fid: str, x: int, y: int, note: str = "") -> None:
+        """Break ALL 4 adjacent canBreak walls (web useItemEffect loops 4 dirs).
+
+        The web pickaxe (破墙镐) useItemEffect iterates core.utils.scan
+        (up/left/down/right) and openDoor's every adjacent wall with
+        block.event.canBreak. Only yellowWall/fakeWall have canBreak=true, so
+        the pickaxe breaks ALL of them around the hero (e.g. MT48 x11y10 breaks
+        both x10y10 and x12y10 yellowWall). The (x,y) target is kept only for
+        the record (the wall the hero will move through); it is NOT the sole
+        wall broken."""
         if self.state["pickaxe"] <= 0:
             self.fail("no pickaxe")
         if self.state["floor"] != fid:
             self.fail(f"cannot use pickaxe on {fid} while at {self.state['floor']}")
-        if abs(self.state["x"] - x) + abs(self.state["y"] - y) != 1:
-            self.fail(f"pickaxe target not adjacent {fid} x{x}y{y}")
-        block = self.block_at(fid, (x, y))
-        if not block or block.eid not in WALL_IDS:
-            self.fail(f"pickaxe target is not breakable wall {fid} x{x}y{y}")
+        hx, hy = self.state["x"], self.state["y"]
         before = self.snapshot()
         self.state["pickaxe"] -= 1
-        self.set_ground(fid, (x, y))
-        self.record("使用镐", (x, y), "pickaxe", before, note)
+        broken: list[str] = []
+        for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            pos = (hx + dx, hy + dy)
+            b = self.block_at(fid, pos)
+            if b and b.eid in BREAKABLE_WALL_IDS:
+                self.set_ground(fid, pos)
+                broken.append(f"x{pos[0]}y{pos[1]} {b.eid}")
+        if not broken:
+            self.fail(f"pickaxe broke no canBreak wall at {fid} x{hx}y{hy}")
+        self.record("使用镐", (x, y), "pickaxe", before, f"{note}; broke={broken}")
+
+    def use_pickaxe_adjacent(self, note: str = "") -> tuple[int, int]:
+        """Use pickaxe when the recording has no target tile.
+
+        Recordings emit ``item:pickaxe`` without a target tile. The web pickaxe
+        breaks ALL adjacent canBreak walls (not facing-based), so pick any
+        adjacent breakable wall as the record target; all are broken."""
+        if self.state["pickaxe"] <= 0:
+            self.fail("no pickaxe")
+        fid = self.state["floor"]
+        hx, hy = self.state["x"], self.state["y"]
+        target: tuple[int, int] | None = None
+        for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            b = self.block_at(fid, (hx + dx, hy + dy))
+            if b and b.eid in BREAKABLE_WALL_IDS:
+                target = (hx + dx, hy + dy)
+                break
+        if target is None:
+            self.fail(f"no adjacent breakable wall for pickaxe at {fid} x{hx}y{hy}")
+        self.use_pickaxe(fid, *target, note)
+        return target
 
     def use_snow(self, note: str = "") -> None:
         if self.state["snow"] <= 0:
@@ -2427,7 +3095,9 @@ class Game:
         self.move_adjacent("MT26", 6, 6, "26F 公主")
         before = self.snapshot()
         self.flags["营救公主"] = True
-        self.set_ground("MT26", (6, 6))
+        # Princess is noPass and stays after the rescue (the commonEvent fires
+        # on facing her each time; the false-branch only modifies MT24). Do NOT
+        # clear (6,6) -- the hero never steps onto it.
         self.set_block("MT24", (6, 1), "wall", "whiteWall2", 1)
         for p in [(5, 1), (7, 1), (6, 2), (6, 3), (6, 4)]:
             self.set_ground("MT24", p)
@@ -2463,6 +3133,7 @@ class Game:
         7:  (50,   {"yk": 5},                 "yellowKey5"),
         12: (800,  {"rk": 1},                 "redKey1"),
         15: (200,  {"bk": 1},                 "blueKey1_15"),
+        28: (-100, {"yk": -1},                "specialTrader"),
         31: (1000, {"yk": 4, "bk": 1},        "keyBundle31"),
         38: (200,  {"yk": 3},                 "yellowKey3"),
         39: (2000, {"bk": 3},                 "blueKey3"),
@@ -2481,13 +3152,22 @@ class Game:
             return
         cost, gain, eid = entry
         flag = self.trader_flag(fid, x, y)
-        if self.flags.get(flag):
+        # specialTrader (e.g. MT28 sells yellowKeys for gold, one per dialog)
+        # is repeatable -- each dialog sells one key, so it must not be gated
+        # by the one-shot flag the way one-shot traders are.
+        repeatable = eid == "specialTrader"
+        if not repeatable and self.flags.get(flag):
             self.fail(f"{fid} trader already used")
         # 47F earthquake trader additionally guards on a dedicated counter.
         if n == 47 and self.state.get("earthquakeBought", 0) >= 1:
             self.fail("47F earthquake trader already used")
         if self.state["gold"] < cost:
             self.fail(f"not enough gold for {fid} trader: need={cost} have={self.state['gold']}")
+        # Reverse traders (gain value < 0) consume items; verify the hero has
+        # enough of the sold item before applying.
+        for key, val in gain.items():
+            if val < 0 and self.state.get(key, 0) < -val:
+                self.fail(f"not enough {key} for {fid} trader: need={-val} have={self.state.get(key, 0)}")
         self.state["gold"] -= cost
         for key, val in gain.items():
             if key == "earthquake":
@@ -2495,7 +3175,8 @@ class Game:
                 self.state["earthquakeBought"] = self.state.get("earthquakeBought", 0) + val
             else:
                 self.state[key] += val
-        self.flags[flag] = 1
+        if not repeatable:
+            self.flags[flag] = 1
         self.record("商人", (x, y), eid, before, note)
 
     def buy_shop(self, kind: str, count: int = 1, shop_pos: tuple[int, int] | None = None) -> None:
@@ -2596,6 +3277,26 @@ def go_to_decomposed(g: Game, fid: str, x: int, y: int, note: str = "", limit: i
             del g.errors[old_errors:]
         path = g.path_to(fid, (x, y), strict_click=False)
         if not path:
+            # No loose path. The target may be reachable only through a door/
+            # wall that an event opens mid-move (the recording's automaticRoute
+            # fires the trigger when the hero steps on it, e.g. MT15 (9,1) thief
+            # opens (8,1) unbreakableWall). The static BFS plans before the hero
+            # steps, so it sees (8,1) as a wall and finds no path. Step onto
+            # reachable passable event-trigger tiles (clone-test: only commit
+            # triggers that actually open a path to the target) and re-plan.
+            opened = False
+            for tpos in g._reachable_event_triggers(fid, (x, y)):
+                cand = g.clone()
+                try:
+                    cand.go_to(fid, tpos[0], tpos[1], f"test trigger {tpos}")
+                except RouteError:
+                    continue
+                if cand.path_to(fid, (x, y), strict_click=False):
+                    g.go_to(fid, tpos[0], tpos[1], f"{note}: 触发事件开路 {tpos}")
+                    opened = True
+                    break
+            if opened:
+                continue
             g.fail(f"cannot decompose route to {fid} x{x}y{y}: {note}")
         blocker = next((pos for pos in path[1:] if g.block_at(fid, pos) is not None), None)
         if blocker is None:
@@ -2677,8 +3378,8 @@ def collect_net_yellow_keys_until(g: Game, needed: int, note: str, min_floor: in
                 if cand.state["hp"] > g.state["hp"]:
                     continue
                 door_cost = (
-                    (cand.state["yd"] - before["yd"]) * 50
-                    + (cand.state["bd"] - before["bd"]) * 200
+                    (cand.state["yd"] - before["yd"]) * 100
+                    + (cand.state["bd"] - before["bd"]) * 500
                     + (cand.state["rd"] - before["rd"]) * 800
                 )
                 hp_loss = before["hp"] - cand.state["hp"]
@@ -3161,8 +3862,8 @@ def eat_minimal_potions_until(
                         or cand.state["rk"] < preserve_rk):
                     continue
                 door_cost = (
-                    (cand.state["yd"] - before["yd"]) * 50
-                    + (cand.state["bd"] - before["bd"]) * 200
+                    (cand.state["yd"] - before["yd"]) * 100
+                    + (cand.state["bd"] - before["bd"]) * 500
                     + (cand.state["rd"] - before["rd"]) * 800
                 )
                 key = (max(0, cand.state["hp"] - target_hp), door_cost, gain)
@@ -4468,6 +5169,7 @@ def trigger_mt49_event(g: Game) -> None:
         g.fail(f"not on MT49 for seal event: {g.state['floor']}")
     g.go_to("MT49", 6, 6, "49F enter seal event")
     before = g.snapshot()
+    g._cow("MT49")  # 裸 events.pop 绕过 COW, clone 共享 floor 会泄漏
     g.floors["MT49"].events.pop("6,6", None)
     g.set_block("MT49", (6, 7), "door", "specialDoor", 85)
     g.set_block("MT49", (6, 3), "enemy", "redKing", 245)
@@ -4837,7 +5539,7 @@ def write_outputs(g: Game) -> None:
         lines.append("")
     lines.append("## 阶段分数")
     lines.append("")
-    lines.append("- `库存折算分 = HP + 黄钥匙*50 + 蓝钥匙*200 + 金币*0.5`；本 Post-40 脚本暂未重算全图剩余资源 `final-score`。")
+    lines.append("- `库存折算分 = HP + 黄钥匙*100 + 蓝钥匙*500 + 金币*1`；本 Post-40 脚本暂未重算全图剩余资源 `final-score`。")
     lines.append("")
     lines.append("| 大阶段 | 状态快照 | 本段dmg | 累计dmg | 门 黄/蓝/红 | 库存折算分 | 关键资源 | 步数 |")
     lines.append("|---|---|---:|---:|---|---:|---|---:|")

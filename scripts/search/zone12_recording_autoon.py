@@ -29,7 +29,11 @@ os.chdir(ROOT)
 from src.solver.game_route import Game, read_json, state_line, RouteError, floor_no, go_to_decomposed
 from scripts.baseline import replay_user_post9_route as guide10
 from scripts.search.zone2_game_route import apply_mt10_supply
+from scripts.search.recording_to_game import scan_residual
 
+# Defaults preserve the original KILL-line behavior; main() accepts overrides so
+# the same zone1-2 converter can replay any auto-ON recording (e.g. the 2攻
+# buy-red-key line) from a capture-flattened statlog + save1 snapshot.
 STATLOG_PATH = Path(r"C:/Users/peiyan.liang/.claude/jobs/79814e6b/tmp/replay_statlog.json")
 SAVE1 = ROOT / "outputs" / "results" / "save1_current_snapshot.json"
 OUT_JSON = ROOT / "outputs" / "results" / "zone12_recording_autoon.json"
@@ -38,8 +42,8 @@ OUT_TXT = Path(r"C:/Users/peiyan.liang/.claude/jobs/79814e6b/tmp/zone12_autoon_r
 MT10_BOSS_TRIGGER = (6, 5)
 
 
-def load_statlog():
-    with open(STATLOG_PATH, encoding="utf-8") as f:
+def load_statlog(path: Path | None = None):
+    with open(path or STATLOG_PATH, encoding="utf-8") as f:
         s = json.load(f)
     return s if isinstance(s, list) else s.get("statlog", s)
 
@@ -117,8 +121,12 @@ def find_stair(g, from_fid, to_fid):
     return min(cands, key=lambda p: abs(p[0]-hx) + abs(p[1]-hy))
 
 
-def main(stop_floor="MT32", write=True, stop_before_redkey_buy=False, skip_ranges=None, stop_after_mt10_supply=False, stop_before_idx=None):
-    statlog = load_statlog()
+def main(stop_floor="MT32", write=True, stop_before_redkey_buy=False, skip_ranges=None, stop_after_mt10_supply=False, stop_before_idx=None,
+         statlog_path: Path | None = None, save1_path: Path | None = None,
+         out_json: Path | None = None, out_txt: Path | None = None,
+         residual_out: Path | None = None, residual_hi: int = 20,
+         auto_spec: str = "battle=true,item=true,wall=true"):
+    statlog = load_statlog(statlog_path)
     mt4 = next(i for i, s in enumerate(statlog) if s["f"] == "MT4")
 
     # skip_ranges: list of (lo, hi) statlog index ranges to skip entirely (e.g. pure
@@ -127,9 +135,14 @@ def main(stop_floor="MT32", write=True, stop_before_redkey_buy=False, skip_range
     # next non-skipped entry flies to the next visit (fly is position-agnostic).
     skip_ranges = skip_ranges or []
 
-    g = Game(read_json(SAVE1))
+    g = Game(read_json(save1_path or SAVE1))
     g.strict_live_model = True
-    g.auto_flags = {"battle": True, "item": True, "wall": True}  # auto ON
+    _af: dict = {}
+    for part in auto_spec.split(","):
+        k, _, v = part.strip().partition("=")
+        if k:
+            _af[k] = (v == "true") if v in ("true", "false") else v
+    g.auto_flags = _af  # auto ON by default; auto OFF (all=false) for 2atk-line replay reliability
 
     buf = []
     def log(*a):
@@ -335,14 +348,43 @@ def main(stop_floor="MT32", write=True, stop_before_redkey_buy=False, skip_range
             log(f"    rec : {rs}")
     log(f"matched {match}/{n}")
 
-    OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    out_json_path = out_json or OUT_JSON
+    out_txt_path = out_txt or OUT_TXT
+    out_json_path.parent.mkdir(parents=True, exist_ok=True)
     if write:
-        OUT_JSON.write_text(json.dumps({"final": g.snapshot(), "steps": g.steps, "errors": g.errors, "ok": not g.errors}, ensure_ascii=False, indent=2), encoding="utf-8")
-        OUT_TXT.write_text("\n".join(buf), encoding="utf-8")
-    print(f"matched {match}/{n}; errors={errors}; skipped={skipped}; json={OUT_JSON}")
+        out_json_path.write_text(json.dumps({"final": g.snapshot(), "steps": g.steps, "errors": g.errors, "ok": not g.errors}, ensure_ascii=False, indent=2), encoding="utf-8")
+        out_txt_path.write_text("\n".join(buf), encoding="utf-8")
+    residual_summary = None
+    if residual_out is not None:
+        total, rows, cats = scan_residual(g, 1, residual_hi)
+        residual_summary = {
+            "final": g.snapshot(),
+            "current_stock": g.state["hp"] + g.state["yk"] * 100 + g.state["bk"] * 500 + g.state["gold"],
+            "residual_value": total, "final_score": g.state["hp"] + g.state["yk"] * 100 + g.state["bk"] * 500 + g.state["gold"] + total,
+            "residual_rows": rows, "cat_summary": {k: len(v) for k, v in cats.items()},
+        }
+        residual_out.parent.mkdir(parents=True, exist_ok=True)
+        residual_out.write_text(json.dumps(residual_summary, ensure_ascii=False, indent=2), encoding="utf-8")
+        log(f"\n=== residual scan zone1-{residual_hi} (final-score 0伤口径) ===")
+        log(f"stock={residual_summary['current_stock']} residual={total} final_score={residual_summary['final_score']}")
+    print(f"matched {match}/{n}; errors={errors}; skipped={skipped}; json={out_json_path}"
+          + (f"; final_score={residual_summary['final_score']}" if residual_summary else ""))
     return g
 
 
 if __name__ == "__main__":
-    g = main()
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--statlog", type=Path, default=None, help="flat PRE-state statlog JSON (default: KILL STATLOG_PATH)")
+    ap.add_argument("--save1", type=Path, default=None, help="MT4 save1 snapshot (default: KILL SAVE1)")
+    ap.add_argument("--out", type=Path, default=None, help="output walk JSON")
+    ap.add_argument("--stop-floor", default="MT32")
+    ap.add_argument("--residual-out", type=Path, default=None, help="export zone1-N final-score residual scan JSON")
+    ap.add_argument("--residual-hi", type=int, default=20)
+    ap.add_argument("--auto", default="battle=true,item=true,wall=true",
+                    help="auto flags (default ON; pass battle=false,item=false,wall=false for auto-OFF replay)")
+    args = ap.parse_args()
+    g = main(stop_floor=args.stop_floor, statlog_path=args.statlog, save1_path=args.save1,
+             out_json=args.out, residual_out=args.residual_out, residual_hi=args.residual_hi,
+             auto_spec=args.auto)
     raise SystemExit(0 if g else 1)

@@ -714,7 +714,7 @@ def _key_value(g: Game) -> int:
     """钥匙+金币的 HP 估值(分数模型:1YK=50,1BK=4YK=200,1RK>=500,100G=1YK=50)。
     链式衔接排序用此替代 yk+bk+rk 简单计数(BK 当 1 低估 4x,和 YK=50HP 对齐)。"""
     s = g.state
-    return 50 * s["yk"] + 200 * s["bk"] + 500 * s["rk"] + s["gold"] // 2
+    return 100 * s["yk"] + 500 * s["bk"] + 500 * s["rk"] + s["gold"]
 
 
 def _pareto_metrics():

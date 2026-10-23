@@ -2,7 +2,7 @@
 
 来源 = **当前最优 zone1-2 walk** `best/zone12_2atk0def_recording_walk.md`（358 步，2攻0防 KILL 线，auto ON，web 0 mismatch；源 JSON `outputs/results/zone12_2atk0def_recording_walk.json`，生成器 `scripts/search/recording_to_game.py`，基线录像 `best/2区2攻不买800红钥匙.h5route`）。zone1-2 终态（MT20 vampire+cluster 后）**HP=1215 ATK=76 DEF=66 YK=5 BK=0 RK=0 G=1298 dmg=7111**。
 
-**演进**：drop753_774（HP=1241，旧录像派生，已删）-> statlog newrec 版（HP=1215，已删）-> **converter 版（当前最优，HP=1215，358 步 web 0 mismatch）**。converter 用 `recording_to_game.py` 逐格复现录像 captured path（突破 Game 类寻路分歧，见下"例外"），比 statlog 版更精确（PRE-state 0 mismatch）。HP=1215 比 drop753_774 少 26，因延后更多 HP 拾取（如 MT11 blackSlime+redPotion）到 3/4 区 0 伤阶段，eventual HP 更高 = 改进。
+**演进**：drop753_774（HP=1241，旧录像派生，已删）-> statlog newrec 版（HP=1215，已删）-> **converter 版（当前最优，HP=1215，358 步 web 0 mismatch）**。converter 用 `recording_to_game.py` 逐格复现录像 captured path（KILL 线产物仍用 `--paths`；2026-08-09 V1 买 rk 线已证明无 `--paths` 也能 0 mismatch，见下「两条 converter 模式」），比 statlog 版更精确（PRE-state 0 mismatch）。HP=1215 比 drop753_774 少 26，因延后更多 HP 拾取（如 MT11 blackSlime+redPotion）到 3/4 区 0 伤阶段，eventual HP 更高 = 改进。
 
 **converter Game walk（当前最优，主产物）**：`scripts/search/recording_to_game.py` 把录像解码 + 逐格 captured path 精确复现 + coalesce + 剪枝，生成 **358 步 Game walk** `outputs/results/zone12_2atk0def_recording_walk.json` + 人看 `best/zone12_2atk0def_recording_walk.md`（2攻0def KILL 线，times1=2）。web 复验 0 mismatch（final HP=1215 ATK=76 DEF=66 YK=5 BK=0 RK=0 G=1298 == exp）。3 处冗余已通用规则剪掉：MT8 钥匙 U 型折返（-4 步）、MT6 fly 前零效果 move、MT4 楼梯前死胡同 move（各 -1）。coalesce/剪枝细节见 `recording_converter_experience.md`。
 
@@ -19,9 +19,15 @@
 - **旧录像路径恰好 Game 兼容**所以 autoon 能跑（见 `recording_autoon_skip_cleared` 记忆，MT4-9 零 stat 错）；**用户新手玩调整路径不兼容**，autoon/driver 都败。
 - **statlog 楼层抖动**：`_doReplayAction` 钩子抓到楼梯转换中途瞬时 floorId（如 MT8 (6,2) 转身时 floor 瞬时跳 MT9 又回 MT8），`nxt.f != hf` 检测被欺骗致 MT8↔MT9 乒乓。可后处理清 1 步抖动（`tmp/clean_statlog_flicker.js`：floor 与前后邻居都不同且位置不变 -> 改回邻居楼层）。旧 statlog 楼梯过渡单调无乒乓。
 
-**结论**：手玩录像复现走 **converter（逐格 captured path）** 路线（当前主产物）。早期 statlog ground truth 路线已被 converter 取代（更精确）。Game 类自己寻路（path_to/automaticRoute）会发散，不能直接复现录像逐 action。
+**结论**：手玩录像复现走 **converter** 路线（当前主产物）。早期 statlog ground truth 路线已被 converter 取代（更精确）。
 
-**例外 -- `recording_to_game.py` converter 已突破此限制**：它不依赖 Game 自己的 `path_to`/`automaticRoute`（那会发散），而是**逐格回放录像 captured path**（exact 路径）+ auto_sweep 对齐 statlog，再 coalesce 成节点级步。所以 Game 类 walk 能逐 action 复现手玩录像、web 0 mismatch（见上"converter Game walk"）。代价 = coalesce/剪枝逻辑复杂（走门格移除 / 零效果 move 剪枝 / U 型折返提升，见 `recording_converter_experience.md`）。即"Game 自己寻路"复现失败，但"逐格照录像走"复现成功。
+**两条 converter 模式**：
+- **逐格 captured path（`--paths`）**：不依赖 Game 自己的 `path_to`/`automaticRoute`（早期 autoon 实测会发散），而是**逐格回放录像 captured path**（exact 路径）+ auto_sweep 对齐 statlog，再 coalesce 成节点级步。KILL（2攻0def）线即此模式：358 步 web 0 mismatch。代价 = coalesce/剪枝逻辑复杂（走门格移除 / 零效果 move 剪枝 / U 型折返提升，见 `recording_converter_experience.md`）。
+- **无 `--paths` Game 自寻路（2026-08-09 突破，推翻旧结论）**：V1 买 rk 线（`best/2区2攻800买红钥匙V1.h5route`）**无 `--paths`** 0 mismatch 到 MT31 HP=1232，web 复验全过。证明"Game 自己寻路必发散、须喂 captured path"是**错的**--发散根因是 4 个可修通用模型 bug（事件门没开/触发格没踩/no-op 误跳 spawn trigger/coalesce 折了 shop 目标），修后 Game 自寻路能复现。详见 `recording_converter_experience.md`「无需 captured path 的 4 个模型修复」+ [[game_conversion_no_paths_needed]]。
+
+> **KILL（2攻0def）线尚未无 `--paths` 重测**：本文件记录的 358 步产物仍用 `--paths`。
+> 4 修复是通用模型 + converter 逻辑修复，理论上对 KILL 线也适用，但未验证。新录像优先
+> 试无 `--paths`，发散再退 `--paths`，发散点先按 4 类模型 bug 排查（别写浏览器 path 捕获）。
 
 ## 新录像 11 处冗余清理 + MT14 优化（用户手玩调整，对比 drop753_774）
 

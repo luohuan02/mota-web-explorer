@@ -12,6 +12,9 @@ reason or None. First non-None wins. Checks (in order):
   6. check_simple_expansion       - shell `$VAR` / `${VAR}` expansion
   7. check_command_substitution   - `$(...)` command substitution
   8. check_dedicated_tool_commands- sed/head/tail/find/grep (use dedicated tools)
+  9. check_background_operator    - bare `&` background operator (defers execution
+                                    past approval-time safety checks; use the Bash
+                                    tool's run_in_background instead)
 
 Why one file + $CLAUDE_PROJECT_DIR: the former 7 entries in settings.local.json
 each ran `python .claude/hooks/check_xxx.py` with a RELATIVE path. If the Bash
@@ -190,25 +193,73 @@ def check_multiline_python_c(command: str):
 
 
 # ---------------------------------------------------------------------------
+# check 2b: python fed by heredoc (python - <<EOF / python3 - <<EOF ...)
+# ---------------------------------------------------------------------------
+
+_PY_HEREDOC = re.compile(_PY + r"[^\n|;&]*<<-?")
+
+
+def check_python_heredoc(command: str):
+    if _PY_HEREDOC.search(command):
+        return (
+            "Blocked: `python - <<EOF` (inline python via heredoc) detected. "
+            "Per CLAUDE.md, python temp scripts must go to a file: use the Write "
+            "tool to write the script to tmp/tmp.py, then run `python tmp/tmp.py`. "
+            "Heredoc-inline python bypasses the multi-line permission prompt but "
+            "produces unreviewable one-shot scripts that vanish from the repo."
+        )
+    return None
+
+
+# ---------------------------------------------------------------------------
 # check 3: heredoc + ${...} + quotes (expansion obfuscation)
 # ---------------------------------------------------------------------------
 
 _HEREDOC = re.compile(r"<<-?")
 
 
+def _heredoc_bodies(command: str):
+    """Yield the body text of each heredoc (from <<marker to the next line that
+    equals the marker). Best-effort: heredocs nested in compounds are rare here."""
+    for m in _HEREDOC.finditer(command):
+        rest = command[m.end():]
+        marker = rest.split(None, 1)[0] if rest.split() else ""
+        if not marker:
+            continue
+        body_start = rest.find("\n")
+        if body_start == -1:
+            continue
+        body = rest[body_start + 1:]
+        end = -1
+        for line in body.split("\n"):
+            if line.strip() == marker:
+                end = body.find(line)
+                break
+        yield body if end == -1 else body[:end]
+
+
 def check_heredoc_expansion(command: str):
     if not _HEREDOC.search(command):
         return None
-    if "${" not in command:
-        return None
-    if "'" not in command and '"' not in command:
-        return None
-    return (
-        "Blocked: command embeds ${...} expansion inside a heredoc/script body mixed "
-        "with quotes (brace-with-quote / expansion obfuscation pattern). Do NOT inline "
-        "scripts via heredoc. Use the Write tool to write the script to a file (e.g. "
-        "tmp/tmp.js), then run that file with Bash."
-    )
+    if "${" in command and ("'" in command or '"' in command):
+        return (
+            "Blocked: command embeds ${...} expansion inside a heredoc/script body mixed "
+            "with quotes (brace-with-quote / expansion obfuscation pattern). Do NOT inline "
+            "scripts via heredoc. Use the Write tool to write the script to a file (e.g. "
+            "tmp/tmp.js), then run that file with Bash."
+        )
+    # 2026-09-06: f-string 式花括号 + 引号同样触发沙箱人工审批
+    # ("Contains brace with quote character"); 无 $ 也拦, 提示改走 Write 工具。
+    for body in _heredoc_bodies(command):
+        if "{" in body and ("'" in body or '"' in body):
+            return (
+                "Blocked: heredoc script body mixes brace blocks with quote "
+                "characters (brace-with-quote pattern, triggers sandbox manual "
+                "approval). Do NOT inline scripts via heredoc -- even without ${...}. "
+                "Use the Write tool to write the script to a file (e.g. tmp/tmp.py or "
+                "tmp/tmp.js), then run that file with Bash."
+            )
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -260,8 +311,10 @@ def check_cd_redirection(command: str):
 # File-target redirect operators. Excludes dup forms `2>&1` / `1>&2` / `>&1`
 # (an `&` follows the operator, so the negative lookahead fails). Matches
 # `>`, `>>`, `1>`, `1>>`, `2>`, `2>>`, `&>`, `&>>` followed by a non-`&`
-# target (file path / /dev/null).
-_FILE_REDIR = re.compile(r"(?:(?:[12]|&)?>>?)(?!\s*&)")
+# target (file path / /dev/null). The char BEFORE the operator must be a
+# whitespace / `(`/`;`/start — 否则 JS 的 `>=`、比较链等会被误判 (2026-09-06:
+# agent-browser eval 的 JS 箭头/比较误触发)。
+_FILE_REDIR = re.compile(r"(?<![=\w>&|<+\-*/^(])(?:(?:[12]|&)?>>?)(?!\s*&)")
 
 
 def _redir_fd(op: str) -> int:
@@ -388,18 +441,42 @@ def check_dedicated_tool_commands(command: str):
 
 
 # ---------------------------------------------------------------------------
+# check 9: bare `&` background operator
+# ---------------------------------------------------------------------------
+
+# Bare `&` = background operator: 前面是空白/行首, 后面是空白/结尾, 且不属于
+# `&&` / `>&` / `&>` / `2>&1`。`a & b` / `cmd &` 命中; JS 位运算 `a & b` 在
+# eval 表达式里理论上会误伤, 但本项目 shell eval 一律走单引号字面量
+# (_strip_single_quoted 后双引号区保留), 风险可接受。
+_BARE_AMP = re.compile(r"(?<![&>\w])&(?![&>\w])")
+
+
+def check_background_operator(command: str):
+    if _BARE_AMP.search(_strip_single_quoted(command)):
+        return (
+            "Blocked: bare `&` background operator detected (command defers "
+            "execution past approval-time safety checks). Remediation: use the "
+            "Bash tool's run_in_background=true parameter instead of `&`, or "
+            "split into sequential commands."
+        )
+    return None
+
+
+# ---------------------------------------------------------------------------
 # driver
 # ---------------------------------------------------------------------------
 
 _CHECKS = [
     check_unicode_whitespace,
     check_multiline_python_c,
+    check_python_heredoc,
     check_heredoc_expansion,
     check_cd_redirection,
     check_multiple_redirects,
     check_simple_expansion,
     check_command_substitution,
     check_dedicated_tool_commands,
+    check_background_operator,
 ]
 
 

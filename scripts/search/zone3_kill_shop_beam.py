@@ -41,7 +41,7 @@ def _rank_proxy(g) -> float:
     return (s["hp"]
             + (s["atk"] - 76) * 6 + (s["def"] - 66) * 6
             + s["gold"] * 0.4
-            + s["yk"] * 50 + s["bk"] * 200 + s["rk"] * 420)
+            + s["yk"] * 100 + s["bk"] * 500 + s["rk"] * 420)
 
 
 def _pareto_metrics(g):

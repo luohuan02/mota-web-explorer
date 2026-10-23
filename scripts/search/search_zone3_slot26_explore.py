@@ -484,7 +484,7 @@ def remaining_simple_value(g: Any) -> int:
 
 def score(g: Any) -> int:
     s = g.state
-    stock = s["hp"] + s["yk"] * 50 + s["bk"] * 200 + s["rk"] * 500 + s["gold"] // 2
+    stock = s["hp"] + s["yk"] * 100 + s["bk"] * 500 + s["rk"] * 500 + s["gold"]
     stats = s["atk"] * 95 + s["def"] * 120
     door_penalty = s["yd"] * 25 + s["bd"] * 70 + s["rd"] * 150
     potion_penalty = 0
@@ -496,14 +496,14 @@ def score(g: Any) -> int:
 
 def goal_score(g: Any) -> int:
     s = g.state
-    stock = s["hp"] + s["yk"] * 50 + s["bk"] * 200 + s["rk"] * 500 + s["gold"] // 2
-    return stock + s["atk"] * 140 + s["def"] * 170 - s["dmg"] - s["yd"] * 50 - s["bd"] * 200 - s["rd"] * 350 + remaining_simple_value(g)
+    stock = s["hp"] + s["yk"] * 100 + s["bk"] * 500 + s["rk"] * 500 + s["gold"]
+    return stock + s["atk"] * 140 + s["def"] * 170 - s["dmg"] - s["yd"] * 100 - s["bd"] * 500 - s["rd"] * 350 + remaining_simple_value(g)
 
 
 def simple_stock_score(g: Any) -> float:
-    """Comparison-only score: 1YK = 50HP = 100G, BK keeps project 4YK value."""
+    """Comparison-only score: 1YK = 100HP = 100G, BK = 5YK = 500HP value."""
     s = g.state
-    return s["hp"] + s["yk"] * 50 + s["bk"] * 200 + s["gold"] * 0.5
+    return s["hp"] + s["yk"] * 100 + s["bk"] * 500 + s["gold"] * 1.0
 
 
 def state_bucket(g: Any) -> tuple[Any, ...]:
@@ -671,7 +671,7 @@ def write_report(data: dict[str, Any], out_json: Path, out_md: Path) -> None:
             lines.append("")
             continue
         lines.append(f"- score: `{row['score']}`；goal_score: `{row['goal_score']}`")
-        lines.append(f"- simple_stock_score(1YK=50HP=100G): `{row['simple_stock_score']}`")
+        lines.append(f"- simple_stock_score(1YK=100HP=100G): `{row['simple_stock_score']}`")
         lines.append(f"- state: `{row['state_text']}`")
         lines.append(f"- remaining_simple_value: `{row['remaining_simple_value']}`")
         lines.append(f"- trace length: `{len(row['trace'])}`；steps: `{len(row['steps'])}`")

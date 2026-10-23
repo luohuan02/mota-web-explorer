@@ -74,7 +74,7 @@ def parse_yk_values(raw: str) -> list[int]:
 
 
 def base_stock_score(final: dict[str, Any], yk_value: int) -> float:
-    return final["hp"] + final["yk"] * yk_value + final["bk"] * yk_value * 4 + final["gold"] * 0.5
+    return final["hp"] + final["yk"] * yk_value + final["bk"] * yk_value * 5 + final["gold"] * 1.0
 
 
 def score_with_yk(
@@ -84,7 +84,7 @@ def score_with_yk(
     yk_value: int,
 ) -> tuple[float, float, float]:
     rg2.YK_VALUE = yk_value
-    rg2.BK_VALUE = yk_value * 4
+    rg2.BK_VALUE = yk_value * 5
     base = base_stock_score(final, yk_value)
     remaining = rg2.remaining_resource_value(rep, enemies, final)
     return base + remaining, base, remaining
@@ -243,7 +243,7 @@ def write_outputs(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--seconds", type=float, default=9000.0)
-    parser.add_argument("--yk-values", default="50,100")
+    parser.add_argument("--yk-values", default="100")
     parser.add_argument("--suffix", default="")
     parser.add_argument("--progress-every", type=int, default=5000)
     args = parser.parse_args()

@@ -49,7 +49,7 @@ KILL_WALK = ROOT / "best" / "zone3_2atk0def_kill_walk.json"
 DEFAULT_OUT_JSON = ROOT / "outputs" / "results" / "zone3_kill_astar_walk.json"
 DEFAULT_OUT_MD = ROOT / "outputs" / "reports" / "zone3_kill_astar.md"
 
-# 1 gold 的 zone4 等价 HP (GOLD_FACE_VALUE 0.5 × zone4_premium 2.5 = 1.25)。
+# 1 gold 的 zone4 等价 HP (GOLD_FACE_VALUE 1.0 × zone4_premium 2.5 = 2.5)。
 GOLD_PREMIUM = 1.25
 POTION_PENALTY = 0.001  # 药瓶微罚, 让搜索只在扛伤时拾 -> HP 紧
 SWORDSMAN_ATK_THRESHOLD = 150  # ATK>=150 一击秒 swordsman (turns=1, damage=0)

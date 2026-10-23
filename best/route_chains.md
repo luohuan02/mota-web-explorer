@@ -23,6 +23,7 @@
 | `non_guide_current_best_branch` | 1 区当前最优 -> 2 区当前最优 2ATK1DEF 分支 -> checkpoint bridge -> 3 区留镐 -> 4 区纯净版 TE | 检查点链接；4区451步网页零数值差异、终战资源闭环和宏邻域 A* 审计通过；20F-31F仍缺机器可读 bridge walk | `HP=23076 ATK=417 DEF=475 YK=5 BK=1 G=906 MT50 x6y5` |
 | `kill_line_2atk0def` | 1-2 区 2攻0防录像 -> MT21-30 离线 (slot32) -> 3 区 KILL (slot152) -> 4 区待定 | zone1-2 录像 358 步 0 mismatch；MT21-30 离线打通（取代 live bridge, slot151 superseded）；3 区 264 步 0 数值差异（11 位置差，优于 23076 的 48）；4 区尾段待搜索 | 3 区终：`HP=609 ATK=166 DEF=174 YK=9 G=2285 MT41 x6y2`（比留镐 +564 HP） |
 | `recording_line_2atk3atk5def` | 2 区 2 攻 (stage-1, save32->MT31) -> 3 区 3 攻 5 防 录像 converter (save33 MT31 起, slot154 终) -> 4 区待定 | 3 区 278 步（激进 coalesce 451->278，空地到达/通过全删）网页零数值差异（converter from recording, auto nopotion）；replayer 远点点击+重试开门/击杀；保留 event-trigger/auto_sweep/楼梯/centerFly·upFly·downFly 前定位步；MT40 (6,7) boss 事件 + path_cost epsilon + MT38 (5,2) 商人 statlog delta 检测；4 区尾段待搜索（录像 TE33508 def542 参考） | 3 区终：`HP=13 ATK=166 DEF=214 YK=6 BK=1 G=2954 MT41 x6y2`（匹配 save33 录像真终态） |
+| `recording_2atk_alldef_40943` | 门少开 all-def 前缀（web 验证到 MT41/save105）-> 5 区 save105->MT50 | 前缀独立复验；5 区 349 步 converter 网页 0 值不匹配（含金币），从 save105 接续 | `HP=40943 ATK=374 DEF=607 MT50 x6y5`（较 39944 +999，逼近 41477） |
 
 ## 各区产物
 
@@ -115,3 +116,108 @@
   - **MT2 (8,2) steelDoor waitAsync 游戏缺陷 workaround（replayer `clearStuckWaitAsync`）**：(8,2) blueGuard afterBattle 若 flag:2 已置（杀 (6,2) 后）则 async openDoor 开 6 个 steelDoor ((5,5)/(5,8)/(5,11)/(9,5)/(9,8)/(9,11)) + waitAsync。steelDoor 的 async openDoor 在 asyncId 留下 function 回调永不调用 -> waitAsync 永不清空 -> 复验卡死。workaround：waitAsync 滞留 >6s 后删 asyncId 的 falsy/滞留 function 键（**不** dismiss 事件），让游戏自己的 waitAsync 轮询检测 asyncId 空 -> 自清 -> afterBattle 继续触发开门后 auto-sweep 拾取新可达的 yellowKey ((3,4)/(4,4)/(3,5))。若 dismiss 事件则 bypass 开门完成 -> auto-sweep 不重跑 -> yk 少 3 发散。
   - 商店序列：MT32 防 x5（def 66->146）+ 攻 x3（atk 76->142）+ MT32 防再补；详见 walk.md。
 - 4 区：待从槽 154 独立搜索+网页验证；录像参考 TE33508（def542，多买 3 次防 + 做 MT2 小偷过 MT35）。
+
+### 2区2攻+买800rk+全防 录像线（2026-08-16，全路线 MT4->MT50）
+
+`zone12.2atk_alldef_recording_mt4_to_mt50`
+
+- 录像来源：`best/2区2攻+买800rk+全防 2120 + 纯净版TE-39944.h5route`（纯净版-TE 全防路线，录像驱动 converter，非 Game 自搜）。
+- `recording_seed_to_game.py` converter 从 save1（MT4 种子，auto-OFF）整条 MT4->MT50 全防路线转换，1061 步 target-click-only 网页复验 **0 值不匹配（含金币）**，16 个纯坐标偏移（已知 target-click-only 边界）。
+- **MT50 redKing 走位步重新插入（已知游戏边界，非补丁）**：redKing 键盘触发要求 hero 相邻 (5,5)/(6,6)/(6,4)/(7,5)；录像 `move:5:5` 是空地定位步，被 `_coalesce_redundant_arrivals` 正确折叠，导致 hero 换层后停在 (6,7) 不满足相邻。按 38624/39003/39529 既有模式，在换层后、redKing reveal 前重新插入 `到达 MT50 (6,7)->(5,5)` 步。
+- 终点：`MT50 x6y5 HP=39944 ATK=374 DEF=607 YK=1 BK=0 RK=1 G=1707 dmg=13342 door=182/23/10 won49 won50`。
+- 产物：`best/zone12_2atk6def_39944_{walk,summary,walk.md,live_verify}.json|md`。
+- 家族内对比：HP=39944 > 39529(39529) > 39003(39003) > 38624(38624)，当前 2atk 全防录像线最高。DEF=607 高于 39529 的 574，ATK=374 低于 39529 的 390（全防牺牲攻换防）。
+
+### 2区2攻+买800rk+1yk换100血+门少开+全防 录像线（2026-08-23，5区 MT41->MT50）
+
+`zone5.40943_alldef_recording_mt41_to_mt50`（链 `recording_2atk_alldef_40943`）
+
+- 录像来源：`best/2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943.h5route`（纯净版-TE 全防路线，录像驱动 converter，非 Game 自搜）。与 39944 同属 2区2攻+买800rk+全防 家族，但 1yk 换 100 血 + 门少开，且前缀已 web 验证到 MT41。
+- 前缀（门少开 all-def）：独立 web 复验到 MT41（save105）。5 区（MT41->MT50）从 save105 接续 converter 复现。
+- `recording_seed_to_game.py` converter from save105（MT41 HP=43 ATK=146 DEF=266 YK=10 BK=1 G=3031），349 步 target-click-only 网页复验 **0 值不匹配（含金币）**。
+- **MT47 (5,2) 地震商人曾卡住（脏浏览器状态，非代码缺口）**：首次 verifier 运行误报 timeout waiting for choices，因浏览器残留污染状态（`eventId=load` 卡死）。同 walk/verifier/seed/auto 干净 reload save105 后重跑全过——编码与历史全路线（38624/39003/39529/39944/23076）一致（商人/eid=earthquake/pos=(5,2)/G 4011->11）。
+- **MT46 2420G 生命商店复现**（G 4011->11 地震后，MT46 2420 商店 +1600 HP），superPotion +7260，MT45 hp2000，MT50 redKing reveal true-ending kill。
+- 终点：`MT50 x6y5 HP=40943 ATK=374 DEF=607 YK=0 BK=0 RK=0 G=640 dmg=2860 won49 won50 magicImmune`。**较 39944 提升 +999 HP**（40943 vs 39944），逼近官方 41477。
+- 产物：`best/2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版TE-40943_{walk,walk.md,live_verify,capture}.*`。种子 `best/checkpoints/save105_mt41_hp43_nopotion_snapshot.json`（槽 105）。
+
+### 生成式 zone1-2 战役（2026-09-12/13，已封闭，非当前最优）
+
+`zone1.generative_fix162 -> bridge.gen_163_to_mt21`（链 `generative_zone12_campaign`）
+
+- **动机**：以生成式搜索（agentN/R/U/V/W 谱系）冲击 41301。zone1 全收集拓扑出口 `MT3 (11,7) HP=916 ATK=30 DEF=30 YK=4 BK=1 G=258 dmg=2660`（与血统出口 618/308 同 yk/bk/atk/def）。
+- **zone1 fix162（web 验证）**：178 步全链 0 mismatch（含金币），含 fly-MT10 死锁修复——`floorTofloor` 谓词要求 hero 与出发层 downFloor 谓词点（MT10=[1,10]）`canConnect`，而 canConnect BFS 把带小偷事件的门格 (6,9) 当不可通行；修复 = 显式踩过 (6,9) 到 (6,10)（小偷事件 once 语义，二穿安全，主线 live 实证）。checkpoint 槽 163。
+- **桥 + v6b zone2 body（web 验证）**：从槽 163 起 306 步 0 mismatch（含金币）到 `MT21 (6,2) HP=1765 ATK=76 DEF=64 YK=4 BK=0 G=485 times1=2 dmg=7161`。**4F->MT21 单次连续 484 步亦 0 mismatch**（458 entries）。checkpoint 槽 164。
+- **zone3-5 适配层全部封闭（2026-09-12/13，agentW/F/E2/G 四轮）**：
+  - v6b 出口直适配 = 35589/33438（bk 结构缺口 + 资金耦合）；血统重排（agentV b2r1）= 模型漏 MT17(6,9) redPriest 战斗，修正后 ≈1755。
+  - 修正版 41599（G−50 平移）：三断点（step311 MT15 200G bk 差 21G / step717 def#7 差 40G / step1142 def#15 差 31G）；Inj-A 盾房腿（净 +260hp/+24G）+ Inj-B 时点移位（+338hp）修前两个，**def#15 的 31G 由 agentF 守恒证明封闭**（阶梯 multiset 不变 ⇒ r15 恒在 [1141] 支付恒差 31；六类新金币源全灭；cheat +100G 上限实测 41133 < 41301）。
+  - 后置嫁接（agentG）：**41301 的 zone2 body 自带收集腿**（#300 MT6 bk 商人 / #401-405 MT1 口袋 / #406-410 MT8 SE / #518-522 MT4）——916 vs 618 的 +298 是时序假象（同批资源 body 在 zone2 高 def 下免费收）；最优嫁接组合 = 精确 −48HP（ceiling 41253）。
+  - zone1 走廊变体（M7/M8/M10）：四重机制死（门被 go_to 自动补开 + yk 无补偿）；zone1 内 G/hp 交换率 ≈ 1G:4hp，理论最优可行点 (620-690, 313-327) → 终局 41303-41372 无可构造 walk。
+- **结论**：纯净版-TE 的终局 hp 被 2120/2420 资金金字塔的 G 轨迹刚性锁定；zone1-2 的 hp 增益若伴生 G 损失即净亏（hp 换金币在阶梯面前净亏）。**41301 维持纯净版-TE 冠军**（官方 41477 参考线仍在家族外）。全部对账：`tmp/agentF_progress.md`、`tmp/agentE2_progress.md`、`tmp/agentG_progress.md`、`outputs/results/agentG_graft_closure.json`；记忆 `zone3-5-adaptation-coupling-closed`。
+- 复现：zone1 = `node scripts/live/live_zone3_mouse_replayer_cdp.js --walk outputs/results/agentR_zone1_walk_fix162.json --load-slot 200 --target-click-only --set-auto battle=true,item=true,wall=true`；4F->MT21 全链 = 同命令换 `--walk outputs/results/main_full_4f_to_mt21_1765_walk.json`。
+
+### C2T/C2 突破线（2026-09-15 AgentF，web 0 mismatch，同 seed）
+
+**⚠️ 用户纠错（09-15 晚）：本节全部 NE 提交价值作废。** 实机 MT50.js (6,5) 事件无条件
+setEnemy redKing hp5000/atk1580/def190（削弱仅在「先对话小偷再封印」的真结局流程发生，
+由 49F 封印事件二次 setEnemy 至 1/10）。C2T 族封印先于小偷 → flag:TE 未置位 → 补完结局
+须打全威力魔王：**atk402/def517 下 24 回合 × 1063 ≈ −24449 血**（且 modder 注记要求
+atk>440/def>440/hp>22000 才杀得死，本族 atk 402 不达标）。**42553/42453/42356/41189
+的快照分数不可提交，路线值仅剩机制证据（南入口/匕首/封印 spawn 链实测）。**
+
+| 线 | walk（best/） | web 复验 | 终态 | 归类 |
+|---|---|---|---|---|
+| ~~NE-42553~~ | `best/42553_NE_walk.json`（1302 步） | `best/42553_NE_live_verify.json` 1169 entries 0 mismatch | `HP=42553 @MT3(9,2) ATK402/DEF517/YK1 dmg=13764` | ~~NE 族天花板~~ **补完 −24449 → 作废** |
+| C2T | `best/42356_C2T_walk.json`（1302 步） | `best/42356_C2T_live_verify.json` 1169 entries 0 mismatch | `HP=42356 @MT3(9,2) ATK398/DEF537/YK1 dmg=13764` | 同上作废 |
+| **C2T-V1** | `best/42453_C2T_V1_walk.json`（1302 步） | `best/42453_C2T_V1_live_verify.json` 1169 entries 0 mismatch | `HP=42453 @MT3(9,2) ATK402/DEF538/YK1 dmg=13667` | 同上作废（trader 时点后移技巧仍有 TE 侧参考价值） |
+| C2 | `best/41189_C2_ne_walk.json`（1269 步） | `best/41189_C2_ne_live_verify.json` 1140 entries 0 mismatch | `HP=41189 @MT3(9,2) ATK298/DEF537/YK2/RK1 dmg=12591` | 同上作废 |
+
+**互斥定理（AgentF）**：flag:TE（小偷先于封印）与「匕首打魔龙」不可兼得——小偷←rk链←大法师
+←剑5←雪←魔龙死 vs 匕首←49F 封印 spawn。G46 杠杆（MT46 第5支 def 箭搭车双购 +2187）凑金
+封闭：全塔合法新金上限 ≤895G < 缺口 2350G。checkpoint 槽 320+/350+，--load-slot 210。
+详见记忆 `mt42356-c2t-web-verified` 与 tmp/agentf_goldhunt_report.md。
+
+### 用户录像三线（2026-09-13/14 全链 web 0 mismatch，同 seed `save210_1f_seed_450161387`）
+
+`recording_lines_2026_09`（链 `recording_lines_2026_09`，1F 新游戏起 → MT45 TE 最终 boss 前）
+
+四条用户录像经通用 converter（`scripts/search/recording_seed_to_game.py`）全链转换并 web 复验
+（0 值不匹配含金币；checkpoint 槽：41206 用 215-225、41127 用 230+、38729 用 240+）。41301/41206/
+41127 三线商店/属性曲线完全相同（MT12 atk×2 → MT32 def×7 → MT46 def×6+hp×1，times1=16，
+终态 374/611），差异全在战斗集/钥匙流/时点；38729 是**异构商店组合**（见下）。
+
+| 线 | 录像 | walk（best/） | web 复验 | 终态 |
+|---|---|---|---|---|
+| 41301 | 用户早前录像 | （见 mt41301 记忆与既有产物） | 已验（历史） | `HP=41301 dmg=13315` |
+| 41206 | 2区2攻+买800rk+4区2攻5防 | `best/41206_walk.json`（1226 步） | `best/41206_live_verify_tail.json` 588 entries 0 mismatch | `HP=41206 @MT45(9,4) dmg=13684 won49` |
+| 41127 | 2区2攻+买800rk+4区2攻7防+43补bk | `best/41127_walk.json`（1203 步） | `best/41127_live_verify.json` 1075 entries 0 mismatch | `HP=41127 @MT45(9,4) dmg=13563 won49` |
+| 38729 | 2区2攻+4区3攻5防+剩3yk | `best/38729_walk.json`（1298 步） | `best/38729_live_verify.json` 1165 entries 0 mismatch | `HP=38729 @MT8(1,2) dmg=15941 won49` |
+| 38829 | 38729+终局2红药（AgentA 变体） | `best/38829_walk.json`（1302 步） | `best/38829_live_verify.json` 1169 entries 0 mismatch | `HP=38829 @MT3(9,2) dmg=15941 won49` |
+
+**38729 异构线（2026-09-15 转换+复验）**：MT32 商店 **3atk+5def**（atk 142→166、def 134→214，
+仍过 MT33 blueGuard atk≥110 且 def≥180 闸门——推翻「3atk 必死」推论：闸门预算有 2 次 def
+冗余，关键看血统 def 基线而非固定 7 防）+ MT46 6 次（times1=16）。核心技巧为 41301 族所无：
+① hp=3 进 MT40-42 半血陷阱区（减半无损失），MT40 (5,3) 一次性收 3 蓝瓶 +2400；② 出陷阱区
+才 SET_AUTO#2132 把 item nopotion→true，全图残扫 2403→12887；③ 圣水 superPotion 留到最后
+（+7070，终点 MT8(1,2)）。终态 `HP=38729 ATK=398 DEF=558 YK=3 G=170 dmg=15941`。
+**38829 = 38729 族参数化天花板**（AgentA：MT12/MT32/MT46 商店组合 44 批级变体全量 Game
+重放全否证——MT32 def5=低楼扫荡筹资引擎、atk3=4区存活下限、MT46 hp 必须末位；唯一正收益
+= 终局追加 MT8(1,3)/MT3(9,2) 两门收 2 红药 +100）。两线均 won50=false（MT50 封印 redKing
+未杀）；实证封印态 redKing hp500/atk158/def19 在两线属性下均 0 伤，won50 与 HP 无关，
+与 41301 直接可比。转换依赖
+converter SET_AUTO 派生的 **phase-capacity 对齐修复**（相邻 no-op help 合并 run 导致后续真
+toggle 错位丢失；修复后 41301/41206/41127/38729 四线回归全 PASS）。
+
+- **血统关系**（AgentV/AgentZ1 审计）：41127 的 zone1-2 = 已知最优混合血统（41206 的 MT9
+  蓝门 + 41301 的 MT18 跳杀 + MT36 双门；对 41301 纯减伤 +266 @MT41）；41228 的出口
+  Pareto 支配混合出口（混合是 41228 的下位版本）。41127 = 41301 + 266 − 440（MT43 首访
+  时机税）；41206 = 41301 + 35 − 230（MT36）= −95。
+- **Excel 检查点报告**：`best/41206_checkpoint_report.xlsx`、`best/41127_checkpoint_report.xlsx`
+  （11 层/31 层/41 层/魔龙前/TE 最终 boss 前 × dmg/恢复/消耗/剩余/金币/商店）。
+- **血统内杠杆全部封闭**（Game 重放级）：MT36 双门移植（−2yk → 2120 悬崖差 35G → 级联
+  −4840）、MT18 跳杀（(4,1) 蓝门需 bk，41206 八扇蓝门 bk 零冗余）、MT14 回收延后
+  （41127 已在 [749] 消费）、MT47 商人口袋 centerFly bypass（MT41 (6,4) −2893 魔法格 →
+  centerFly 3/3 结构性占满）、混合 zone1-2 → 41301/41228 吸收（0 / Pareto 被支配）、
+  41231 族 +246（199 候选 + 63 配对手术全 0 GAIN）、zone2 严格 parity（可达即必被扫）。
+  详见记忆 `mt41206-line-audit-and-mt36-graft-closure` 与 tmp/agent{v,z1,h1,h2,h4}_*.md。
+- **复现命令**（41206 例，41127 同款换文件名与槽 230+）：
+  `node scripts/live/live_zone3_mouse_replayer_cdp.js --walk best/41206_walk.json --load-slot 210 --set-auto battle=false,item=false,wall=false --target-click-only --checkpoint-start 215 --checkpoint-every 50`

@@ -13,9 +13,9 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
-YK_VALUE = 50
-BK_VALUE = 200
-GOLD_HP_RATE = 0.5
+YK_VALUE = 100
+BK_VALUE = 500
+GOLD_HP_RATE = 1.0
 
 RESOURCE_ITEMS = {
     "yellowKey",

@@ -5,7 +5,7 @@ https://www.taptap.cn/moment/15225056477054087
 
 分数模型：
 
-- `1YK = 50HP`、`1BK = 4YK = 200HP`、`100G = 1YK = 50HP`。
+- `1YK = 100HP`、`1BK = 5YK = 500HP`、`100G = 1YK = 100HP`。
 - 本文件记录当前全图 final-score 模型下的固定攻略基线。
 
 攻略基线：

@@ -1,78 +1,74 @@
-# zone3 KILL 线 Game 搜索(替代手建 walk,优化 final-score)
+# 39944 基准骨架节点交换搜索（可达矩阵 + Game 重放即评估）
 
-## 背景与动机
+## 已核实的事实（本轮探查）
 
-当前 zone3 KILL 线 `best/zone3_2atk0def_kill_walk.json` 是 **BUILT(手建/半自动)**,HP=609。前面试图通过手改 walk steps 优化(变体 b-p:改商店 eid、挪 swordsman、删血瓶),变体 p(延后 swordsman)失败--MT38 redDoor 路线断 + 顺序乱。**结论:改了策略必须重新用 Game 搜索,手挪必断**(用户判断)。分析只给搜索指定方向,合法路线由搜索找。
+- **离线重放引擎已闭环且极快**：`convert(seed=save1_mt4_snapshot, capture=2atk_alldef_39944_capture,
+  stage='mt4-mt31', start_stat=55)` -> ok=True，final HP=39944 精确复现，**0.5 秒/次**
+  （tmp/plan_baseline_timing.py 实测）。
+- 动作列表 1462 条（target 631 / arrow 755 / set_auto 7 / fly 116 / tool 10），每条带
+  `floor` + `data.stat_index`。
+- **商店购买可移植**：购买 (kind,count) 从原 statlog delta 推导（`_shop_purchase_from_delta`），
+  挂在 action.stat_index 上 -> 单元整体搬移后购买语义保留。陷阱：验证用重放时 `times1`，
+  变体中不匹配会**静默不买**（当作 approach waypoint），必须加守卫显式核对购买 delta。
+- 可达矩阵基建就绪：`src/solver/reachability_matrix.py`（skeleton/shop/supplement 分类、
+  钥匙门感知 flood、`cross_floor_reachable` 飞行边 + 法师陷阱 guard）。
 
-目标:从 slot32(MT20 HP=1215 ATK=76 DEF=66 YK=5 G=1298 times1=2)搜到 MT41,优化 **final-score**(终局 HP 最优)。final-score 把未拾血瓶算剩余资源(1:1),搜索自动只拾必须扛伤的血瓶--HP 自然紧(满足 <100 诉求)+ 终局最优,统一两个目标。
+## 方法：重放即评估（replay-as-evaluation）
 
-## 设计:复用 GameAStar + zone2 P2 / zone4 资源组模板
+搜索不 clone、不估伤——每个候选 = 修改动作列表 -> `convert()` 全程重放 ->
+`(ok, final HP, errors)`。Game 是 web-parity 已验证模型：合法性（路径/钥匙/事件）、
+生存（饿死/资金不足）自动拒绝，终值 HP 直接可比。0.5s/次 -> 数千候选可跑。
+stat_diagnostic 对变体是噪声（对照原录像 statlog），非致命、忽略；只有 ValueError/g.errors 算拒绝。
 
-新脚本 `scripts/search/zone3_kill_astar.py`,复用:
-- 引擎:`src/solver/game_astar.py::GameAStar`(A*/Dijkstra + Pareto + top-K + clone)
-- actions 模板:`zone2_resource_group_search.py::skeleton_actions`(怪/商店/楼梯 click + 商店 move_adjacent+buy)
-- 资源组压缩:`zone4_resource_group_astar_optimize.py` 的 `hp_potential`/`resource_signature`/`target_action`/`build_pool`
-- 候选:`reachability_matrix.compute_matrix`/`_flood_floor`/`cross_floor_reachable`
-- 事件:`Zone3Game` 方法(thief_mt29_open_passage / event_mt32_yellow_knight / event_mt40_boss / buy_mt38_yellow_keys 等)
-- 评估:`reachability_matrix.comparison_score`(HP+钥匙+剩余资源+gold×zone4溢价-times1)
+## Phase A：评估器 + 访问单元分割（新脚本 `scripts/search/skeleton_swap_search.py`）
 
-### 起点
-```python
-g = Zone3Game(read_json("best/checkpoints/zone2_2atk0def_kill_end_save.json"))
-g.strict_live_model = True
-g.auto_flags = {"battle": True, "item": "nopotion", "wall": True}
-```
+1. `replay(actions) -> result` 封装 convert()；先断言基线复现 39944。
+2. 动作列表按 fly 边界切 ~117 个「访问单元」：unit = `fly(F)` + 后续同楼层 run
+   （set_auto 按 floor 锚定；**tool 动作及其依赖下一动作方向的单元（pickaxe 目标推断）
+   不参与搬移**）。
+3. 单元元数据：floor、目的标签（shop-buy / potion / gem / event / battle / traversal，
+   从基线重放步 delta 推断）。
+4. 商店守卫：重放后核对每个含购买单元的 atk/def/hp/gold delta 与基线购买一致。
 
-### actions(g) -- 扩展 skeleton_actions
-1. **资源 click**:当前层 + 飞行可达 visited 层的 怪/骨架/道具/门,`go_to_decomposed` 压缩成一条边(怪按 access_dmg 排序前 N)。
-2. **楼梯换层**:`change_by_stair`(四邻可达 + 法师陷阱 guard)。
-3. **飞行**:`fly(visited 楼层)`(免费跨层收资源)。
-4. **商店**:`move_adjacent + buy_shop`,kind ∈ {atk, def}(**不生成 hp**,用户点1:zone3 不买hp)。
-5. **zone3 事件**:调用 Zone3Game 方法(MT29 thief / MT32 yellowKnight / MT40 boss / MT38 buy keys / MT2 oldman / MT35 thief),作为显式 action。
-6. **策略剪枝**:
-   - swordsman:ATK<150 时不生成击杀动作(延后,用户点3:150攻0伤;`enemy_damage` 确认 ATK≥150 一击秒 turns=1 damage=0)。
-   - 不买 hp(见上)。
+## Phase B：候选生成
 
-### goal
-`floor == "MT41"` 且 MT40 boss 事件已触发(`flags.get("402")`)。
+- **搬移族（骨架交换，主攻）**：每个可搬单元 U：与相邻单元交换、后移/前移 K 个位置
+  （全窗口）。含商店单元（时序换血：MT32 def 商店提前/延后、MT46 防店系列重排——
+  atk/def 购买时点变化改变前后所有战斗伤害，正是 [[shop_change_requires_from_scratch_search]]
+  要求的 from-scratch 重搜，此处重放=全量重模拟，天然满足）。
+  优先级：先跑「回访/绕行单元」（fly 到比当前更低楼层、或同层多次访问的，
+  如 MT34 药水绕行 ×2、MT38/MT36 回收访问），主进度单元（fly 递增爬塔）靠后。
+- **插入族（矩阵驱动）**：在单元边界取重放状态快照，跑 `compute_matrix` /
+  `cross_floor_reachable`，枚举可达未收集 skeleton 条目（宝石/药水/装备/商店），
+  生成 `[fly F, target pos]` 插入单元（auto_sweep 到达即拾）。
+- **商店拆分族**：大额购买单元拆 (k, N-k) 两个时点（合成购买动作，复用
+  `_execute_shop` 的 purchase spec）。
 
-### edge_cost
-`max(0, after.dmg - before.dmg)`(HP 损失,同 zone2 P2)。势能损失备选:`hp_potential` 损失(含剩余血瓶)。
+## Phase C：爬山搜索
 
-### state_key
-`(floor, x, y, atk, def, hp//20, times1, gold, yk, bk, rk, flags_402, blocked_items_count)`(同 zone2 P2 风格 + zone3 flags)。
+- 合法性判定：`ok=True` 且 final floor=MT50 且 won50 且商店守卫通过。
+- HP 严格升 -> 接受为新 incumbent，从新动作列表继续生成候选；至无改进或预算用尽。
+- 首轮预算 ~1500 候选（≈13 分钟）；全量日志（move, ΔHP, error/reject 原因）写
+  `outputs/results/skeleton_swap_search_roundN.json`。
 
-### heuristic
-O(1) 向 MT41 引导:`max(0, 41 - floor_no(cur))` + 缺攻防/缺钥匙的估计。
+## Phase D：落地验证
 
-### 搜索参数
-- weight=3, max_expansions=10000(可调), top_k=5(收集多个 goal 候选)
-- upper_bound = incumbent dmg(变体 g dmg=7108 或 baseline 8806)
-- pareto_metrics 可选:(dmg, -atk, -def, -yk, -gold) 多目标保留
+1. 最优变体 -> walk JSON（steps + provenance 标注 variant-of-39944）先离线复放确认。
+2. `gen_zone_walk_md.py` 生成 .md；`live_zone3_mouse_replayer_cdp.js --walk <json>
+   --load-slot 1 --target-click-only` web 复验 0 mismatch（含金币）。
+3. 通过后 best/ 固化（新文件名带 HP，**不覆盖 39944 产物**）+ route_chains 登记 +
+   skill（te_hp_optimization_experience.md）/memory 更新。
+4. web 若 mismatch：按根因优先约束修通用 Game 模型，不在坐标/walk 打补丁。
 
-### 评估/排序
-goal 候选用 `comparison_score`(含 gold×zone4 溢价,对应"省钱带 zone4"点2)排序,选 final-score 最优。报告 HP/ATK/DEF/keys/gold/dmg/final-score + 血瓶拾取清单 + 剩余资源组。
+## 风险与对策
 
-## 输出
-- `outputs/results/zone3_kill_astar_walk.json`(最优 walk,MT20->MT41)
-- `outputs/reports/zone3_kill_astar.md`(HP 曲线 + 商店序列 + 血瓶 + final-score 对比 baseline)
+- 商店静默不买（times1 校验失败）-> Phase A 守卫核对购买 delta，拒绝可疑变体。
+- set_auto 锚定：单元搬移跨越 auto 切换点改变 sweep 行为 -> 重放如实评估，不打补丁。
+- 动作隐式依赖（pickaxe 目标推断等）-> tool 相关单元排除出搬移族。
+- 全部候选被拒/无改进：负结果也固化（证明 39944 在该交换邻域局部最优），
+  更新 te_hp_41477_bounds 记忆。
 
-## web 验证(0 mismatch 前不进 best/)
-```
-node scripts/live/live_zone3_mouse_replayer_cdp.js --walk outputs/results/zone3_kill_astar_walk.json --load-slot 32 --target-click-only --set-auto battle=true,item=nopotion,wall=true
-```
-期望 ok=true,0 数值差异,终点 MT41。验证通过后生成 walk.md(`gen_zone_walk_md.py`)+ 提升 best/(替换当前 HP=609 产物)+ 更新 route_chains/memory。
+## 不改的东西
 
-## 风险与边界
-- **搜索空间大**(MT20->MT41 + 飞回 zone1-2 收资源):max_expansions 可能不够,需调参/分段(MT20->MT31 离线前缀 + MT31->MT41 搜索)。
-- **zone3 事件触发**:MT34 中心8怪事件、MT40 boss 等需搜索正确触发(Zone3Game 方法);若搜索漏触发,web 验证会发散,按根因修事件建模。
-- **Game 寻路 vs 实机**:Game `path_to` 与实机寻路不同(记忆:复现录像会发散),但搜索用 Game 找合法路线,web replayer 用真实点击 handler 寻路,只要 Game 路线合法,web 应复现(值匹配,可能位置差)。
-- **incumbent**:变体 g(HP=107,dmg=7108)作 upper_bound 参照;搜索应找到 ≤7108 dmg 或更高 final-score 的路线。
-- **不声明全局最优**:max_expansions 达上限只写"该预算未发现提升",不写穷尽(skill 约束)。
-
-## 阶段
-1. 写 `scripts/search/zone3_kill_astar.py`(复用模板,适配 zone3 事件/剪枝)。
-2. 小预算(max_expansions=2000)试跑,确认 actions/goal/事件触发正确(到 MT41 ok)。
-3. 调参扩预算(10000+),找最优 final-score 候选。
-4. web 验证最优候选(0 mismatch)。
-5. 通过则提升 best/ + walk.md + route_chains + memory;不通过按根因修模型。
+- 不改 Game/模型/verifier（纯新增搜索脚本 + tmp 探查脚本）；AGENTS/CLAUDE 不动；
+  39944 现有产物不动；无模型改动则无需跑回归套件（py_compile 新脚本即可）。

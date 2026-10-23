@@ -297,11 +297,11 @@ def gen_md(
     if summary and summary.get("final_score") is not None:
         old_score = summary["final_score"]
         if old_final_gold is not None:
-            new_score = old_score + (new_gold - old_final_gold) * 0.5
+            new_score = old_score + (new_gold - old_final_gold) * 1.0
         else:
             new_score = old_score
         lines.append(f"- final-score: {fmt_score(new_score)} (旧 {fmt_score(old_score)}"
-                    f"{f' + {new_gold-old_final_gold}G*0.5' if old_final_gold and new_gold!=old_final_gold else ''})")
+                    f"{f' + {new_gold-old_final_gold}G*1.0' if old_final_gold and new_gold!=old_final_gold else ''})")
     lines.append("")
 
     # Walk
@@ -429,7 +429,7 @@ def update_summary(summary: dict[str, Any], final: dict[str, Any],
     s["bd"] = final.get("bd", s.get("bd", 0))
     s["rd"] = final.get("rd", s.get("rd", 0))
     if old_gold is not None and s.get("final_score") is not None:
-        s["final_score"] = s["final_score"] + (final["gold"] - old_gold) * 0.5
+        s["final_score"] = s["final_score"] + (final["gold"] - old_gold) * 1.0
     if "summary" not in out:
         out["summary"] = s
     else:

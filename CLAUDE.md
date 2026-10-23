@@ -42,6 +42,15 @@ https://www.taptap.cn/moment/15225056477054087
 离线正确 -> 一个脚本生成 walk JSON -> 一个脚本生成人看懂 walk.md -> web 仅复验。
 离线对了，web 复验理论上不应有 bug；若 web 出 bug，先修通用 `Game` 模型，不在 walk/坐标打补丁。
 
+**硬性要求（用户提供的 `.h5route` 录像转换与复验）**：任何来自用户录像
+（`.h5route`）的路线转换 / web 复验，**必须走本管线通用 `Game` 类逻辑**——
+`scripts/search/recording_seed_to_game.py` 转换 + `scripts/live/live_zone3_mouse_replayer_cdp.js`
+复验（统一 CDP 点击 verifier，0 容忍含金币）。**禁止为单条录像手写一次性临时脚本跑偏**
+（不要自己乱写临时脚本当规范产物）；确需临时分析时写入 `tmp/` 并说明其只作辅助、不作为
+规范产物，规范 walk 一律由通用 converter 产出。示例：41228 线（
+`2区2攻+买800rk+1yk换100血的门少开+4区全防纯净版-TE`）即由通用 `recording_seed_to_game.py`
+转换 + 统一点击 verifier web 0 mismatch（含金币）验证，final HP=41228。
+
 1. 离线 Game：`scripts/search/zoneN_game_route.py`（通用 `Game` 类 + zone 适配，`strict_live_model` + `auto_sweep`，auto 全开或 3 区起 `item="nopotion"`）-> `outputs/results/zoneN_game_route.json`（每步 `before/after`）。
 2. 人看懂 walk：`scripts/build/gen_zone_walk_md.py --game-route-json <json> --md <md> --zone <N>` -> `best/zoneN_..._walk.md`。
 3. web 复验：`node scripts/live/live_zone3_mouse_replayer_cdp.js --walk <json> --load-slot <100+> --target-click-only [--set-auto battle=true,item=...,wall=true]`。
@@ -49,6 +58,10 @@ https://www.taptap.cn/moment/15225056477054087
 - 唯一 verifier = `scripts/live/live_zone3_mouse_replayer_cdp.js`（CDP 真实点击 handler `_sys_ondown`/`_sys_onup`，游戏自身寻路一次到位）。1-4 区全用它，不要用 zone 专用 runner。
 - 禁用 API（导致人无法通过 web 复现）：`core.doAction` / `core.moveHero` / `core.setHeroLoc` / `core.changeFloor`、方向键逐步走。旧 runner（zone 专用 + `core.doAction`/`setHeroLoc` 强推）已删除（2026-08-08 pre-cleanup，git tag `pre-cleanup-2026-08-08` 可恢复）。
 - 50F 相邻 Boss / confirmBox 选择可用真实键盘事件（`dispatchKeyDown` / `agent-browser press`），不算强制移动。
+- walk 里的 `SET_AUTO`（设置自动）step 走「游戏说明」commonEvent 菜单（`help`+`choices:N` 录进 `.h5route`），**不用 `setAutoState` 直接改 `core.status.hero.flags.__auto__`**。根因：`.h5route` = `encodeRoute(core.status.route)`，只 dump 进过 route 缓冲区的命令；菜单 push `help`+`choices:N`，回放时 `doAction` 在 action-chain 对话框期间消费 `choices:N` 真切 auto，而 `setAutoState` 改内存 flag 不进 route、回放不可见。verifier SET_AUTO 分支已用 `setAutoStateViaMenu`（日志 `via 游戏说明 menu`）；`--set-auto` 初始值仍用 `setAutoState` 即可（回放前前置设置，不属 route）。详见 `skills/mota-live-verify/SKILL.md`「SET_AUTO 录像记录根因」。
+- verifier strict 模式（`--target-click-only`）点击前若只有 `moving` busy（无 lock/event/choices）先 `waitMovementSettled` 等 automaticRoute 走完再点（damage/checkBlock 格不停路线，下一步 `moving=true` 是瞬态），仅非瞬态 busy 才 throw。2026-08-09 修复（zone4 step 160 MT45 downFloor 曾因 `moving=true` 误 throw 挂掉）。
+- live `automaticRoute`（地图点击 `move:x:y`）语义（Game `go_to`/`path_cost` 必须镜像，2026-08-11 2 处模型修复，web 0 mismatch）：① `auto_sweep` **只在目的地跑一次**（中途 path 格不跑，`autoNextStep` 需 hero idle）——`_go_to_body` 不得在中途格执行 auto_sweep，否则 MT14 redKey 提前杀 3 zombieKnight + spawn/拾取时序错；② `path_cost` **不折扣事件格**，且破坏性事件格（如 40F boss `(6,7)`）会**中断 automaticRoute**——路线无法穿过它，必须绕行（原事件格 0.9 折扣使 go_to(MT40,5,7) 绕经 (6,7) 提前触发 boss、奖励拾取错位）。详见 `skills/mota-route-search/recording_seed_converter_experience.md`「automaticRoute 语义」。
+- live auto BFS 的 **checkBlock.damage 阻挡语义**（2026-09-05 40145 修复，web 0 mismatch）：`updateCheckBlock` 对 special 15 领域/16 夹击写入 damage 图（仅 `魔法免疫` flag 免除——MT47 damage=[] 是已拿神圣盾所致，不是法术场不入图）；web bfs 每 tile visit 后 `hasBlockDamage(loc)` **可访问不扩展**、damage 格道具**不可远程拾取**（`canGetItem`）、hero 站 damage 格 **deep=0 sweep 不跑**。`Game.auto_sweep` 用 `check_damage_at`（同源：special 15/16 + magicImmune + 怪死场消）镜像这三处。改阻挡语义前先探 live `core.status.checkBlock.damage` 现值并读 `project/functions.js` 的 updateCheckBlock 源码，不要从单层现象推全塔结论。
 
 ## 阶段性存档（stage checkpoints）
 
@@ -153,9 +166,9 @@ HP=25 ATK=27 DEF=27 YK=0 BK=0 RK=0 G=304 dmg=2601 door=40/2/1 final-score=1327.5
 
 ## 分数模型
 
-- `1YK = 50HP`
-- `1BK = 4YK = 200HP`
-- `100G = 1YK = 50HP`
+- `1YK = 100HP`
+- `1BK = 5YK = 500HP`
+- `100G = 1YK = 100HP`
 - 红药水 = `50`，蓝药水 = `200`
 - 红钥匙和宝石的剩余分数为 `0`，除非脚本显式使用别的目标
 - `final-score` = 当前 HP/钥匙/金币存量 + 全图剩余资源组
@@ -168,6 +181,24 @@ HP=25 ATK=27 DEF=27 YK=0 BK=0 RK=0 G=304 dmg=2601 door=40/2/1 final-score=1327.5
 - MT7 `x6y1`：花 `50G` 换 `5YK`
 - MT6 `x8y4`：花 `50G` 换 `1BK`
 - MT6 `x8y3` 红药水和 MT6 `x8y4` 商人要作为单独资源组，因为商人会消耗金币。
+
+商店购买经济（核心机制，楼层无关成本、楼层相关收益）：
+
+- 商店价 `shop_cost(times1)` 全局统一、与楼层无关（阶梯 `20+10·n(n-1)`，跨店连续计数）。
+- 属性增益按楼层 ratio：`def 增益 = 4×floor ratio`，`atk 增益 = 2×floor ratio`。
+  实测：MT32 (zone4, ratio4) 防 +16/次、攻 +8/次；MT46 (zone5, ratio5) 防 +20/次、攻 +10/次。
+- **防购买延后到高 ratio 楼层净赚**：同一次数下，把 1 次防从 MT32 挪到 MT46，
+  经济一样（购买次数/总价不变），但 net +4 def（+20 vs +16）。这个 +4 def 在
+  **魔龙（MT35 magicDragon）和大法师（MT25）** 等高伤固定怪上同时生效——是核心收益，
+  不是"龙伤不变"。对比两条线时必须把两边的防购买按楼层分开看，不能假设高 ratio 层
+  的购买计划固定不变。
+- 反面：防延后到 MT46 会牺牲 4 区（MT33-40）的减伤（少 16 def 打 4 区），
+  净收益取决于 5 区 +4 def 的减伤是否盖过 4 区 -16 def 的增伤。
+- **实测（2攻族 39529 路线骨架，2026-08-24）**：+4 def 在魔龙省 240、大法师省 ~70
+  （两怪均在 MT46 后开打，+4 全部生效）≈ +310；但 4 区 MT33-40 爬楼段（从 6 次 MT32 防
+  购到 MT46 首次防购之间，27 个物理怪）少 16 def 多耗 ≈ 1728（法系怪 special 15/16 无视防
+  不计）。**净 ≈ −1418 → 2攻5防（5@MT32 + 6@MT46）劣于 2攻6防**，2攻族内"防延后"不是
+  净胜杠杆；要同时保住 4 区减伤 + 5 区高防只能靠全防族（更多金币买防），即 41228 族。
 
 `finalStock` / `netStock` 术语：
 
@@ -255,6 +286,7 @@ python -m py_compile src\solver\game_route.py scripts\search\zone1_game_route.py
 python tests\run_merchant_fullmap_score_test.py
 python tests\run_zone3_game_model_test.py
 python tests\run_strict_live_click_model_test.py
+python tests\run_mt44_door_cow_test.py
 python tests\run_zone_walk_md_test.py
 python tests\run_project_docs_sync_test.py
 ```

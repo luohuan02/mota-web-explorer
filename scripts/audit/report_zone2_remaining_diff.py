@@ -86,7 +86,7 @@ def replay_named(
 
 
 def base_stock(final: dict[str, Any]) -> float:
-    return final["hp"] + final["yk"] * 50 + final["bk"] * 200 + final["gold"] * 0.5
+    return final["hp"] + final["yk"] * 100 + final["bk"] * 500 + final["gold"] * 1.0
 
 
 def shop_buy_count(options: dict[str, Any]) -> int:

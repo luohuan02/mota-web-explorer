@@ -31,8 +31,8 @@ OUT_JSON = os.path.join("outputs", "results", "post9_resource_group_search.json"
 OUT_MD = os.path.join("outputs", "reports", "post9_resource_group_search.md")
 OUT_WALK = os.path.join("outputs", "walkthroughs", "walkthrough_post9_resource_group_best.md")
 
-YK_VALUE = 50
-BK_VALUE = 200
+YK_VALUE = 100
+BK_VALUE = 500
 ATK_GEM_VALUE = 260
 DEF_GEM_VALUE = 280
 RED_KEY_VALUE = 420

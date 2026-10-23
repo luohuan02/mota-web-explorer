@@ -94,14 +94,14 @@ def seeded_score(g: Any) -> int:
 
 def seeded_goal_score(g: Any) -> int:
     s = g.state
-    stock = s["hp"] + s["yk"] * 50 + s["bk"] * 200 + s["gold"] * 0.5
+    stock = s["hp"] + s["yk"] * 100 + s["bk"] * 500 + s["gold"] * 1.0
     return int(
         stock
         + s["atk"] * 320
         + s["def"] * 340
         - s["dmg"]
-        - s["yd"] * 50
-        - s["bd"] * 200
+        - s["yd"] * 100
+        - s["bd"] * 500
         - s["rd"] * 350
         + base.remaining_simple_value(g)
     )
@@ -750,8 +750,8 @@ def build_continuous_36_pareto(args: argparse.Namespace) -> list[Any]:
         frontier = list(winners)
     frontier.sort(
         key=lambda gg: (
-            gg.state["hp"] + gg.state["yk"] * 50 + gg.state["bk"] * 200
-            + gg.state["gold"] * 0.5 + gg.state["atk"] * 320 + gg.state["def"] * 340
+            gg.state["hp"] + gg.state["yk"] * 100 + gg.state["bk"] * 500
+            + gg.state["gold"] * 1.0 + gg.state["atk"] * 320 + gg.state["def"] * 340
         ),
         reverse=True,
     )

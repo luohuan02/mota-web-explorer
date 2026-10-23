@@ -82,6 +82,17 @@ source save=37 verified save=42
 
 注意：这是从 37 号存档继续的 40F 后路线，已网页实机复现并保存到 42 号存档；完整关联见 `best/route_chains.md`。
 
+### 2攻800买红钥匙 + 3区2攻6防 V1 复现（save1 -> MT40 boss -> MT41）
+
+`best/2区2攻800买红钥匙3区2攻6防V1.h5route` 用通用 `Game` 类从 save1 复现到 MT41：
+```text
+MT41 x6y2 HP=138 ATK=162 DEF=238 YK=8 BK=0 RK=0 G=3069 dmg=9988
+```
+web 验证 620 entries **0 值不匹配（含金币）**，5 pos-only（坐标偏移可接受）。产物
+`best/zone12_2atk800redkeyV1_walk.{json,md}`、检查点 `best/checkpoints/zone123_2atk6def_v1_mt41_save161_save.json`。
+修复 2 个 Game 模型 bug（`automaticRoute` 语义：go_to 目的地才 auto_sweep；path_cost 不折扣
+事件格、破坏性事件中断路线），详见 `skills/mota-route-search/recording_seed_converter_experience.md`。
+
 ### 1 区到 10F Boss 最优
 
 ```text
@@ -102,9 +113,9 @@ HP=25 ATK=27 DEF=27 YK=0 BK=0 RK=0 G=304 dmg=2601 door=40/2/1 final-score=1327.5
 
 ## 评分模型
 
-- `1YK = 50HP`
-- `1BK = 4YK = 200HP`
-- `100G = 1YK = 50HP`
+- `1YK = 100HP`
+- `1BK = 5YK = 500HP`
+- `100G = 1YK = 100HP`
 - 红血瓶 = `50`
 - 蓝血瓶 = `200`
 - 红钥匙和宝石默认不计剩余分，除非某个脚本明确采用其他目标
@@ -222,10 +233,9 @@ node scripts\live\live_zone3_mouse_replayer_cdp.js --walk outputs\results\zone2_
 - `skills/`：按功能拆分的项目工作流说明
 - `scripts/`：搜索、重放、审计、报告和网页辅助脚本
 - `src/solver/`：共享地图和搜索实现
-- `src/legacy/`：旧版楼层、Pareto、浏览器等辅助代码
 - `data/`、`config/`：地图和配置数据
 - `tests/`：轻量回归检查
 - `outputs/`：忽略的临时报告、搜索结果和 walk
 - `browser-profile/`：忽略的本地浏览器 profile 和 h5mota 存档
 
-不要删除 `src/solver/`、`src/legacy/`、`data/`、`browser-profile/` 或 `config/`。
+不要删除 `src/solver/`、`data/`、`browser-profile/` 或 `config/`。（旧 `src/legacy/` 已于 2026-08-08 pre-cleanup 删除，git tag `pre-cleanup-2026-08-08` 可恢复）

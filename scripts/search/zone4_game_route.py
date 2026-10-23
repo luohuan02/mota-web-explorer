@@ -175,7 +175,7 @@ def run_zone4(g: Game, stop_after: str | None = None) -> None:
                 "after": after,
                 "delta_dmg": after["dmg"] - before["dmg"],
                 "delta_steps": len(g.steps) - before_steps,
-                "stock_score": after["hp"] + after["yk"] * 50 + after["bk"] * 200 + after["gold"] * 0.5,
+                "stock_score": after["hp"] + after["yk"] * 100 + after["bk"] * 500 + after["gold"] * 1.0,
             }
         )
         print(

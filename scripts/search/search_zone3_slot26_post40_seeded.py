@@ -73,7 +73,7 @@ def post40_score(g: Any) -> int:
 
 def post40_goal_score(g: Any) -> int:
     s = _s(g)
-    stock = s["hp"] + s["yk"] * 50 + s["bk"] * 200 + s["gold"] * 0.5
+    stock = s["hp"] + s["yk"] * 100 + s["bk"] * 500 + s["gold"] * 1.0
     return int(
         post40_ready_bonus(g)
         + stock * 12

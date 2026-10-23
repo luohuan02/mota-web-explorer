@@ -8,8 +8,8 @@ from typing import Any
 
 from scripts.baseline import replay_zone2_guide_route as zone2
 
-YK_VALUE = 50
-BK_VALUE = 200
+YK_VALUE = 100
+BK_VALUE = 500
 
 
 def super_potion_value(final: dict[str, Any]) -> int:
@@ -113,7 +113,7 @@ def remaining_resource_groups(
                         reward += value
                         items.append({"pos": f"x{pos[0]}y{pos[1]}", "eid": block.eid, "value": value})
                 elif block.kind == "enemy":
-                    value = float(enemies.get(block.eid, {}).get("money", 0)) * 0.5
+                    value = float(enemies.get(block.eid, {}).get("money", 0)) * 1.0
                     if value > 0:
                         reward += value
                         monsters.append({"pos": f"x{pos[0]}y{pos[1]}", "eid": block.eid, "gold_value": value})

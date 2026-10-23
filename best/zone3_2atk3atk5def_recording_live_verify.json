@@ -46667,7 +46667,7 @@
     "provenance": {
       "seed_save": "D:\\claude\\mota-web-explorer\\best\\checkpoints\\zone3_2atk3atk5def_seed_mt31_save.json",
       "seed_sha256": "d68e5a75147ee212729123f6354b679b3128f377cc34fb56a44cafee012c4b1e",
-      "capture": "D:\\claude\\mota-web-explorer\\outputs\\results\\2atk_3atk5def_v1_capture.json",
+      "capture": "D:\\claude\\mota-web-explorer\\best\\captures\\2atk_3atk5def_v1_capture.json",
       "capture_sha256": "92f4b7acddacefab929588a18f7b4c8293a96fa7e4dcc78223c9fc760a1c3336",
       "recording": {
         "path": "D:\\claude\\mota-web-explorer\\best\\2区2攻3区3攻5防_v1.h5route",
