@@ -1,0 +1,331 @@
+{
+  "ok": true,
+  "final": {
+    "floor": "MT5",
+    "x": 9,
+    "y": 3,
+    "hp": 726,
+    "atk": 20,
+    "def": 10,
+    "yk": 4,
+    "auto": {
+      "battle": false,
+      "item": false,
+      "wall": false
+    }
+  },
+  "steps": [
+    {
+      "action": "设置自动",
+      "eid": "__auto__",
+      "floor": "MT4",
+      "pos": [
+        11,
+        10
+      ],
+      "auto": {
+        "battle": false,
+        "item": false,
+        "wall": false
+      },
+      "note": "关 auto 全关 (via 游戏说明 menu)"
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        11,
+        9
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        11,
+        8
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        4,
+        7
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        3,
+        7
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        1,
+        6
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        1,
+        7
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        1,
+        8
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        1,
+        10
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        1,
+        11
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        6,
+        9
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        6,
+        8
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        6,
+        6
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        7,
+        6
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        10,
+        6
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        10,
+        7
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        11,
+        6
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        11,
+        7
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        8,
+        8
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        8,
+        9
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        8,
+        11
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        9,
+        11
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        10,
+        11
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT4",
+      "pos": [
+        11,
+        11
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        11,
+        3
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        11,
+        2
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        11,
+        1
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        10,
+        1
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        8,
+        1
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        8,
+        2
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        8,
+        3
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        8,
+        4
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        9,
+        4
+      ]
+    },
+    {
+      "action": "到达",
+      "eid": null,
+      "floor": "MT5",
+      "pos": [
+        9,
+        3
+      ]
+    }
+  ]
+}

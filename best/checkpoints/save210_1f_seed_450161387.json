@@ -1,0 +1,70 @@
+{
+  "slot": 210,
+  "exportedAt": "2026-09-12T18:29:34.510Z",
+  "floorId": "MT1",
+  "hero": {
+    "x": 6,
+    "y": 11,
+    "hp": 1000,
+    "atk": 100,
+    "def": 100,
+    "money": 0,
+    "yk": 0,
+    "bk": 0,
+    "rk": 0,
+    "tools": {},
+    "constants": {
+      "I300": 1,
+      "fly": 1,
+      "I333": 1
+    },
+    "flags": {
+      "nowWeapon": "sword5",
+      "nowShield": "shield5",
+      "魔法免疫": true,
+      "__winskin_opacity__": 1,
+      "__seed__": 450161387,
+      "__rand__": 450161387,
+      "hard": 0,
+      "__hardColor__": "red",
+      "textAttribute": {
+        "position": "center",
+        "offset": 0,
+        "title": [
+          255,
+          215,
+          0,
+          1
+        ],
+        "background": "winskin.png",
+        "text": [
+          255,
+          255,
+          255,
+          1
+        ],
+        "titlefont": 22,
+        "textfont": 16,
+        "bold": false,
+        "time": 0,
+        "letterSpacing": 0,
+        "animateTime": 0
+      },
+      "__itemHint__": [],
+      "__leaveLoc__": {},
+      "对话能量": 0,
+      "__aei__": [],
+      "__visited__": {
+        "MT1": true
+      },
+      "fly": false
+    }
+  },
+  "maps": {},
+  "values": {},
+  "hard": "",
+  "route": "Q===",
+  "version": "Ver 3.0",
+  "guid": "b8727a97_d48c_4a0c_a7b4_fdf7d6bc6fd6",
+  "time": 1789237750225
+}

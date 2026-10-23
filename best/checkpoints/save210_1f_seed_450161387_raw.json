@@ -1,0 +1,97 @@
+{
+  "floorId": "MT1",
+  "hero": {
+    "image": "hero.png",
+    "animate": false,
+    "name": "勇者",
+    "lv": 1,
+    "hpmax": -1,
+    "hp": 1000,
+    "manamax": -1,
+    "mana": 0,
+    "atk": 100,
+    "def": 100,
+    "mdef": 0,
+    "money": 0,
+    "exp": 0,
+    "equipment": [],
+    "items": {
+      "constants": {
+        "I300": 1,
+        "fly": 1,
+        "I333": 1
+      },
+      "tools": {},
+      "equips": {}
+    },
+    "loc": {
+      "direction": "down",
+      "x": 6,
+      "y": 11
+    },
+    "flags": {
+      "nowWeapon": "sword5",
+      "nowShield": "shield5",
+      "魔法免疫": true,
+      "__winskin_opacity__": 1,
+      "__seed__": 450161387,
+      "__rand__": 450161387,
+      "hard": 0,
+      "__hardColor__": "red",
+      "textAttribute": {
+        "position": "center",
+        "offset": 0,
+        "title": [
+          255,
+          215,
+          0,
+          1
+        ],
+        "background": "winskin.png",
+        "text": [
+          255,
+          255,
+          255,
+          1
+        ],
+        "titlefont": 22,
+        "textfont": 16,
+        "bold": false,
+        "time": 0,
+        "letterSpacing": 0,
+        "animateTime": 0
+      },
+      "__itemHint__": [],
+      "__leaveLoc__": {},
+      "对话能量": 0,
+      "__aei__": [],
+      "__visited__": {
+        "MT1": true
+      },
+      "fly": false
+    },
+    "followers": [],
+    "steps": 0,
+    "statistics": {
+      "totalTime": 9330626988.40552,
+      "currTime": 1486.1000000014901,
+      "hp": 0,
+      "battle": 0,
+      "money": 0,
+      "exp": 0,
+      "battleDamage": 0,
+      "poisonDamage": 0,
+      "extraDamage": 0,
+      "moveDirectly": 0,
+      "ignoreSteps": 0,
+      "start": 46864185.6
+    }
+  },
+  "hard": "",
+  "maps": {},
+  "route": "Q===",
+  "values": {},
+  "version": "Ver 3.0",
+  "guid": "b8727a97_d48c_4a0c_a7b4_fdf7d6bc6fd6",
+  "time": 1789237750225
+}
