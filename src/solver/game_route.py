@@ -1099,6 +1099,55 @@ class Game:
             return self.is_wall(fid, (1, 12))
         return False
 
+    # 观测预算（2026-10-25 capture59 实证）：live 的 auto 收集链是**可被玩家
+    # 下一次点击打断的迭代过程**，statlog 的逐 token 观测差分 = 链在该拍内真实
+    # 完成的收集量。模型的单次深 BFS 在"链被打断"的场景 over-collect（MT38
+    # (10,1)：41400 原局链走完 +90 金 ✓，capture59 原局被打断 +0 ✗——模型两处
+    # 都按走完算 → walk59 web 验证 gold -90 失败）。converter 在每个 action 前
+    # 设置 `_sweep_budget`（statlog post-pre 的观测差分）与 `_sweep_budget_anchor`
+    # （模型 action 前状态快照）；auto_sweep 的每次拾取/0-dmg 击杀前用预测增益
+    # 检查 (模型已有增量 + 增益) 是否超观测预算，超了则**不拾不扩展**（该格对
+    # BFS 封锁，匹配 live 链终止后怪/道具保持原状）。None = 不启用（全部旧
+    # walk 行为不变）。
+    _SWEEP_BUDGET_STATS = ("gold", "hp", "atk", "def", "yk", "bk", "rk")
+
+    def _item_gain(self, fid: str, eid: str) -> dict[str, int]:
+        """Predict apply_item's stat deltas without mutating (pure mapping)."""
+        ratio = self.floors[fid].ratio
+        table = {
+            "yellowKey": {"yk": 1}, "blueKey": {"bk": 1}, "redKey": {"rk": 1},
+            "redPotion": {"hp": 50 * ratio}, "bluePotion": {"hp": 200 * ratio},
+            "redGem": {"atk": ratio}, "blueGem": {"def": ratio},
+            "sword1": {"atk": 10}, "sword2": {"atk": 20}, "sword3": {"atk": 40},
+            "sword4": {"atk": 50}, "sword5": {"atk": 100},
+            "shield1": {"def": 10}, "shield2": {"def": 20}, "shield3": {"def": 40},
+            "shield4": {"def": 50},
+            # shield5 also sets magicImmune — budgeted by def only (flag is
+            # binary and outside the tracked stats).
+            "shield5": {"def": 100},
+            "bigKey": {}, "bomb": {}, "pickaxe": {}, "earthquake": {},
+            "coin": {}, "superPotion": {}, "snow": {}, "knife": {}, "cross": {},
+        }
+        return dict(table.get(eid, {}))
+
+    def _within_sweep_budget(self, gain: dict[str, int]) -> bool:
+        budget = getattr(self, "_sweep_budget", None)
+        if not budget:
+            return True
+        anchor = getattr(self, "_sweep_budget_anchor", None)
+        if not anchor:
+            return True
+        for stat, g in gain.items():
+            if stat not in self._SWEEP_BUDGET_STATS or not g:
+                continue
+            cap = budget.get(stat)
+            if cap is None:
+                continue  # 观测缺失的维度不受约束
+            already = self.state.get(stat, 0) - anchor.get(stat, 0)
+            if already + g > cap:
+                return False
+        return True
+
     def auto_sweep(
         self,
         fid: str | None = None,
@@ -1243,6 +1292,8 @@ class Game:
                     # check_damage_at 恒 0，41200 (11,6) redBat 行为不变。
                     if self.check_damage_at(fid, nxt) > 0:
                         continue
+                    if not self._within_sweep_budget(self._item_gain(fid, block.eid)):
+                        continue  # 观测预算外：不拾取也不扩展（live 链被打断语义）
                     self.apply_item(fid, block.eid)
                     self.set_ground(fid, nxt)
                     self.after_action(fid, nxt, block)
@@ -1268,6 +1319,8 @@ class Game:
                     gain = int(self.enemies[block.eid].get("money", 0))
                     if self.state.get("coin"):
                         gain *= 2
+                    if not self._within_sweep_budget({"gold": gain}):
+                        continue  # 观测预算外：不击杀也不扩展（live 链被打断语义）
                     self.state["gold"] += gain
                     self.set_ground(fid, nxt)
                     self.after_action(fid, nxt, block, auto=True)

@@ -1908,11 +1908,55 @@ def convert(seed: dict[str, Any], capture: dict[str, Any], actions: list[Semanti
                 g.record("事件", [1, 9], _eid, _before,
                          "布阵监狱小偷告别 facing-trigger")
                 executed += 1
+        # 观测预算（2026-10-25，实验性，--sweep-budget 开启）：live auto 收集链
+        # 可被玩家下一拍点击打断，statlog 逐 token 差分 = 该拍真实完成的收集量
+        # （两拍窗口容忍异步跨拍采样）。默认关闭：verifier 的 settle 式回放会让
+        # 链跑完，与"被打断"归因冲突（MT1 (6,9) 门步 +4g 实证）——sweep 的
+        # 迭代腿/远程拾取语义需要专门实机实验定论后再定默认值。
+        _si = action.data.get("stat_index")
+        _budget: dict[str, int] | None = None
+        if SWEEP_BUDGET and statlog and isinstance(_si, int) and 0 <= _si < len(statlog):
+            def _obs(idx: int) -> tuple[dict, dict] | None:
+                e = statlog[idx]
+                if not isinstance(e, dict):
+                    return None
+                pre = e.get("before") if isinstance(e.get("before"), dict) else None
+                post = e.get("after") if isinstance(e.get("after"), dict) else (
+                    statlog[idx + 1] if idx + 1 < len(statlog) and isinstance(statlog[idx + 1], dict) else None)
+                if pre is None or post is None:
+                    return None
+                return pre, post
+            _pair = _obs(_si)
+            _pair2 = _obs(_si + 1) if _si + 1 < len(statlog) else None
+            if _pair:
+                _pre, _post = _pair
+                _budget = {}
+                for _k in ("atk", "def", "yk", "bk", "rk", "g"):
+                    _pv, _qv = _pre.get(_k), _post.get(_k)
+                    if isinstance(_pv, (int, float)) and isinstance(_qv, (int, float)):
+                        _budget["gold" if _k == "g" else _k] = int(_qv) - int(_pv)
+                if _pair2:
+                    _pre2, _post2 = _pair2
+                    for _k in ("atk", "def", "yk", "bk", "rk", "g"):
+                        _pv, _qv = _pre2.get(_k), _post2.get(_k)
+                        if isinstance(_pv, (int, float)) and isinstance(_qv, (int, float)):
+                            _budget["gold" if _k == "g" else _k] = \
+                                _budget.get("gold" if _k == "g" else _k, 0) + int(_qv) - int(_pv)
+        if _budget is not None:
+            g._sweep_budget = _budget
+            g._sweep_budget_anchor = {k: g.state[k] for k in
+                                      ("gold", "hp", "atk", "def", "yk", "bk", "rk")}
+        else:
+            g._sweep_budget = None
+            g._sweep_budget_anchor = None
         try:
             did_execute = _safe_execute(g, action, diagnostics, statlog)
         except ValueError as exc:
             errors.append(f"recording action #{action.index}: {exc}")
             break
+        finally:
+            g._sweep_budget = None
+            g._sweep_budget_anchor = None
         if did_execute:
             executed += 1
         else:
@@ -1983,6 +2027,11 @@ def convert(seed: dict[str, Any], capture: dict[str, Any], actions: list[Semanti
     }
 
 
+# 2026-10-25 观测预算实验开关（见 convert 内注释）。默认关闭：verifier 的
+# settle 式回放与"被打断的链"归因冲突，sweep 迭代语义定论前不作为默认。
+SWEEP_BUDGET = False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seed-save", required=True, type=Path)
@@ -1998,8 +2047,15 @@ def main() -> int:
                              "battle=true,item=nopotion,wall=true")
     parser.add_argument("--stop-floor", default=None,
                         help="override the stage's stop floor (e.g. MT41 to stop a mt4-mt31 full-route run before zone4)")
+    parser.add_argument("--sweep-budget", action="store_true",
+                        help="experimental: constrain auto_sweep collections to the statlog's "
+                             "two-token observed deltas (interrupted-chain semantics). Default off: "
+                             "the verifier's settle-style replay completes chains, conflicting with "
+                             "interrupted attribution — needs a dedicated live-experiment session.")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
+    global SWEEP_BUDGET
+    SWEEP_BUDGET = args.sweep_budget
 
     capture, actions = load_capture(args.capture)
     start_stat = args.start_stat

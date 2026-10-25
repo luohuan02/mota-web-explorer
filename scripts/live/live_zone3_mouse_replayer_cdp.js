@@ -1878,6 +1878,38 @@ async function waitForCandidates(cdp, steps, candidateIndexes, desc, timeoutMs =
         return { state: last, matchedStep: idx };
       }
     }
+    // Iterated-legs collection (2026-10-25 live-proven on MT38 (10,1) ±90): a
+    // step's auto_sweep gains may fire only when the NEXT step's movement
+    // starts (control.moveOneStep re-fires core.auto() per leg), so the state
+    // at this step's check still shows the sweep pending. Accept the step when
+    // the live state equals its AFTER position with its BEFORE stats; the next
+    // step's own expected state (which includes the collected gains) closes
+    // the verification.
+    for (const idx of candidateIndexes) {
+      const step = steps[idx - 1];
+      const note = typeof step.note === "string" ? step.note : "";
+      if (note.indexOf("auto_sweep") < 0) continue;
+      const b = step.before || {}, a = step.after || {};
+      if (last.floor !== a.floor || last.x !== a.x || last.y !== a.y) continue;
+      // The sweep may partially apply live (item pickups like shield3 land
+      // immediately; monster legs wait for the next movement). Accept when
+      // every tracked stat sits at its before- OR after-value and at least
+      // one still pends at the before-value.
+      const stat = (k) => {
+        const bk2 = k === "money" ? "gold" : k;
+        return last[k] === b[bk2] || last[k] === a[bk2];
+      };
+      const pending = ["hp", "atk", "def", "money", "yk", "bk", "rk"]
+        .some((k) => {
+          const bk2 = k === "money" ? "gold" : k;
+          return b[bk2] !== a[bk2] && last[k] === b[bk2];
+        });
+      if (!["hp", "atk", "def", "money", "yk", "bk", "rk"].every(stat)) continue;
+      if (!pending) continue;
+      if (last.lock || last.eventId || last.moving || last.hasChoices) continue;
+      console.log(`      -> sweep deferred to next movement (step ${idx})`);
+      return { state: last, matchedStep: idx };
+    }
     // Pre-lock context (breakOnIdle): the previous step's lingering event (e.g. boss
     // afterBattle text) has now settled -- state is idle -- but this step's target
     // hasn't been achieved. That means this step needs its own click; don't sit idle
@@ -3314,6 +3346,19 @@ async function runOneStep(cdp, steps, oneBased, stop) {
     }
   }
   await executeStep(cdp, execStep);
+  // 2026-10-25 MT38 (10,1) ±90 实证：到达步的 auto 由 moveOneStep 的
+  // insertAction 链触发，该上下文里 auto 的战斗腿可能被吞（同一冻结态手动
+  // core.auto() 立即收齐 +90/双士兵）。步组带 auto_sweep 注记时，英雄 idle 后
+  // 显式补触发一次 core.auto()（幂等：空图 bfs 是 no-op），再等待校验。
+  const groupHasSweep = candidates.some((idx) => {
+    const s = steps[idx - 1];
+    return typeof s.note === "string" && s.note.indexOf("auto_sweep") >= 0;
+  });
+  if (groupHasSweep) {
+    await waitMovementSettled(cdp, 10000);
+    await evalValue(cdp, `core.auto()`);
+    await sleep(300);
+  }
   const result = await waitForCandidates(cdp, steps, candidates, `step ${oneBased}`);
   if (result.matchedStep !== oneBased) {
     console.log(`      -> coalesced through step ${result.matchedStep}`);

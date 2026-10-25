@@ -107,6 +107,7 @@ description: 用于魔塔/h5mota 本地路线搜索、最优寻路、攻略-vs-�
 
 ### 经验文件
 - **纯净版-TE HP 最优宏观经验（当前探索目标总纲）**：路线族/当前最优 + 通向 41477 的已封闭结构性杠杆（别再撞）+ 伤害归因 + 剩余「降低钥匙消耗」微优化方向：`skills/mota-route-search/te_hp_optimization_experience.md`。
+- **用户经验 2026-10-24（41477 族配方 + 最高防御 653 防攻略 + 漏探根因）**：用户手玩 41477 全族关键点（7楼省2yk/9楼蓝门、800红钥匙、卖yk 7防、38F 商人延后到魔龙后、2120 悬崖、终局顺序）+ 官方 653 防线摘要 + 为什么之前没探到（微交换/转换时点算子缺口、分区出口规格写死、微收益阈值歧视）与 OP-SWAP/OP-DEFER 算子规格：`skills/mota-route-search/te_user_experience_20261024.md`。TE 搜索前必读。
 - **钥匙-掉血决策逻辑（2攻全防，按区）**：
   - zone1（11 条）：`skills/mota-route-search/te_hp_zone1_decisions.md`
   - zone2（MT11-20，金币-掉血：2攻/红钥匙/BK）：`skills/mota-route-search/te_hp_zone2_decisions.md`
